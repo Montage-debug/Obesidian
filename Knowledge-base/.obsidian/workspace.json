@@ -1,0 +1,289 @@
+{
+  "main": {
+    "id": "92f6e77d59796e57",
+    "type": "split",
+    "children": [
+      {
+        "id": "af8c4d449f6d0408",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8309e4e5c0140a01",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "ROS2参数服务器.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ROS2参数服务器"
+            }
+          },
+          {
+            "id": "d916eaea18bb96e5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "git命令的使用.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "git命令的使用"
+            }
+          },
+          {
+            "id": "3599ae640320e67b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "ROS2/ROS2参数服务器.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ROS2参数服务器"
+            }
+          },
+          {
+            "id": "bbfdca541ca342ad",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "ROS2/ROS2功能包.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ROS2功能包"
+            }
+          },
+          {
+            "id": "4f2d447807c9e533",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "ROS2/ROS2中串口使用例程 from deepseek.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ROS2中串口使用例程 from deepseek"
+            }
+          },
+          {
+            "id": "a3322f81d5bea185",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "JSON库的使用.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "JSON库的使用"
+            }
+          }
+        ],
+        "currentTab": 5
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3913785647624a13",
+    "type": "split",
+    "children": [
+      {
+        "id": "92277becfb5450e7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "412fedaf38d8931a",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "7c9a1d49490ec6b9",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "serial_driv",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "194850dab5fdcc25",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "6673bb7c7bc13d0c",
+    "type": "split",
+    "children": [
+      {
+        "id": "896d817c5532b350",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "eb0cf9ee1dc26c63",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "git命令的使用.md",
+                "collapseAll": true,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "git命令的使用 的反向链接列表"
+            }
+          },
+          {
+            "id": "06b5ae0bb1ba75ce",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "git命令的使用.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "git命令的使用 的出链列表"
+            }
+          },
+          {
+            "id": "f286729a0f9bfba2",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "dce8e91bcec888be",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "JSON库的使用.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "JSON库的使用 的大纲"
+            }
+          }
+        ],
+        "currentTab": 3
+      },
+      {
+        "id": "66086ff58dcd0759",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4e26449987831892",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "关系图谱"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 700.5
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:创建新数据库": false,
+      "zk-prefixer:创建时间戳笔记": false
+    }
+  },
+  "active": "a3322f81d5bea185",
+  "lastOpenFiles": [
+    "ROS2/ROS2中串口使用例程 from deepseek.md",
+    "待分类/ros2/串口通信.md",
+    "待分类/ros2/ROS2操作.md",
+    "ROS2/ROS2-Humble安装.md",
+    "Ubuntu修改root用户名和设备名.md",
+    "MD5的使用.md",
+    "ROS2/ROS2自定义消息接口.md",
+    "MarkDown草稿本.md",
+    "网络调用API.md",
+    "寻艾中医AI.md",
+    "未命名",
+    "ROS2/ROS2功能包.md",
+    "ROS2/ROS2参数服务器.md",
+    "git命令的使用.md",
+    "ROS2",
+    "http库的使用.md",
+    "ROS2/行为树（Behavior Tree）.md",
+    "JSON库的使用.md",
+    "ROS2/行为树例程 form DeepSeek.md",
+    "常用GIT命令详解，手把手让你登堂入室.md",
+    "ROS系列",
+    "欢迎.md",
+    "未命名.canvas",
+    "json.hpp",
+    "httplib.h"
+  ]
+}

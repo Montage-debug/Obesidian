@@ -1,0 +1,3 @@
+https://wenku.baidu.com/view/181550736aeae009581b6bd97f1922791688be1f.html?_wkts_=1758707860130&needWelcomeRecommand=1     基于ABB机器人的人体经络腧穴识别
+https://max.book118.com/html/2023/0913/5223040002010330.shtm 一种基于全身关键点识别和实例分割的腧穴定位方法
+https://d.wanfangdata.com.cn/thesis/Y4350797 多传感融合人体腧穴定位方法研究
