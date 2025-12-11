@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "d06b406e4b14aeda",
+        "id": "77f3e04b1aa2ecd7",
         "type": "tabs",
         "children": [
           {
-            "id": "b30dbdeb8b897519",
+            "id": "84be0323f4b0d399",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "机械革命/STM32/STM32-PPT.md",
+                "file": "机械革命/ROS2/ROS2.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "STM32-PPT"
+              "title": "ROS2"
             }
           }
         ]
@@ -53,7 +53,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "create",
+                "query": "tag:#2节点设置",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -74,7 +74,8 @@
               "title": "书签"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -142,13 +143,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "机械革命/STM32/STM32-PPT.md",
+                "file": "机械革命/ROS2/ROS2.md",
                 "followCursor": true,
                 "showSearch": true,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "STM32-PPT 的大纲"
+              "title": "ROS2 的大纲"
             }
           }
         ],
@@ -156,8 +157,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -170,12 +170,20 @@
       "bases:创建新数据库": false
     }
   },
-  "active": "b30dbdeb8b897519",
+  "active": "84be0323f4b0d399",
   "lastOpenFiles": [
+    "机械革命/论文/开题报告/SC-RRT算法实现/路径规划.md",
+    "机械革命/论文/开题报告/SC-RRT算法实现/路径平滑方法对比.md",
+    "路径平滑方法对比3D.fig",
+    "路径平滑方法对比2D.fig",
+    "机械革命/论文/开题报告/SC-RRT算法实现",
+    "机械革命/MobaXterm/MobaXterm操作指南.md",
+    "MobaXterm_Installer_v25.4.zip",
+    "机械革命/STM32/STM32-PPT.md",
+    "机械革命/MobaXterm",
     "PID电机驱动及控制板-V1.0.pdf",
     "编码电机工作原理.pdf",
     "Pasted image 20251118220549.png",
-    "机械革命/STM32/STM32-PPT.md",
     "机械革命/~$STM32入门教程 4.pptx",
     "机械革命/STM32/STM32F10xxx参考手册（中文）.pdf",
     "Knowledge-base/待分类/ros2/ROS2操作.md",
@@ -203,22 +211,13 @@
     "Dynamic-RRT实现细节.md",
     "Pasted image 20251019225203.png",
     "Pasted image 20251019211829.png",
-    "~$STM32入门教程 4.pptx",
-    "STM32入门教程 4.pptx",
     "论文/开题报告/参考文献.md",
     "论文/目标检测/yolov8算法.md",
-    "论文/开题报告",
     "论文/目标检测/One-stage.png",
     "Pasted image 20251015220401.png",
     "Pasted image 20251015220152.png",
     "Pasted image 20251015220208.png",
     "Pasted image 20251015220158.png",
-    "STM32/STM32-PPT.md",
-    "论文/目标检测",
-    "论文",
-    "ROS2/Platformio IDE 工程实现流程.md",
-    "ROS2/ROS2.md",
-    "ROS2",
     "未命名 1.canvas",
     "未命名 2.canvas"
   ]
