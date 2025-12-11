@@ -1,4 +1,4 @@
-
+ 
 
 ---
 
@@ -130,3 +130,20 @@ git push -u origin main
 如果你需要，我可以帮你画一张 **VSCode 操作 Git 的流程图**，让整个上传流程一目了然，包括修改邮箱、添加远程仓库、上传文件。
 
 你希望我画吗？
+
+
+
+```c
+# windows合并
+git merge origin/dev
+```
+
+```
+
+|命令|主要用途|输出示例|
+|---|---|---|
+|`git remote -v`|**查看所有远程仓库**的名称和URL[](https://worktile.com/kb/ask/252138.html)[](https://worktile.com/kb/ask/237040.html)|`origin https://github.com/user/repo.git (fetch)`  <br>`origin https://github.com/user/repo.git (push)`|
+|`git remote get-url <远程名称>`|获取**单个指定远程仓库**的URL[](https://cloud.tencent.cn/developer/information/%e5%a6%82%e4%bd%95%e6%9f%a5%e7%9c%8b%e5%b7%a5%e4%bd%9c%e7%9b%ae%e5%bd%95%e6%89%80%e6%8c%87%e5%90%91%e7%9a%84%e5%ad%98%e5%82%a8%e5%ba%93URL%ef%bc%9f-salon)|`https://github.com/user/repo.git`|
+|`git config --get remote.<远程名称>.url`|直接查询Git配置中**特定远程的URL**[](https://worktile.com/kb/ask/252138.html)[](https://worktile.com/kb/ask/237040.html)|`https://github.com/user/repo.git`|
+|`git remote show <远程名称>`|显示**指定远程仓库的详细信息**，包括其URL[](https://worktile.com/kb/ask/237040.html)|_输出包含URL、跟踪分支等详细信息_|
+```
