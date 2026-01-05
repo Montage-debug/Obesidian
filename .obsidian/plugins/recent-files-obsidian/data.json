@@ -1,6 +1,26 @@
 {
   "recentFiles": [
     {
+      "basename": "obisidian",
+      "path": "06-临时与归档/待整理/obisidian.md"
+    },
+    {
+      "basename": "ssh进程服务",
+      "path": "03-开发工具/MobaXterm/ssh进程服务.md"
+    },
+    {
+      "basename": "MobaXterm操作指南",
+      "path": "03-开发工具/MobaXterm/MobaXterm操作指南.md"
+    },
+    {
+      "basename": "Linux操作",
+      "path": "02-技术文档/Linux系统/Linux操作.md"
+    },
+    {
+      "basename": "Ubuntu修改root用户名和设备名",
+      "path": "02-技术文档/Linux系统/Ubuntu修改root用户名和设备名.md"
+    },
+    {
       "basename": "未来之城手柄功能实现",
       "path": "01-项目实践/未来之城项目/硬件驱动/未来之城手柄功能实现.md"
     },
@@ -15,10 +35,6 @@
     {
       "basename": "行为树例程 form DeepSeek",
       "path": "02-技术文档/ROS2/行为树例程 form DeepSeek.md"
-    },
-    {
-      "basename": "obisidian",
-      "path": "06-临时与归档/待整理/obisidian.md"
     },
     {
       "basename": "Solidworks 讲解",
