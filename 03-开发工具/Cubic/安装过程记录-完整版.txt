@@ -1,0 +1,763 @@
+#!/bin/bash
+
+
+# 有个想法： 在chroot中安装ros2和功能包，在ubuntu.seed中填写命令安装其他功能包
+# 完整环境配置脚本
+#==================一=====================
+echo "开始配置API全局开发环境"
+
+# 1. 更新系统并配置软件源
+echo "[1/4] 更新系统和配置软件源"
+apt-get update
+apt-get upgrade -y
+apt-get install -y software-properties-common
+
+# 配置完整软件源
+cat > /etc/apt/sources.list << 'EOF'
+deb http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu jammy-security main restricted universe multiverse
+EOF
+
+#==================ROS2安装====================
+wget http://fishros.com/install -O fishros && . fishros
+
+#==================深度相机驱动安装===============
+
+mkdir -p /opt/drivers
+mkdir -p /cdrom/custom/drivers 2>/dev/null || true
+
+# 复制到正确位置
+cp "/custom/ros-humble-deptrum-ros-driver-aurora930_0.2.12-0jammy_amd64.deb" "/cdrom/custom/drivers/"
+
+# 先创建目录后安装驱动
+# 检查并安装驱动
+if [ -f "/cdrom/custom/drivers/ros-humble-deptrum-ros-driver-aurora930_0.2.12-0jammy_amd64.deb" ]; then
+    echo "找到深度相机驱动文件，开始安装..."
+    cp "/cdrom/custom/drivers/ros-humble-deptrum-ros-driver-aurora930_0.2.12-0jammy_amd64.deb" /opt/drivers/
+    dpkg -i "/opt/drivers/ros-humble-deptrum-ros-driver-aurora930_0.2.12-0jammy_amd64.deb" || apt-get install -f -y
+    echo "✓ 深度相机驱动已安装并保存到 /opt/drivers/"
+else
+    echo "⚠ 深度相机驱动文件未找到"
+    echo "请将驱动文件放入: /cdrom/custom/drivers/"
+    echo "文件名: ros-humble-deptrum-ros-driver-aurora930_0.2.12-0jammy_amd64.deb"
+fi
+
+
+
+
+ls /opt/drivers/*.deb 2>/dev/null && echo "✓ 驱动文件已保存"
+#==================APT安装====================
+
+apt-get update
+
+# 2. 安装系统依赖
+echo "[2/4] 安装系统依赖"
+# 更新包列表
+apt-get update
+
+# 基础系统工具和Python开发环境
+apt-get install -y \
+    build-essential \
+    git \
+    curl \
+    wget \
+    pkg-config \
+    libssl-dev \
+    libffi-dev \
+    libusb-1.0-0-dev \
+    libasound2-dev \
+    nlohmann-json3-dev
+
+# Python开发套件
+apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-dev \
+    python3-venv
+
+# 多媒体和图像处理
+apt-get install -y \
+    ffmpeg \
+    libopencv-dev \
+    libopencv-core4.5d \
+    libopencv-imgcodecs4.5d \
+    libopencv-imgproc4.5d
+
+# 数据库相关
+apt-get install -y \
+    sqlcipher \
+    libsqlcipher-dev \
+    libsqlcipher0
+
+# Boost库
+apt-get install -y \
+    libboost-filesystem1.74.0
+
+# ROS 2 Humble 相关包
+apt-get install -y \
+    ros-humble-web-video-server \
+    ros-humble-asio-cmake-module \
+    ros-humble-serial-driver \
+    ros-humble-io-context \
+    ros-humble-cv-bridge \
+    ros-humble-pcl-* \
+    ros-humble-behaviortree-cpp \
+    ros-humble-behaviortree-cpp-v3 \
+    ros-humble-smacc2 \
+    ros-humble-usb-cam
+    
+#===========SSH服务安装与配置==================
+apt-get install -y openssh-server
+
+which sshd
+
+systemctl enable ssh
+
+systemctl enable sshd
+
+systemctl start ssh
+
+systemctl start sshd
+#===========处理libsqlcipher-dev依赖==================
+echo "安装SQLCipher依赖"
+if ! apt-get install -y libsqlcipher-dev 2>/dev/null; then
+    echo "从源码编译安装SQLCipher"
+    apt-get install -y \
+        tcl \
+        libreadline-dev \
+        sqlite3 \
+        libsqlite3-dev \
+        libssl-dev
+    
+    cd /tmp
+    wget -q https://github.com/sqlcipher/sqlcipher/archive/refs/tags/v4.5.5.tar.gz
+    tar -xzf v4.5.5.tar.gz
+    cd sqlcipher-4.5.5
+    ./configure --enable-tempstore=yes CFLAGS="-DSQLITE_HAS_CODEC" LDFLAGS="-lcrypto"
+    make -j$(nproc)
+    make install
+    ldconfig
+    cd /
+    rm -rf /tmp/sqlcipher-*
+fi
+
+# 安装音频/视频依赖
+apt-get install -y \
+    ffmpeg \
+    libsdl2-dev \
+    libsdl2-image-dev \
+    libsdl2-mixer-dev \
+    libsdl2-ttf-dev \
+    libportaudio2 \
+    portaudio19-dev
+    
+#=============音频依赖=================
+# 安装ALSA核心包
+apt-get install -y alsa-base alsa-utils alsa-tools
+
+ #在"Packages"标签页确保勾选：
+    #alsa-base
+    #alsa-utils
+    #libasound2
+
+# 1. 确保目录存在
+mkdir -p /opt/scripts/
+
+# 2. 创建主脚本
+cat > /opt/scripts/generate-global-asoundconf.sh << 'EOF'
+#!/bin/bash
+# generate-global-asoundconf.sh
+
+set -e
+
+echo "🔍 检测 USB 音频设备..."
+
+if [ ! -f /proc/asound/cards ]; then
+    echo "❌ ALSA 未安装或无音频子系统。"
+    exit 1
+fi
+
+USB_CARD_LINE=$(grep -i usb /proc/asound/cards | head -n1)
+if [ -z "$USB_CARD_LINE" ]; then
+    echo "❌ 未找到 USB 音频设备。请插入后重试。"
+    cat /proc/asound/cards
+    exit 1
+fi
+
+CARD_ID=$(echo "$USB_CARD_LINE" | awk '{print $1}')
+CARD_NAME=$(echo "$USB_CARD_LINE" | sed -n 's/.*\[\(.*\)\].*/\1/p' | xargs)
+[ -z "$CARD_NAME" ] && CARD_NAME="Device"
+
+echo "✅ 使用设备: $CARD_NAME (Card ID: $CARD_ID)"
+echo "ℹ️  实际硬件路径: hw:$CARD_ID"
+
+# 生成 /etc/asound.conf
+cat > /etc/asound.conf << ASOUNDEOF
+# =============================================
+# 全局 ALSA 配置：USB 音频多用户/多进程支持
+# 设备: $CARD_NAME (Card $CARD_ID)
+# 生成时间: $(date)
+# =============================================
+
+# 播放混音器
+pcm.dmix_usb {
+    type dmix
+    ipc_key 1024
+    ipc_perm 0666
+    slave {
+        pcm "hw:$CARD_ID"
+        rate 48000
+        period_size 1024
+        buffer_size 4096
+        periods 4
+    }
+}
+
+# 录音共享器
+pcm.dsnoop_usb {
+    type dsnoop
+    ipc_key 1025
+    ipc_perm 0666
+    slave {
+        pcm "hw:$CARD_ID"
+        rate 16000
+        channels 1
+        period_size 1024
+        buffer_size 4096
+    }
+}
+
+# 合并播放与录音
+pcm.usb {
+    type asym
+    playback.pcm "dmix_usb"
+    capture.pcm "dsnoop_usb"
+}
+
+# 默认设备
+pcm.!default {
+    type plug
+    slave.pcm "usb"
+}
+
+ctl.!default {
+    type hw
+    card $CARD_ID
+}
+ASOUNDEOF
+
+echo "✅ 全局 ALSA 配置已写入 /etc/asound.conf"
+
+if [ -e "/dev/snd" ]; then
+    chmod -R a+rw /dev/snd
+    echo "✅ /dev/snd 权限已更新"
+fi
+
+alsactl restore 2>/dev/null || true
+echo "ℹ️  确保用户在 'audio' 组"
+EOF
+
+chmod +x /opt/scripts/generate-global-asoundconf.sh
+
+# 3. 创建rc.local
+cat > /etc/rc.local << 'EOF'
+#!/bin/bash
+sleep 2
+if [ -f /opt/scripts/generate-global-asoundconf.sh ]; then
+    echo "开机: 配置USB音频..."
+    /opt/scripts/generate-global-asoundconf.sh || true
+fi
+exit 0
+EOF
+
+chmod +x /etc/rc.local
+
+# 4. 确保rc-local服务配置
+cat > /lib/systemd/system/rc-local.service << 'EOF'
+[Unit]
+Description=/etc/rc.local Compatibility
+ConditionPathExists=/etc/rc.local
+
+[Service]
+Type=oneshot
+ExecStart=/etc/rc.local
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 5. 启用服务
+systemctl enable rc-local.service
+
+# 6. 检查audio组
+groupadd -f audio
+
+# 检查ALSA相关包是否已安装
+dpkg -l | grep -E "alsa-base|alsa-utils|libasound2"
+# 结果应该显示：
+# ii  alsa-base    版本号    amd64    ALSA driver configuration files
+# ii  alsa-utils   版本号    amd64    Utilities for configuring and using ALSA
+# ii  libasound2   版本号    amd64    Shared library for ALSA applications
+#=============埃利特SDK=================
+sudo add-apt-repository ppa:elite-robots/cs-robot-series-sdk
+sudo apt update
+sudo apt install elite-cs-series-sdk
+#==========================验证音频和埃利特SDK=========================
+echo "=== 最终完整配置验证 ==="
+
+echo "1. 🔧 音频配置:"
+echo "   脚本: $(ls -la /opt/scripts/generate-global-asoundconf.sh 2>/dev/null && echo '✅' || echo '❌')"
+echo "   rc.local: $(ls -la /etc/rc.local 2>/dev/null && echo '✅' || echo '❌')"
+echo "   服务状态: $(systemctl is-enabled rc-local.service 2>/dev/null && echo '✅ 已启用' || echo '❌ 未启用')"
+
+echo ""
+echo "2. 📦 软件包:"
+echo "   ALSA: $(dpkg -l alsa-base alsa-utils 2>/dev/null | grep -q ^ii && echo '✅ 已安装' || echo '❌ 缺失')"
+echo "   SDK: $(dpkg -l elite-cs-series-sdk 2>/dev/null | grep -q ^ii && echo '✅ 已安装' || echo '❌ 缺失')"
+echo "   libssh: $(dpkg -l libssh-dev 2>/dev/null | grep -q ^ii && echo '✅ 已安装' || echo '❌ 缺失')"
+
+echo ""
+echo "3. 📁 SDK文件检查:"
+if dpkg -l elite-cs-series-sdk >/dev/null 2>&1; then
+    echo "   SDK安装路径:"
+    dpkg -L elite-cs-series-sdk | head -10 | sed 's/^/     /'
+    echo "   ✅ SDK文件已安装"
+else
+    echo "   ❌ SDK未安装"
+fi
+
+echo ""
+echo "4. 👥 用户组:"
+getent group audio >/dev/null && echo "   ✅ audio组存在" || echo "   ❌ audio组缺失"
+
+echo ""
+echo "5. ⚙️  系统服务:"
+echo "   rc-local: $(systemctl is-enabled rc-local.service 2>/dev/null && echo '✅ 已启用' || echo '⚠️  未启用')"
+echo "   pulseaudio: $(systemctl is-enabled pulseaudio.service 2>/dev/null && echo '✅ 已启用' || echo '默认禁用（正常）')"
+
+echo "=== 验证完成 ==="
+#=============创建requirements.txt并安装Python包================
+
+echo "[3/4] 创建requirements.txt文件"
+
+cat > /requirements.txt << 'EOF'
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+pyyaml>=6.0
+sqlalchemy==2.0.23
+aiosqlite==0.19.0
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==5.0.0
+python-dotenv==1.0.0
+pysqlcipher3==1.2.0
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.1
+pytest-cov==4.1.0
+websockets==12.0
+numpy>=1.20.0
+tenacity==8.2.3
+pygame==2.6.1
+pydub>=0.25.1
+openai==2.14.0
+empy
+lark
+pyarmor.cli.runtime
+EOF
+
+# 4. 安装Python依赖包
+echo "[4/4] 安装Python依赖包"
+
+# 升级pip
+python3 -m pip install --upgrade pip setuptools wheel
+
+# 设置编译环境
+export LDFLAGS="-L/usr/local/lib"
+export CFLAGS="-I/usr/local/include"
+
+# 安装所有包
+pip3 install -r /requirements.txt
+
+# 处理pysqlcipher3可能的安装问题
+if ! python3 -c "import pysqlcipher3" 2>/dev/null; then
+    echo "尝试安装pysqlcipher3替代方案..."
+    pip3 install pysqlcipher3-binary 2>/dev/null || pip3 install apsw
+fi
+
+#==================后续验证安装====================
+# 创建完整的验证脚本
+cat > /usr/local/bin/verify-fastapi << 'EOF'
+#!/usr/bin/env python3
+import sys
+import subprocess
+
+def check_package(package_name, min_version=None):
+    """检查单个包的安装情况"""
+    try:
+        if '.' in package_name:
+            # 处理有子模块的包，如pyarmor.cli.runtime
+            parts = package_name.split('.')
+            mod = __import__(parts[0])
+            for part in parts[1:]:
+                mod = getattr(mod, part, None)
+                if mod is None:
+                    return False, "未找到子模块"
+            version = getattr(mod, '__version__', '已安装')
+            return True, version
+        else:
+            mod = __import__(package_name)
+            version = getattr(mod, '__version__', '已安装')
+            
+            if min_version and version != '已安装':
+                # 简单的版本比较
+                try:
+                    from packaging import version as pkg_version
+                    if pkg_version.parse(str(version)) >= pkg_version.parse(min_version):
+                        return True, f"{version} ✓"
+                    else:
+                        return True, f"{version} (需要 {min_version}+)"
+                except:
+                    return True, version
+            return True, version
+    except ImportError as e:
+        return False, f"未安装 ({str(e)})"
+    except Exception as e:
+        return False, f"检查失败 ({str(e)})"
+
+def main():
+    print("=" * 60)
+    print("全局环境验证")
+    print("=" * 60)
+    
+    # 检查Python和pip版本
+    python_version = sys.version.split()[0]
+    print(f"Python版本: {python_version}")
+    
+    try:
+        import pip
+        print(f"Pip版本: {pip.__version__}")
+    except:
+        print("Pip版本: 未知")
+    
+    print("\n" + "-" * 60)
+    print("包安装状态:")
+    print("-" * 60)
+    
+    # 要检查的包列表（从requirements.txt提取的关键包）
+    packages_to_check = [
+        ("fastapi", "0.104.1"),
+        ("uvicorn", "0.24.0"),
+        ("pydantic", "2.5.0"),
+        ("sqlalchemy", "2.0.23"),
+        ("openai", "2.14.0"),
+        ("numpy", "1.20.0"),
+        ("pygame", "2.6.1"),
+        ("pydub", "0.25.1"),
+        ("websockets", "12.0"),
+        ("httpx", "0.25.1"),
+        ("aiosqlite", None),
+        ("python-jose", None),  # python-jose导入名
+        ("pyarmor", None),      # pyarmor.cli.runtime的父包
+        ("lark", None),
+        ("empy", None),
+    ]
+    
+    results = []
+    all_ok = True
+    
+    for package, min_version in packages_to_check:
+        success, message = check_package(package, min_version)
+        
+        if success:
+            status = "✅"
+            results.append(f"{status} {package:25} {message}")
+        else:
+            status = "❌"
+            results.append(f"{status} {package:25} {message}")
+            all_ok = False
+        
+        # 显示进度
+        sys.stdout.write(f"\r检查: {package:25} {'✓' if success else '✗'}")
+        sys.stdout.flush()
+    
+    print("\n" + "-" * 60)
+    
+    # 显示结果
+    for result in results:
+        print(result)
+    
+    print("-" * 60)
+    
+    # 检查包安装位置
+    print("\n包安装位置:")
+    try:
+        import site
+        for path in site.getsitepackages():
+            print(f"  {path}")
+    except:
+        pass
+    
+    # 最终结论
+    if all_ok:
+        print("\n🎉 所有包安装成功！环境就绪。")
+        return 0
+    else:
+        print("\n⚠ 部分包安装有问题，但核心功能应该可用。")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
+EOF
+
+# 设置执行权限
+chmod +x /usr/local/bin/verify-fastapi
+
+
+#===========================完整验证============================
+cat > /tmp/final-validation.sh << 'EOF'
+#!/bin/bash
+echo "========== 最终系统验证 =========="
+
+echo ""
+echo "1. 📦 基础系统验证:"
+echo "   Python 3.10.12: $(python3 --version 2>/dev/null || echo '❌')"
+echo "   Pip: $(pip3 --version 2>/dev/null | head -1 || echo '❌')"
+echo "   ROS 2: $(source /opt/ros/humble/setup.bash 2>/dev/null && ros2 --help 2>&1 | head -1 && echo '✅' || echo '❌')"
+
+echo ""
+echo "2. 🐍 Python包验证:"
+echo "   FastAPI: $(python3 -c "import fastapi; print(fastapi.__version__)" 2>/dev/null || echo '❌')"
+echo "   SQLAlchemy: $(python3 -c "import sqlalchemy; print(sqlalchemy.__version__)" 2>/dev/null || echo '❌')"
+echo "   OpenAI: $(python3 -c "import openai; print(openai.__version__)" 2>/dev/null || echo '❌')"
+echo "   PyGame: $(python3 -c "import pygame; print(pygame.__version__)" 2>/dev/null || echo '❌')"
+
+echo ""
+echo "3. 🔊 音频配置验证:"
+echo "   音频脚本: $(ls /opt/scripts/generate-global-asoundconf.sh 2>/dev/null && echo '✅' || echo '❌')"
+echo "   rc-local服务: $(systemctl is-enabled rc-local.service 2>/dev/null && echo '✅启用' || echo '❌禁用')"
+echo "   ALSA包: $(dpkg -l alsa-base alsa-utils 2>/dev/null | grep -q ^ii && echo '✅已安装' || echo '❌缺失')"
+
+echo ""
+echo "4. 🤖 Elite SDK验证:"
+echo "   SDK包: $(dpkg -l elite-cs-series-sdk 2>/dev/null | grep -q ^ii && echo '✅已安装' || echo '❌未安装')"
+echo "   头文件: $(ls /usr/include/Elite/ 2>/dev/null && echo '✅存在' || echo '❌缺失')"
+
+echo ""
+echo "5. 📁 Custom配置验证:"
+echo "   fastapi-env: $(ls /custom/fastapi-env/ 2>/dev/null && echo '✅存在' || echo '❌缺失')"
+echo "   install-post.sh: $(ls /custom/install-post.sh 2>/dev/null && echo '✅存在' || echo '❌缺失')"
+echo "   preseed配置: $(ls /custom/preseed/ubuntu.seed 2>/dev/null && echo '✅存在' || echo '❌缺失')"
+
+echo ""
+echo "6. 🔧 系统服务验证:"
+echo "   SSH: $(ls /lib/systemd/system/ssh* 2>/dev/null && echo '✅配置存在' || echo '❌缺失')"
+echo "   rc-local: $(ls /lib/systemd/system/rc-local.service 2>/dev/null && echo '✅配置存在' || echo '❌缺失')"
+
+echo ""
+echo "7. 📊 包数量统计:"
+echo "   Python包: $(pip3 list | wc -l)个"
+echo "   ROS 2包: $(ros2 pkg list 2>/dev/null | wc -l)个"
+
+echo ""
+echo "========== 验证完成 =========="
+EOF
+
+chmod +x /tmp/final-validation.sh
+/tmp/final-validation.sh
+#==================配置/custom/(必须)========================
+# 在Cubic中创建custom目录结构
+mkdir -p /custom/fastapi-env
+
+# 复制重要的Python包信息和配置
+cp /requirements.txt /custom/fastapi-env/
+cp -r /usr/local/bin/verify-fastapi /custom/fastapi-env/
+
+# 创建环境配置文件
+cat > /custom/fastapi-env/setup.sh << 'EOF'
+#!/bin/bash
+# FastAPI环境设置脚本
+export PYTHONPATH=/usr/local/lib/python3.10/dist-packages:$PYTHONPATH
+export PATH=/usr/local/bin:$PATH
+export PYTHONUTF8=1
+EOF
+
+chmod -R a+rX /usr/local/lib/python3.10/dist-packages
+chmod -R a+rX /usr/local/bin/
+
+chmod +x /custom/fastapi-env/setup.sh
+
+echo "=== 查看现有custom目录 ==="
+ls -la /custom/
+echo ""
+echo "=== fastapi-env内容 ==="
+ls -la /custom/fastapi-env/
+echo ""
+echo "=== 文件内容 ==="
+cat /custom/fastapi-env/requirements.txt
+echo "---"
+cat /custom/fastapi-env/setup.sh
+echo "---"
+head -20 /custom/fastapi-env/verify-fastapi
+
+# 安装ALSA核心包
+apt-get install -y alsa-base alsa-utils alsa-tools
+
+#=================打包前验证======================
+echo "=== 打包前最终检查 ==="
+
+# 1. 修复verify-fastapi脚本
+python3 -c "exec(open('/usr/local/bin/verify-fastapi').read())" 2>&1 | head -5
+
+# 2. 检查所有关键文件
+echo "关键文件检查:"
+[ -f /opt/scripts/generate-global-asoundconf.sh ] && echo "✅ 音频脚本"
+[ -f /custom/install-post.sh ] && echo "✅ 安装后脚本"
+[ -f /custom/preseed/ubuntu.seed ] && echo "✅ preseed配置"
+[ -f /usr/local/bin/verify-fastapi ] && echo "✅ 验证脚本"
+[ -f /opt/ros/humble/setup.bash ] && echo "✅ ROS 2环境"
+
+# 3. 测试音频脚本
+echo "测试音频脚本:"
+bash -n /opt/scripts/generate-global-asoundconf.sh && echo "✅ 语法正确" || echo "❌ 语法错误"
+
+# 4. 检查Custom目录完整性
+echo "Custom目录:"
+du -sh /custom/
+find /custom -type f | wc -l
+
+echo ""
+echo "✅ 如果以上检查都通过，可以生成ISO了！"
+echo "退出终端，点击Cubic的Generate按钮生成ISO。"
+echo "生成后使用: sudo dd if=your-iso.iso of=/dev/sdX bs=4M status=progress"
+#==================配置音频文件====================
+sudo mkdir -p /opt/scripts/
+sudo nano /opt/scripts/generate-global-asoundconf.sh
+
+# ==================系统清理======================
+echo "清理临时文件..."
+apt-get clean
+pip cache purge
+rm -rf /tmp/*
+rm -rf /var/tmp/*
+rm -rf /root/.cache
+rm -f /var/cache/apt/archives/*.deb
+rm -f "/custom/ros-humble-deptrum-ros-driver-aurora930_0.2.12-0jammy_amd64.deb"
+
+echo ""
+echo "所有包已全局安装，可以直接使用。"
+
+
+
+#=============================================
+#Terminal (终端) → Next → Remove Packages (您现在的界面)
+#    ↓
+#    Next → Copy Files (Files标签页)
+#    ↓  
+#    Next → Prepare (Prepare标签页)
+#    ↓
+#    Next → Generate (生成ISO)
+
+#========================在preseed 目录下ubuntu.seed文件内更改late_command=========
+# =============================================
+# Ubuntu自动安装配置 - Gxy
+# =============================================
+
+# 基础设置
+d-i debian-installer/locale string en_US
+d-i keyboard-configuration/xkb-keymap select us
+d-i netcfg/choose_interface select auto
+
+# 分区设置
+d-i partman-auto/method string regular
+d-i partman-auto/choose_recipe select atomic
+d-i partman/confirm boolean true
+d-i partman/confirm_nooverwrite boolean true
+
+# 用户设置
+d-i passwd/user-fullname string Ubuntu User
+d-i passwd/username string ubuntu
+d-i passwd/user-password password ubuntu
+d-i passwd/user-password-again password ubuntu
+d-i user-setup/allow-password-weak boolean true
+
+# 软件源和包管理
+d-i apt-setup/extras boolean true
+# 添加更多基础包
+d-i pkgsel/include string \
+    openssh-server \
+    build-essential \
+    git \
+    curl \
+    wget \
+    python3 \
+    python3-pip \
+    python3-dev \
+    python3-venv \
+    ffmpeg \
+    libssl-dev \
+    libffi-dev \
+    pkg-config \
+    alsa-base \
+    alsa-utils \
+    libasound2-dev \
+    libusb-1.0-0-dev \
+    libsqlcipher-dev \
+    sqlcipher \
+    software-properties-common
+
+# 软件包选择
+tasksel tasksel/first multiselect ubuntu-desktop
+
+# 保留安装的包
+ubiquity ubiquity/keep-installed string icedtea6-plugin openoffice.org
+
+# =============================================
+# 安装后自动执行自定义配置
+# =============================================
+d-i preseed/late_command string \
+    # 1. 复制custom配置到新系统 \
+    cp -r /cdrom/custom /target/opt/; \
+    chmod -R a+rX /target/opt/custom; \
+    \
+    # 2. 运行安装后配置脚本 \
+    in-target /opt/custom/install-post.sh; \
+    \
+    # 3. 设置Python包权限 \
+    in-target find /usr/local/lib/python3.* -name "dist-packages" -type d -exec chmod -R a+rX {} \;; \
+    in-target chmod -R a+rX /usr/local/bin; \
+    \
+    # 4. 启用系统服务 \
+    in-target systemctl enable ssh; \
+    in-target systemctl enable rc-local.service;
+
+# 完成安装
+d-i finish-install/reboot_in_progress note
+#==================U盘配置====================
+# 查看U盘设备
+sudo fdisk -l
+# 卸载U盘
+sudo umount /dev/sdX*
+
+# 烧录ISO
+sudo dd if=fastapi-ubuntu.iso of=/dev/sdc bs=4M status=progress oflag=sync
+
+# 同步
+sudo sync
+
+
+#  使用Ventoy
+#  安装到U盘
+#  将ISO文件复制到U盘
+#  启动时选择ISO文件
+#  开机进入BIOS/UEFI
+
+#==================验证=======================
+# 直接运行验证脚本
+verify-fastapi
