@@ -1,0 +1,36 @@
+{
+  "recentFiles": [
+    {
+      "basename": "未来之城手柄功能实现",
+      "path": "01-项目实践/未来之城项目/硬件驱动/未来之城手柄功能实现.md"
+    },
+    {
+      "basename": "驱动实现顺序",
+      "path": "01-项目实践/未来之城项目/硬件驱动/驱动实现顺序.md"
+    },
+    {
+      "basename": "按摩头时序检测",
+      "path": "01-项目实践/未来之城项目/硬件驱动/按摩头时序检测.md"
+    },
+    {
+      "basename": "行为树例程 form DeepSeek",
+      "path": "02-技术文档/ROS2/行为树例程 form DeepSeek.md"
+    },
+    {
+      "basename": "obisidian",
+      "path": "06-临时与归档/待整理/obisidian.md"
+    },
+    {
+      "basename": "Solidworks 讲解",
+      "path": "Solidworks 讲解.md"
+    },
+    {
+      "basename": "ROS2自定义消息接口",
+      "path": "02-技术文档/ROS2/ROS2自定义消息接口.md"
+    }
+  ],
+  "omittedPaths": [],
+  "omittedTags": [],
+  "updateOn": "file-open",
+  "omitBookmarks": false
+}
