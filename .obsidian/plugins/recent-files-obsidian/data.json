@@ -1,8 +1,60 @@
 {
   "recentFiles": [
     {
-      "basename": "参考文献",
-      "path": "01-项目实践/机械革命项目/论文研究/参考文献/参考文献.md"
+      "basename": "cubic镜像系统打包配置",
+      "path": "03-开发工具/Cubic/cubic镜像系统打包配置.md"
+    },
+    {
+      "basename": "【485用户手册】六轴力传感器KWR75系列V23.6.75.1",
+      "path": "Document/【485用户手册】六轴力传感器KWR75系列V23.6.75.1.pdf"
+    },
+    {
+      "basename": "编码电机工作原理",
+      "path": "Document/编码电机工作原理.pdf"
+    },
+    {
+      "basename": "【485用户手册】六轴力传感器KWR75系列V23.6.75.1 1",
+      "path": "Document/【485用户手册】六轴力传感器KWR75系列V23.6.75.1 1.pdf"
+    },
+    {
+      "basename": "规划",
+      "path": "规划.md"
+    },
+    {
+      "basename": "obisidian",
+      "path": "06-临时与归档/待整理/obisidian.md"
+    },
+    {
+      "basename": "ssh进程服务",
+      "path": "03-开发工具/MobaXterm/ssh进程服务.md"
+    },
+    {
+      "basename": "MobaXterm操作指南",
+      "path": "03-开发工具/MobaXterm/MobaXterm操作指南.md"
+    },
+    {
+      "basename": "Linux操作",
+      "path": "02-技术文档/Linux系统/Linux操作.md"
+    },
+    {
+      "basename": "Ubuntu修改root用户名和设备名",
+      "path": "02-技术文档/Linux系统/Ubuntu修改root用户名和设备名.md"
+    },
+    {
+      "basename": "未来之城手柄功能实现",
+      "path": "01-项目实践/未来之城项目/硬件驱动/未来之城手柄功能实现.md"
+    },
+    {
+      "basename": "驱动实现顺序",
+      "path": "01-项目实践/未来之城项目/硬件驱动/驱动实现顺序.md"
+    },
+    {
+      "basename": "按摩头时序检测",
+      "path": "01-项目实践/未来之城项目/硬件驱动/按摩头时序检测.md"
+    },
+    {
+      "basename": "行为树例程 form DeepSeek",
+      "path": "02-技术文档/ROS2/行为树例程 form DeepSeek.md"
     },
     {
       "basename": "Solidworks 讲解",
