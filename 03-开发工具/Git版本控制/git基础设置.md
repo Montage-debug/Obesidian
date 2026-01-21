@@ -106,8 +106,8 @@ git push -u origin main
 cd /path/to/project
 
 # 修改用户名和邮箱
-git config user.name "Guo"
-git config user.email "guo@example.com"
+git config user.name "Montage"
+git config user.email "gxyhaoxianghenlihai@gmail.com"
 
 # 初始化仓库
 git init
@@ -125,6 +125,14 @@ git commit -m "Initial commit"
 git push -u origin main
 ```
 
+
+```c
+# 验证是否连接成功
+ssh -T git@github.com
+
+# ping github 
+ping -c 3 github.com
+```
 ---
 
 如果你需要，我可以帮你画一张 **VSCode 操作 Git 的流程图**，让整个上传流程一目了然，包括修改邮箱、添加远程仓库、上传文件。
