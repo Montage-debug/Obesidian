@@ -1,12 +1,43 @@
-# ==============================
-# Obsidian Git Ignore (Windows)
-# ==============================
+# =============== Obsidian 配置 ===============
+# 完全排除所有 Obsidian 内部文件和配置
+.obsidian/
+.obsidian.*
+.trash/
+.sync/
+.cache/
+.temp/
+*.tmp
+.session
 
-# Ignore all Obsidian internal files by default
-.obsidian/**
+# =============== 系统文件 ===============
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*~
+ehthumbs.db
+Icon?
 
-# ---- Allow essential config files ----
-!.obsidian/app.json
-!.obsidian/appearance.json
-!.obsidian/core-plugins.json
-!.obsidian/community-plugins.json
+# =============== 临时和备份文件 ===============
+*.bak
+*.backup
+*.old
+*-backup.md
+archive/
+backup/
+tmp/
+temp/
+
+# =============== IDE/编辑器文件 ===============
+.vscode/
+.idea/
+*.swp
+*.swo
+*.code-workspace
+
+# =============== 可选：媒体文件 ===============
+# *.mp4
+# *.mov
+# *.avi
+# *.mp3

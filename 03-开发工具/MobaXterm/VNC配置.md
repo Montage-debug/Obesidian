@@ -23,23 +23,27 @@ nohup x11vnc -auth guess -forever -loop -noxdamage -repeat -rfbauth ~/.vnc/passw
     sudo nano /etc/systemd/system/x11vnc.service
     ```
 2.  **粘贴以下内容**（你可以修改`-rfbport`等参数）：
-    ```
-    ini
-    [Unit]
-    Description=x11vnc service
-    After=multi-user.target display-manager.service
-    Wants=display-manager.service
+```
+[Unit]
+Description=x11vnc service
+After=graphical-session.target
+Wants=graphical-session.target
 
-    [Service]
-    Type=simple
-    ExecStart=/usr/bin/x11vnc -auth guess -forever -loop -noxdamage -repeat -rfbauth /home/YOUR_USERNAME/.vnc/passwd -rfbport 5901 -shared
-    Restart=on-failure
-    RestartSec=3
+[Service]
+Type=simple
+User=wlzc
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/run/user/1000/gdm/Xauthority
+ExecStart=/usr/bin/x11vnc -display :0 -auth /run/user/1000/gdm/Xauthority -forever -loop -noxdamage -repeat -rfbauth /home/wlzc/.vnc/passwd -rfbport 5901 -shared
+Restart=on-failure
+RestartSec=3
 
-    [Install]
-    WantedBy=multi-user.target
-    ```
-    **关键**：请将 `/home/YOUR_USERNAME/.vnc/passwd` 中的 `YOUR_USERNAME` 替换成你**实际的Linux用户名**。
+[Install]
+WantedBy=multi-user.target
+
+ ```
+
+    **关键**：请将 `/home/YOUR_USERNAME/.vnc/passwd` 中的 `YOUR_USERNAME` 替换成**实际的Linux用户名**。
 3.  **启用并启动服务**
     ```bash
     # 重新加载systemd配置
@@ -51,9 +55,16 @@ nohup x11vnc -auth guess -forever -loop -noxdamage -repeat -rfbauth ~/.vnc/passw
     # 检查服务状态，看到"active (running)"即表示成功
     sudo systemctl status x11vnc.service
     ```
+<<<<<<< HEAD
     之后，你可以随时用 `sudo systemctl restart/stop x11vnc.service` 来管理服务。
 
 ### 后续操作与验证
 无论采用哪种方案，服务启动后，都建议使用 `ss -tlnp | grep 5901` 命令来验证端口`5901`是否已在监听。确认无误后，就可以回到Windows的MobaXterm，使用 **`Linux_IP:5901`** 进行连接了。
 
 如果你选择**方案二**，请务必确认好你的Linux用户名。如果需要帮助或有任何步骤不清楚，可以随时告诉我你的发行版（如Ubuntu、CentOS），我可以提供更精确的指导。
+=======
+    之后，可以随时用 `sudo systemctl restart/stop x11vnc.service` 来管理服务。
+
+### 后续操作与验证
+无论采用哪种方案，服务启动后，都建议使用 `ss -tlnp | grep 5901` 命令来验证端口`5901`是否已在监听。确认无误后，就可以回到Windows的MobaXterm，使用 **`Linux_IP:5901`** 进行连接了。
+>>>>>>> 9c3ef4918cc48948d2565af55340a8781b5329c0

@@ -1,3 +1,19 @@
+```shell
+# 常用监听指令
+
+# 过滤需要的服务
+grep 服务名
+
+# 过滤掉不需要的服务，|过滤多个
+# 可以加入-v -E -i
+grep -v （服务名1|服务名2）
+journalctl -u massage-robot.service -f | grep -v "(API 请求完成|massage_process_info_get|API 请求开 始|robot_api.app.utils.ros_accessor)"
+
+# 过滤字段
+journalctl -u massage-robot.service -f | grep -v -E -i "(api|API|music|speech)"
+
+
+```
 
 
 
