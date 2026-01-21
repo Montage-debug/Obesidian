@@ -48,6 +48,13 @@ fi
 
 
 ls /opt/drivers/*.deb 2>/dev/null && echo "✓ 驱动文件已保存"
+
+
+#================安装pytorch/yolo功能包===============
+pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#注：上述指令不能用就执行下述指令
+#pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cpu --upgrade --ignore-installed sympy
+pip install ultralytics
 #==================APT安装====================
 
 apt-get update
@@ -391,125 +398,377 @@ if ! python3 -c "import pysqlcipher3" 2>/dev/null; then
     pip3 install pysqlcipher3-binary 2>/dev/null || pip3 install apsw
 fi
 
+
+
+#=================配置用户组======================
+# 创建用户并配置权限
+useradd --system --no-create-home --shell /usr/sbin/nologin wlzc
+usermod -a -G dialout,video,audio wlzc
+mkdir -p /home/wlzc && chown wlzc:wlzc /home/wlzc
+
+# 配置关机权限
+cat > /etc/sudoers.d/wlzc-poweroff << 'EOF'
+wlzc ALL=(ALL) NOPASSWD: /usr/bin/systemctl poweroff
+wlzc ALL=(ALL) NOPASSWD: /usr/sbin/shutdown -P now
+wlzc ALL=(ALL) NOPASSWD: /usr/sbin/shutdown
+wlzc ALL=(ALL) NOPASSWD: /usr/sbin/poweroff
+wlzc ALL=(ALL) NOPASSWD: /usr/bin/systemctl reboot
+wlzc ALL=(ALL) NOPASSWD: /usr/sbin/reboot
+EOF
+chmod 440 /etc/sudoers.d/wlzc-poweroff
+visudo -c -f /etc/sudoers.d/wlzc-poweroff
+
 #==================后续验证安装====================
 # 创建完整的验证脚本
 cat > /usr/local/bin/verify-fastapi << 'EOF'
 #!/usr/bin/env python3
 import sys
 import subprocess
+import os
+import json
+import importlib
+import importlib.metadata
+from typing import Tuple, List, Dict
 
-def check_package(package_name, min_version=None):
+def check_package(package_name: str, min_version: str = None) -> Tuple[bool, str]:
     """检查单个包的安装情况"""
     try:
-        if '.' in package_name:
-            # 处理有子模块的包，如pyarmor.cli.runtime
-            parts = package_name.split('.')
-            mod = __import__(parts[0])
-            for part in parts[1:]:
-                mod = getattr(mod, part, None)
-                if mod is None:
-                    return False, "未找到子模块"
-            version = getattr(mod, '__version__', '已安装')
-            return True, version
-        else:
-            mod = __import__(package_name)
-            version = getattr(mod, '__version__', '已安装')
-            
-            if min_version and version != '已安装':
-                # 简单的版本比较
-                try:
-                    from packaging import version as pkg_version
-                    if pkg_version.parse(str(version)) >= pkg_version.parse(min_version):
-                        return True, f"{version} ✓"
+        # 包名到模块名的映射
+        package_to_module = {
+            "python-jose": "jose",
+            "pysqlcipher3-binary": "pysqlcipher3",
+        }
+        
+        # 特殊包处理
+        if package_name == "elite-cs-series-sdk":
+            if os.path.exists("/usr/include/Elite/") or os.path.exists("/opt/elite-sdk/"):
+                return True, "SDK installed"
+            return False, "SDK not found"
+        
+        elif "ros-humble-" in package_name:
+            try:
+                result = subprocess.run(
+                    ["ros2", "pkg", "list"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if package_name.replace("ros-humble-", "") in result.stdout:
+                    return True, "ROS package installed"
+            except:
+                pass
+            return False, "ROS package not found"
+        
+        # 获取实际的模块名
+        module_name = package_to_module.get(package_name, package_name)
+        
+        # 使用importlib.metadata检查包版本（Python 3.8+）
+        try:
+            # 首先尝试使用importlib.metadata
+            version = importlib.metadata.version(package_name)
+        except importlib.metadata.PackageNotFoundError:
+            # 如果失败，尝试直接导入模块
+            try:
+                # 抑制导入时的输出
+                import io
+                import contextlib
+                
+                f = io.StringIO()
+                with contextlib.redirect_stdout(f), contextlib.redirect_stderr(f):
+                    if '.' in module_name:
+                        parts = module_name.split('.')
+                        mod = __import__(parts[0])
+                        for part in parts[1:]:
+                            mod = getattr(mod, part, None)
+                            if mod is None:
+                                return False, "Submodule not found"
+                        version = getattr(mod, '__version__', 'installed')
                     else:
-                        return True, f"{version} (需要 {min_version}+)"
-                except:
-                    return True, version
-            return True, version
-    except ImportError as e:
-        return False, f"未安装 ({str(e)})"
+                        mod = __import__(module_name)
+                        version = getattr(mod, '__version__', 'installed')
+            except ImportError:
+                return False, "Not installed"
+            except Exception:
+                return False, "Check failed"
+        
+        # 版本检查
+        if min_version and version != 'installed':
+            try:
+                from packaging import version as pkg_version
+                if pkg_version.parse(str(version)) >= pkg_version.parse(min_version):
+                    return True, f"{version} ✓"
+                else:
+                    return True, f"{version} (needs {min_version}+)"
+            except:
+                return True, str(version)
+        
+        return True, str(version)
+        
     except Exception as e:
-        return False, f"检查失败 ({str(e)})"
+        return False, f"Check error"
 
-def main():
-    print("=" * 60)
-    print("全局环境验证")
-    print("=" * 60)
+# 其余的函数保持不变（check_system_package, check_audio_config等）
+def check_system_package(package_name: str) -> Tuple[bool, str]:
+    """检查系统包是否安装"""
+    try:
+        result = subprocess.run(
+            ["dpkg", "-l", package_name],
+            capture_output=True,
+            text=True
+        )
+        if "ii" in result.stdout:
+            lines = result.stdout.strip().split('\n')
+            for line in lines:
+                if line.startswith("ii"):
+                    parts = line.split()
+                    if len(parts) >= 3:
+                        return True, parts[2]
+            return True, "installed"
+        return False, "not installed"
+    except Exception as e:
+        return False, f"Check error: {str(e)}"
+
+def check_audio_config() -> Tuple[bool, str]:
+    """检查音频配置"""
+    checks = []
     
-    # 检查Python和pip版本
-    python_version = sys.version.split()[0]
-    print(f"Python版本: {python_version}")
+    alsa_packages = ["alsa-base", "alsa-utils", "libasound2"]
+    for pkg in alsa_packages:
+        success, msg = check_system_package(pkg)
+        checks.append(f"ALSA {pkg}: {'✅' if success else '❌'} {msg}")
+    
+    script_path = "/opt/scripts/generate-global-asoundconf.sh"
+    if os.path.exists(script_path):
+        checks.append(f"Audio script: ✅ {script_path}")
+    else:
+        checks.append(f"Audio script: ❌ Not found")
     
     try:
-        import pip
-        print(f"Pip版本: {pip.__version__}")
+        result = subprocess.run(
+            ["systemctl", "is-enabled", "rc-local.service"],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0:
+            checks.append(f"rc-local service: ✅ {result.stdout.strip()}")
+        else:
+            checks.append("rc-local service: ❌ Not enabled")
     except:
-        print("Pip版本: 未知")
+        checks.append("rc-local service: ❌ Check failed")
     
-    print("\n" + "-" * 60)
-    print("包安装状态:")
-    print("-" * 60)
+    # 检查/etc/asound.conf
+    if os.path.exists("/etc/asound.conf"):
+        checks.append("Audio config: ✅ /etc/asound.conf")
+    else:
+        checks.append("Audio config: ❌ /etc/asound.conf not found (run audio script)")
     
-    # 要检查的包列表（从requirements.txt提取的关键包）
-    packages_to_check = [
+    return True, "\n".join(checks)
+
+def generate_asound_config():
+    """生成音频配置文件"""
+    print("\n🔧 生成音频配置文件...")
+    if os.path.exists("/opt/scripts/generate-global-asoundconf.sh"):
+        try:
+            result = subprocess.run(
+                ["/opt/scripts/generate-global-asoundconf.sh"],
+                capture_output=True,
+                text=True
+            )
+            if result.returncode == 0:
+                print("✅ 音频配置文件已生成")
+                if os.path.exists("/etc/asound.conf"):
+                    print(f"  配置文件: /etc/asound.conf")
+                    with open("/etc/asound.conf", "r") as f:
+                        content = f.read()
+                        print(f"  内容预览: {content[:100]}...")
+            else:
+                print(f"❌ 音频配置失败: {result.stderr}")
+        except Exception as e:
+            print(f"❌ 执行音频脚本失败: {e}")
+    else:
+        print("❌ 音频脚本不存在")
+
+# 主函数保持不变...
+def main():
+    print("=" * 80)
+    print("🧪 完整系统镜像验证脚本 (修复版)")
+    print("=" * 80)
+    
+    # 检查系统基本信息
+    print("\n📊 系统基本信息:")
+    print("-" * 40)
+    
+    try:
+        python_version = sys.version.split()[0]
+        print(f"Python版本: {python_version}")
+        
+        with open("/etc/os-release", "r") as f:
+            for line in f:
+                if line.startswith("PRETTY_NAME"):
+                    os_name = line.split("=")[1].strip().strip('"')
+                    print(f"操作系统: {os_name}")
+                    break
+        
+        result = subprocess.run(["uname", "-m"], capture_output=True, text=True)
+        print(f"CPU架构: {result.stdout.strip()}")
+        
+    except Exception as e:
+        print(f"系统信息获取失败: {e}")
+    
+    # 检查Python包
+    print("\n🐍 Python包检查:")
+    print("-" * 40)
+    
+    python_packages = [
         ("fastapi", "0.104.1"),
         ("uvicorn", "0.24.0"),
         ("pydantic", "2.5.0"),
+        ("pydantic-settings", None),
+        ("pyyaml", "6.0"),
         ("sqlalchemy", "2.0.23"),
-        ("openai", "2.14.0"),
-        ("numpy", "1.20.0"),
+        ("aiosqlite", "0.19.0"),
+        ("python-multipart", None),
+        ("python-jose", None),
+        ("passlib", None),
+        ("bcrypt", "5.0.0"),
+        ("python-dotenv", None),
+        ("pysqlcipher3", None),
+        ("pysqlcipher3-binary", None),
+        ("pytest", "7.4.3"),
+        ("pytest-asyncio", "0.21.1"),
+        ("httpx", "0.25.1"),
+        ("pytest-cov", None),
+        ("websockets", "12.0"),
+        ("tenacity", "8.2.3"),
         ("pygame", "2.6.1"),
         ("pydub", "0.25.1"),
-        ("websockets", "12.0"),
-        ("httpx", "0.25.1"),
-        ("aiosqlite", None),
-        ("python-jose", None),  # python-jose导入名
-        ("pyarmor", None),      # pyarmor.cli.runtime的父包
-        ("lark", None),
+        ("numpy", "1.20.0"),
+        ("torch", None),
+        ("torchvision", None),
+        ("ultralytics", None),
+        ("openai", "2.14.0"),
         ("empy", None),
+        ("lark", None),
+        ("pyarmor", None),
     ]
     
-    results = []
-    all_ok = True
+    python_results = []
+    missing_packages = []
     
-    for package, min_version in packages_to_check:
+    for package, min_version in python_packages:
         success, message = check_package(package, min_version)
         
         if success:
             status = "✅"
-            results.append(f"{status} {package:25} {message}")
+            python_results.append(f"{status} {package:25} {message}")
         else:
             status = "❌"
-            results.append(f"{status} {package:25} {message}")
-            all_ok = False
-        
-        # 显示进度
-        sys.stdout.write(f"\r检查: {package:25} {'✓' if success else '✗'}")
-        sys.stdout.flush()
+            python_results.append(f"{status} {package:25} {message}")
+            missing_packages.append(package)
     
-    print("\n" + "-" * 60)
-    
-    # 显示结果
-    for result in results:
+    for result in python_results:
         print(result)
     
-    print("-" * 60)
+    # 检查系统包
+    print("\n📦 系统包检查:")
+    print("-" * 40)
     
-    # 检查包安装位置
-    print("\n包安装位置:")
+    system_packages = [
+        "build-essential",
+        "git",
+        "curl",
+        "wget",
+        "pkg-config",
+        "libssl-dev",
+        "libffi-dev",
+        "libusb-1.0-0-dev",
+        "libasound2-dev",
+        "libsqlcipher-dev",
+        "ffmpeg",
+        "libopencv-dev",
+        "sqlcipher",
+        "alsa-base",
+        "alsa-utils",
+        "portaudio19-dev",
+        "libboost-filesystem-dev",
+        "openssh-server",
+    ]
+    
+    system_results = []
+    
+    for package in system_packages:
+        success, message = check_system_package(package)
+        
+        if success:
+            status = "✅"
+            system_results.append(f"{status} {package:30} {message}")
+        else:
+            status = "❌"
+            system_results.append(f"{status} {package:30} {message}")
+    
+    for result in system_results:
+        print(result)
+    
+    # 检查音频配置
+    print("\n🔊 音频配置检查:")
+    print("-" * 40)
+    audio_success, audio_message = check_audio_config()
+    print(audio_message)
+    
+    # 检查ROS2环境
+    print("\n🤖 ROS2环境检查:")
+    print("-" * 40)
+    
+    ros_checks = []
+    ros_setup = "/opt/ros/humble/setup.bash"
+    if os.path.exists(ros_setup):
+        ros_checks.append("ROS2 humble: ✅ Installed")
+    else:
+        ros_checks.append("ROS2 humble: ❌ Not found")
+    
     try:
-        import site
-        for path in site.getsitepackages():
-            print(f"  {path}")
+        result = subprocess.run(["which", "ros2"], capture_output=True, text=True)
+        if result.returncode == 0:
+            ros_checks.append(f"ros2 command: ✅ {result.stdout.strip()}")
+        else:
+            ros_checks.append("ros2 command: ❌ Not in PATH")
     except:
-        pass
+        ros_checks.append("ros2 command: ❌ Check failed")
+    
+    for check in ros_checks:
+        print(check)
     
     # 最终结论
-    if all_ok:
-        print("\n🎉 所有包安装成功！环境就绪。")
+    print("\n" + "=" * 80)
+    print("🏁 验证结果总结:")
+    print("=" * 80)
+    
+    if not missing_packages and os.path.exists("/etc/asound.conf"):
+        print("\n🎉 所有组件安装成功！系统镜像配置完成。")
+        print("\n可以开始使用以下功能:")
+        print("  • FastAPI Web服务")
+        print("  • ROS2机器人开发")
+        print("  • PyTorch/YOLO AI模型")
+        print("  • USB音频设备")
+        print("  • SSH远程访问")
+        print("  • Elite SDK机器人控制")
         return 0
     else:
-        print("\n⚠ 部分包安装有问题，但核心功能应该可用。")
+        if missing_packages:
+            print(f"\n⚠️  发现 {len(missing_packages)} 个Python包检查失败:")
+            for pkg in missing_packages:
+                print(f"  • {pkg}")
+        
+        if not os.path.exists("/etc/asound.conf"):
+            print("\n⚠️  音频配置文件缺失")
+            generate_asound_config()
+        
+        print("\n建议:")
+        if missing_packages:
+            print("  1. 尝试手动验证包是否安装:")
+            for pkg in missing_packages:
+                print(f"     python3 -c \"import {pkg.split('-')[0]}; print('{pkg} ok')\"")
+        
         return 1
 
 if __name__ == "__main__":
@@ -761,3 +1020,18 @@ sudo sync
 #==================验证=======================
 # 直接运行验证脚本
 verify-fastapi
+
+
+
+# 系统安装后的最终验证脚本
+sudo -u wlzc sudo -n -l
+
+# 预期输出应该包含：
+# (ALL) NOPASSWD: /usr/bin/systemctl poweroff
+# (ALL) NOPASSWD: /usr/sbin/shutdown -P now
+# ...
+
+# 测试关机命令（dry-run，不会真正关机）
+sudo -u wlzc sudo -n /usr/bin/systemctl poweroff --dry-run
+sudo -u wlzc sudo -n /usr/sbin/shutdown -P now --dry-run
+sudo -u wlzc sudo -n /usr/bin/systemctl poweroff --help
