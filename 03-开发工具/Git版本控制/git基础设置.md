@@ -53,8 +53,11 @@ git remote -v
 
 > 如果仓库已经存在远程地址，要修改 URL：
 > 
-> ```bash
-> git remote set-url origin https://github.com/用户名/仓库名.git
+> ```c
+> git remote set-url origin https://github.com/Montage-debug/Obesidian.git
+> 
+> # 验证
+> git remote -v
 > ```
 
 ---

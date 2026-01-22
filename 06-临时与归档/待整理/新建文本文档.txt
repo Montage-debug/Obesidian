@@ -1,2 +1,0 @@
-wget http://fishros.com/install -O fishros && bash fishros
-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
