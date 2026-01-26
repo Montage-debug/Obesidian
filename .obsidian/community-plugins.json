@@ -4,5 +4,9 @@
   "obsidian-kanban",
   "ace-code-editor",
   "obsidian-outliner",
-  "recent-files-obsidian"
+  "recent-files-obsidian",
+  "editing-toolbar",
+  "python-lab-plugin",
+  "code-emitter",
+  "cm-chs-patch"
 ]

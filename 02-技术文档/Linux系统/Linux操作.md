@@ -1,3 +1,8 @@
+
+# 网关IP设置
+
+![[Pasted image 20260122162638.png]]
+
 ```shell
 # 常用监听指令
 
@@ -11,7 +16,6 @@ journalctl -u massage-robot.service -f | grep -v "(API 请求完成|massage_proc
 
 # 过滤字段
 journalctl -u massage-robot.service -f | grep -v -E -i "(api|API|music|speech)"
-
 
 ```
 
