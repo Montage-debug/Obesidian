@@ -126,12 +126,7 @@ c_min_B = norm(goalPoint - meetPoint);
 c_best_A = inf;
 c_best_B = inf;
 
-% PID采样控制器状态（新架构：控制采样分布而非代价）
-pidSamplingState = [];  % 初始化为空，自动初始化
-gammaA = 1.0;           % 初始膨胀系数
-pInformedA = 0.8;       % 初始知情采样概率
-
-% 旧的PID代价控制器参数（将被废弃）
+% PID控制器参数（为两个树分别设置）
 prevErrorA = 0;
 integralErrorA = 0;
 errorHistoryA = [];
@@ -198,20 +193,6 @@ while iterCount < maxIterations && ~success
             treeA(1:sizeA, :), treeB(1:sizeB, :), ...
             startPoint, goalPoint, meetPoint, m, ellipsoidBuffer);
         
-        % === PID采样控制器更新（新架构） ===
-        % 用当前最优路径代价更新PID控制器，获取gamma和p_informed
-        if strcmp(mode, 'adaptive') || strcmp(mode, 'pid')
-            % 初始化时，L_best_shared为inf
-            [pidSamplingState, gammaA, pInformedA] = PIDSamplingController(...
-                pidSamplingState, L_best_shared, ...
-                'WindowSize', 50, ...
-                'TargetEfficiency', 0.02, ...
-                'Kp', 2.0, 'Ki', 0.2, 'Kd', 0.8);
-        else
-            gammaA = 1.0;     % basic模式不使用PID
-            pInformedA = 0.8; % 固定知情采样概率
-        end
-        
         % 计算采样效率
         validRateA = validSamplesA / max(1, totalSamples / 2);
         validRateB = validSamplesB / max(1, totalSamples / 2);
@@ -219,13 +200,8 @@ while iterCount < maxIterations && ~success
         
         % 精简的进度输出（每200次迭代显示一次）
         if mod(iterCount, 200) == 0
-            if strcmp(mode, 'adaptive') || strcmp(mode, 'pid')
-                fprintf('  迭代%d: L_best=%.1f, gamma=%.2f, p=%.2f, 效率=%.0f%%, y=%.4f\n', ...
-                    iterCount, L_best_shared, gammaA, pInformedA, totalValidRate*100, pidSamplingState.current_y);
-            else
-                fprintf('  迭代%d: 交汇点[%.0f,%.0f], c_A=%.1f, c_B=%.1f, 效率=%.0f%%\n', ...
-                    iterCount, meetPoint(1), meetPoint(2), c_best_A, c_best_B, totalValidRate*100);
-            end
+            fprintf('  迭代%d: 交汇点[%.0f,%.0f], c_A=%.1f, c_B=%.1f, 效率=%.0f%%\n', ...
+                iterCount, meetPoint(1), meetPoint(2), c_best_A, c_best_B, totalValidRate*100);
         end
         
         % ========== 可视化双椭球体 ==========
@@ -320,18 +296,12 @@ while iterCount < maxIterations && ~success
         searchEfficiencyB = 0.5;
     end
     
-    % ========== 3. 为A树生成采样点（使用PID控制的知情采样） ==========
-    % 根据PID控制的p_informed概率决定采样策略
-    if rand < pInformedA && ~isinf(c_best_A)
-        % 知情采样：在膨胀椭球内采样（使用gamma）
-        randomPointA = SamplingModule('ellipsoid', startPoint, meetPoint, c_best_A, bounds, m, gammaA);
-    else
-        % 全局采样
-        randomPointA = SamplingModule('uniform', bounds, goalPoint);
-    end
+    % ========== 3. 为A树生成采样点（基于椭球A内，带目标偏置） ==========
+    randomPointA = generateDualEllipsoidSample(...
+        bounds, startPoint, meetPoint, c_best_A, c_min_A, m, 0.3, goalThreshold);
     
     totalSamples = totalSamples + 1;
-    if ~isinf(c_best_A) && isInsideEllipsoid(randomPointA, startPoint, meetPoint, c_best_A * gammaA)
+    if isInsideEllipsoid(randomPointA, startPoint, meetPoint, c_best_A)
         validSamplesA = validSamplesA + 1;
     end
     
@@ -398,10 +368,30 @@ while iterCount < maxIterations && ~success
         treeA(sizeA, m+1) = bestParentIdx;
         treeA(sizeA, m+2) = bestCost;
         
-        % 计算启发式代价（F = G + H）
-        % 新架构：PID控制采样而非代价，因此这里使用标准A*估计
-        costH = norm(newPointA - meetPoint);
-        treeA(sizeA, m+3) = bestCost + costH;
+        % 使用SC-RRT的自适应式代价函数
+        try
+            [F_hat, errorInfo] = CostModule(treeA(1:sizeA, :), sizeA, meetPoint, m, ...
+                'Mode', mode, ...
+                'PrevError', prevErrorA, ...
+                'IntegralError', integralErrorA, ...
+                'BestPathLength', L_best_shared, ...
+                'IterCount', iterCount, ...
+                'MaxIterations', maxIterations, ...
+                'SearchEfficiency', searchEfficiencyA, ...
+                'ErrorHistory', errorHistoryA);
+            
+            treeA(sizeA, m+3) = F_hat;
+            prevErrorA = errorInfo.currentError;
+            integralErrorA = errorInfo.integralError;
+            if strcmp(mode, 'adaptive') || strcmp(mode, 'pid')
+                errorHistoryA = [errorHistoryA, errorInfo.currentError];
+                if length(errorHistoryA) > 10
+                    errorHistoryA = errorHistoryA(end-9:end);
+                end
+            end
+        catch
+            treeA(sizeA, m+3) = newCostA + norm(newPointA - meetPoint);
+        end
         
         treeA(sizeA, m+4) = 0;
         treeA(nearestIdxA, m+4) = treeA(nearestIdxA, m+4) + 1;
@@ -489,10 +479,25 @@ while iterCount < maxIterations && ~success
             treeB(sizeB, m+1) = bestParentIdxB;
             treeB(sizeB, m+2) = bestCostB;
             
-            % 计算启发式代价（F = G + H）
-            % 新架构：PID控制采样而非代价
-            costH = norm(newStepB - meetPoint);
-            treeB(sizeB, m+3) = bestCostB + costH;
+            % 使用自适应代价
+            try
+                [F_hat_B, errorInfoB] = CostModule(treeB(1:sizeB, :), sizeB, meetPoint, m, ...
+                    'Mode', mode, ...
+                    'PrevError', prevErrorB, ...
+                    'IntegralError', integralErrorB, ...
+                    'BestPathLength', L_best_shared, ...
+                    'IterCount', iterCount, ...
+                    'MaxIterations', maxIterations, ...
+                    'SearchEfficiency', searchEfficiencyB, ...
+                    'ErrorHistory', errorHistoryB);
+                
+                treeB(sizeB, m+3) = F_hat_B;
+                prevErrorB = errorInfoB.currentError;
+                integralErrorB = errorInfoB.integralError;
+            catch
+                treeB(sizeB, m+3) = bestCostB + norm(newStepB - meetPoint);
+            end
+            
             treeB(sizeB, m+4) = 0;
             treeB(extendIdxB, m+4) = treeB(extendIdxB, m+4) + 1;
             

@@ -1,34 +1,34 @@
 function sample = SamplingModule(samplingType, varargin)
-% SamplingModule - ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½
+% SamplingModule - µ¥Ò»µã²ÉÑùÄ£¿é
 %
-% ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ã£¨ï¿½Õ¼ï¿½ï¿½ï¿½È¡ï¿½Ä¿ï¿½ï¿½Æ«ï¿½Ã¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+% ¹¦ÄÜ£ºÔÚÖ¸¶¨ÇøÓòÄÚ²ÉÑùµã£¨¿Õ¼ä¾ùÔÈ¡¢Ä¿±êÆ«ÖÃ¡¢ÍÖÇòÌå»ı²ÉÑù£©
 %
-% ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½ï¿½ï¿½
+% µ÷ÓÃ·½·¨£º
 %   sample = SamplingModule('uniform', bounds, goalPoint)
 %   sample = SamplingModule('goal_biased', goalPoint, radius, bounds)
 %   sample = SamplingModule('ellipsoid', startPoint, goalPoint, cBest, bounds, m)
 %
-% ï¿½ï¿½ï¿½ë£º
-%   samplingType - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 'uniform', 'goal_biased', 'ellipsoid'
-%   varargin     - ï¿½ï¿½ï¿½İ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÍµÄ²ï¿½Í¬ï¿½ï¿½ï¿½ï¿½
+% ÊäÈë£º
+%   samplingType - ²ÉÑùÀàĞÍ: 'uniform', 'goal_biased', 'ellipsoid'
+%   varargin     - ¸ù¾İ²ÉÑùÀàĞÍµÄ²»Í¬²ÎÊı
 %
-% ï¿½ï¿½ï¿½ï¿½ï¿½
-%   sample - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ [1 x m]
+% Êä³ö£º
+%   sample - ²ÉÑùµã [1 x m]
 
 switch samplingType
     case 'uniform'
-        % ï¿½Õ¼ï¿½ï¿½ï¿½È²ï¿½ï¿½ï¿½
+        % ¿Õ¼ä¾ùÔÈ²ÉÑù
         if length(varargin) < 2
-            error('SamplingModule(uniform): ï¿½ï¿½Òª bounds, goalPoint ï¿½ï¿½ï¿½ï¿½');
+            error('SamplingModule(uniform): ĞèÒª bounds, goalPoint ²ÎÊı');
         end
         bounds = varargin{1};
         goalPoint = varargin{2};
         sample = uniformSampling(bounds, goalPoint);
         
     case 'goal_biased'
-        % Ä¿ï¿½ï¿½Æ«ï¿½Ã²ï¿½ï¿½ï¿½
+        % Ä¿±êÆ«ÖÃ²ÉÑù
         if length(varargin) < 3
-            error('SamplingModule(goal_biased): ï¿½ï¿½Òª goalPoint, radius, bounds ï¿½ï¿½ï¿½ï¿½');
+            error('SamplingModule(goal_biased): ĞèÒª goalPoint, radius, bounds ²ÎÊı');
         end
         goalPoint = varargin{1};
         radius = varargin{2};
@@ -36,46 +36,40 @@ switch samplingType
         sample = goalBiasedSampling(goalPoint, radius, bounds);
         
     case 'ellipsoid'
-        % æ¤­çƒä½“å†…é‡‡æ ·
+        % ÍÖÇòÌå»ı²ÉÑù
         if length(varargin) < 5
-            error('SamplingModule(ellipsoid): éœ€è¦ startPoint, goalPoint, cBest, bounds, m å‚æ•°');
+            error('SamplingModule(ellipsoid): ĞèÒª startPoint, goalPoint, cBest, bounds, m ²ÎÊı');
         end
         startPoint = varargin{1};
         goalPoint = varargin{2};
         cBest = varargin{3};
         bounds = varargin{4};
         m = varargin{5};
-        % å¯é€‰å‚æ•°ï¼šgammaï¼ˆè†¨èƒ€ç³»æ•°ï¼‰
-        if length(varargin) >= 6
-            gamma = varargin{6};
-        else
-            gamma = 1.0;
-        end
-        sample = ellipsoidSampling(startPoint, goalPoint, cBest, bounds, m, gamma);
+        sample = ellipsoidSampling(startPoint, goalPoint, cBest, bounds, m);
         
     otherwise
-        error('ï¿½ï¿½Ö§ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: %s', samplingType);
+        error('²»Ö§³Ö²ÉÑùÀàĞÍ: %s', samplingType);
 end
 
 end
 
-%% ========== ï¿½Óºï¿½ï¿½ï¿½: ï¿½Õ¼ï¿½ï¿½ï¿½È²ï¿½ï¿½ï¿½ ==========
+%% ========== ×Óº¯Êı: ¿Õ¼ä¾ùÔÈ²ÉÑù ==========
 function randomPoint = uniformSampling(bounds, goalPoint)
-% ï¿½Ú¿Õ¼ï¿½ï¿½Ú¾ï¿½ï¿½È²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½20%Ä¿ï¿½ï¿½Æ«ï¿½ï¿½
+% ÔÚ¿Õ¼äÄÚ¾ùÔÈ²ÉÑù£¬¸½20%Ä¿±êÆ«ÖÃ
 
 m = length(goalPoint);
 if length(bounds) ~= 2*m
-    error('bounds ï¿½ß´ï¿½Ó¦Îª %d ï¿½ï¿½, 2*m', 2*m);
+    error('bounds ³ß´çÓ¦Îª %d ÁĞ, 2*m', 2*m);
 end
 
-goalBias = 0.2; % Ä¿ï¿½ï¿½Æ«ï¿½Ã¸ï¿½ï¿½ï¿½
+goalBias = 0.2; % Ä¿±êÆ«ÖÃ¸ÅÂÊ
 if rand < goalBias
-    % Ä¿ï¿½ê¸½ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½ï¿½ï¿½ï¿½
+    % Ä¿±ê¸½½ü¸ßË¹²ÉÑù
     range = bounds(2:2:end) - bounds(1:2:end);
     offset = range .* (rand(1, m) - 0.5) * 0.1;
     randomPoint = goalPoint + offset;
 else
-    % ï¿½Õ¼ï¿½ï¿½ï¿½È²ï¿½ï¿½ï¿½
+    % ¿Õ¼ä¾ùÔÈ²ÉÑù
     randomPoint = zeros(1, m);
     for i = 1:m
         minBound = bounds(2*i-1);
@@ -84,28 +78,28 @@ else
     end
 end
 
-% ï¿½ß½ï¿½Ã¼ï¿½
+% ±ß½ç²Ã¼ô
 for i = 1:m
     randomPoint(i) = max(bounds(2*i-1), min(bounds(2*i), randomPoint(i)));
 end
 end
 
-%% ========== ï¿½Óºï¿½ï¿½ï¿½: Ä¿ï¿½ï¿½Æ«ï¿½Ã²ï¿½ï¿½ï¿½ ==========
+%% ========== ×Óº¯Êı: Ä¿±êÆ«ÖÃ²ÉÑù ==========
 function randomPoint = goalBiasedSampling(goalPoint, goalBiasRadius, bounds)
-% ï¿½ï¿½Ä¿ï¿½ï¿½ã¸½ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½ï¿½ï¿½ï¿½
+% ÔÚÄ¿±êµã¸½½ü¸ßË¹²ÉÑù
 
 m = length(goalPoint);
 if length(bounds) ~= 2*m
-    error('bounds ï¿½ß´ï¿½Ó¦Îª %d ï¿½ï¿½, 2*m', 2*m);
+    error('bounds ³ß´çÓ¦Îª %d ÁĞ, 2*m', 2*m);
 end
 
-% È·ï¿½ï¿½ goalPoint Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+% È·±£ goalPoint ÎªĞĞÏòÁ¿
 goalPoint = reshape(goalPoint, 1, m);
 
-% ï¿½ï¿½Ë¹ï¿½ï¿½ï¿½ï¿½
+% ¸ßË¹²ÉÑù
 randomPoint = goalPoint + goalBiasRadius * randn(1, m);
 
-% ï¿½ß½ï¿½Ã¼ï¿½
+% ±ß½ç²Ã¼ô
 for i = 1:m
     minBound = bounds(2*i-1);
     maxBound = bounds(2*i);
@@ -113,83 +107,68 @@ for i = 1:m
 end
 end
 
-%% ========== å­å‡½æ•°: æ¤­çƒä½“å†…é‡‡æ · ==========
-function sample = ellipsoidSampling(startPoint, goalPoint, cBest, bounds, m, gamma)
-% æ¤­çƒä½“å†…é‡‡æ ·ï¼ˆæ”¯æŒåŠ¨æ€è†¨èƒ€ç³»æ•°gammaï¼‰
-%
-% è¾“å…¥ï¼š
-%   startPoint - èµ·ç‚¹ï¼ˆæ¤­çƒç„¦ç‚¹1ï¼‰
-%   goalPoint  - ç»ˆç‚¹ï¼ˆæ¤­çƒç„¦ç‚¹2ï¼‰
-%   cBest      - å½“å‰æœ€ä¼˜è·¯å¾„ä»£ä»·
-%   bounds     - ç©ºé—´è¾¹ç•Œ
-%   m          - ç»´åº¦
-%   gamma      - è†¨èƒ€ç³»æ•°ï¼ˆé»˜è®¤1.0ï¼Œ>1æ—¶æ¤­çƒå˜å¤§ï¼‰
+%% ========== ×Óº¯Êı: ÍÖÇòÌå»ı²ÉÑù ==========
+function sample = ellipsoidSampling(startPoint, goalPoint, cBest, bounds, m)
+% ÍÖÇòÌå»ı²ÉÑù
 
-if nargin < 6
-    gamma = 1.0;
-end
-
-% è‹¥æœªæ‰¾åˆ°è·¯å¾„ï¼Œè¿”å›ç©ºé—´å‡åŒ€é‡‡æ ·
+% Èç¹ûÎ´ÕÒµ½Â·¾¶£¬·µ»Ø¿Õ¼ä¾ùÔÈ²ÉÑù
 if isinf(cBest)
     sample = uniformSampling(bounds, goalPoint);
     return;
 end
 
-% ç„¦ç‚¹è·ç¦»
+% ¼ÆËãÂ·¾¶³¤¶È
 cMin = norm(goalPoint(1:m) - startPoint(1:m));
 if cBest < cMin
     cBest = cMin;
 end
 
-% åº”ç”¨è†¨èƒ€ç³»æ•°
-cBest_expanded = gamma * cBest;
+% ÍÖÇò²ÎÊı
+a = cBest / 2; % ³¤°ëÖá
+b = sqrt(cBest^2 - cMin^2) / 2; % ¶Ì°ëÖá
 
-% æ¤­çƒå‚æ•°
-a = cBest_expanded / 2; % åŠé•¿è½´
-b = sqrt(cBest_expanded^2 - cMin^2) / 2; % åŠçŸ­è½´
-
-% æ¤­çƒä¸­å¿ƒ
+% ÍÖÇòÖĞĞÄ
 center = (startPoint(1:m) + goalPoint(1:m)) / 2;
 
-% ä¸»è½´æ–¹å‘å‘é‡
+% Ö÷Öá·½ÏòÏòÁ¿
 eVec = (goalPoint(1:m) - startPoint(1:m)) / cMin;
 
-% è®¡ç®—æ—‹è½¬çŸ©é˜µ
+% ¼ÆËãĞı×ª¾ØÕó
 R = computeRotationMatrix(eVec, m);
 
-% æ¤­çƒå†…é‡‡æ ·å¹¶éªŒè¯
+% ÔÚÍÖÇòÄÚ²ÉÑù²¢ÑéÖ¤
 max_attempts = 100;
 for attempt = 1:max_attempts
-    % å•ä½çƒé‡‡æ ·
+    % µ¥Î»Çò²ÉÑù
     xBall = randomInUnitBall(m);
     
-    % å˜æ¢
+    % ±ä»»
     L = diag([a, repmat(b, 1, m-1)]);
     sample = R * (L * xBall) + center';
     
-    % éªŒè¯: 1)è¾¹ç•Œå†… 2)æ¤­çƒå†…éªŒè¯ï¼ˆä½¿ç”¨è†¨èƒ€åçš„cBestï¼‰
+    % ÑéÖ¤: 1)±ß½ç¼ì²é 2)ÍÖÇòÄÚÑéÖ¤
     dist_sum = norm(sample - startPoint(1:m)') + norm(sample - goalPoint(1:m)');
     
     if all(sample >= bounds(1:2:end)') && all(sample <= bounds(2:2:end)') && ...
-       dist_sum <= cBest_expanded * 1.001
-        sample = sample'; % è½¬ä¸ºè¡Œå‘é‡
+       dist_sum <= cBest * 1.001
+        sample = sample'; % ×ªÎªĞĞÏòÁ¿
         return;
     end
 end
 
-% é‡‡æ ·å¤±è´¥åˆ™è¿”å›ä¸­å¿ƒé™„è¿‘çš„ç‚¹
+% ³¬¹ı´ÎÊıÊ§°Ü£¬·µ»ØÖĞĞÄ¸½½üËæ»úµã
 sample = center' + randn(1, m) * min(a, b) * 0.1;
 end
 
-%% ========== ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1: ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ==========
+%% ========== ¸¨Öúº¯Êı1: Ğı×ª¾ØÕó¼ÆËã ==========
 function R = computeRotationMatrix(eVec, m)
-% ï¿½ï¿½ï¿½İ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
+% ¸ù¾İ·½ÏòÏòÁ¿¼ÆËãĞı×ª¾ØÕó
 
 if m == 2
     theta = atan2(eVec(2), eVec(1));
     R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
 elseif m == 3
-    % 3D Rodriguesï¿½ï¿½×ªï¿½ï¿½Ê½
+    % 3D RodriguesĞı×ª¹«Ê½
     v = [1; 0; 0];
     axis = cross(v, eVec(:));
     if norm(axis) < 1e-8
@@ -207,17 +186,17 @@ else
 end
 end
 
-%% ========== ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½2: ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ú¾ï¿½ï¿½È²ï¿½ï¿½ï¿½ ==========
+%% ========== ¸¨Öúº¯Êı2: µ¥Î»ÇòÄÚ¾ùÔÈ²ÉÑù ==========
 function x = randomInUnitBall(m)
-% ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ú¾ï¿½ï¿½È²ï¿½ï¿½ï¿½
+% µ¥Î»ÇòÄÚ¾ùÔÈ²ÉÑù
 
-% ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ò£¬·ï¿½ï¿½Ó¸ï¿½Ë¹ï¿½Ö²ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
+% Ëæ»ú·½Ïò£¬·ş´Ó¸ßË¹·Ö²¼ºó¹éÒ»»¯
 v = randn(m, 1);
 v = v / norm(v);
 
-% ï¿½ï¿½ï¿½ï¿½ë¾¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½
+% Ëæ»ú°ë¾¶£¬·ş´ÓÇòÌå»ı·Ö²¼
 r = rand()^(1/m);
 
-% ï¿½ï¿½Ï·ï¿½ï¿½ï¿½Í°ë¾¶
+% ×éºÏ·½ÏòºÍ°ë¾¶
 x = v * r;
 end
