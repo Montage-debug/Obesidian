@@ -13,24 +13,26 @@ Output: Path π* or FAILURE
  1:  T_A ← {x_start}, T_B ← {x_goal}
  2:  x_meet ← (x_start + x_goal) / 2
  3:  c_A, c_B ← ∞, ∞
- 4:  
- 5:  for k = 1 to k_max do
- 6:      /* Periodic dual-ellipsoid update */
- 7:      if k mod τ = 0 then
- 8:          x_meet ← PotentialFieldMeetPoint(T_A, T_B)
- 9:          (c_A, c_B) ← DualEllipsoidParams(T_A, T_B, x_meet)    ▷ Alg. 2
-10:      end if
-11:      
-12:      /* Constrained sampling within active ellipsoid */
-13:      x_rand ← DualEllipsoidSample(x_start, x_meet, c_A)        ▷ Alg. 2
+ 4:  PID_state ← ∅, γ ← γ_max, p ← 0                ▷ Initialize PID controller
+ 5:  
+ 6:  for k = 1 to k_max do
+ 7:      /* Periodic dual-ellipsoid update */
+ 8:      if k mod τ = 0 then
+ 9:          x_meet ← PotentialFieldMeetPoint(T_A, T_B)
+10:          (c_A, c_B) ← DualEllipsoidParams(T_A, T_B, x_meet)    ▷ Alg. 2
+11:          (γ, p) ← PIDSamplingController(c_best, PID_state)     ▷ Alg. 4
+12:      end if
+13:      
+14:      /* PID-controlled adaptive sampling */
+15:      x_rand ← AdaptiveSample(x_start, x_meet, c_A, γ, p)       ▷ Alg. 2
 14:      
 15:      /* Pareto-optimal node selection for expansion */
 16:      x_near ← ParetoNodeSelect(T_A, x_meet)                    ▷ Alg. 3
 17:      x_new ← Steer(x_near, x_rand, δ)
 18:      
-19:      if CollisionFree(x_near, x_new) then
-20:          F̂ ← AdaptivePIDCost(x_new, T_A, k)                    ▷ Eq. (8)-(12)
-21:          T_A ← T_A ∪ {(x_new, parent: x_near, cost: F̂)}
+21:      if CollisionFree(x_near, x_new) then
+22:          F̂ ← G(x_new) + H(x_new)                               ▷ Standard A* cost
+23:          T_A ← T_A ∪ {(x_new, parent: x_near, cost: F̂)}
 22:          
 23:          /* Attempt connection to opposite tree */
 24:          x_connect ← NearestNode(T_B, x_new)
@@ -76,20 +78,24 @@ Output: x_sample (valid sample point)
 17:      c_best^A ← γ · c_best^A,  c_best^B ← γ · c_best^B
 18:  end if
 
-/* ═══ Part B: Ellipsoid Sampling ═══ */
-19:  Select ellipsoid E with foci (f_1, f_2) and c_best
-20:  x_c ← (f_1 + f_2) / 2                           ▷ Ellipsoid center
-21:  a ← c_best / 2                                  ▷ Semi-major axis
-22:  b ← √(a² - ||f_2 - f_1||²/4)                   ▷ Semi-minor axis
-23:  R ← RotationMatrix((f_2 - f_1) / ||f_2 - f_1||)
-24:  L ← diag(a, b, ..., b)                          ▷ Scaling matrix
-25:  
-26:  repeat
-27:      x_ball ← UniformSampleUnitBall(n)
-28:      x_sample ← R · L · x_ball + x_c
-29:  until x_sample ∈ X_free ∩ Bounds
-30:  
-31:  return x_sample
+/* ═══ Part B: PID-Controlled Adaptive Sampling ═══ */
+19:  if Random(0,1) < p AND c_best < ∞ then
+20:      /* Informed sampling with PID expansion */
+21:      c_expanded ← γ · c_best                     ▷ Apply PID expansion factor
+22:      Select ellipsoid E with foci (f_1, f_2) and c_expanded
+23:      x_c ← (f_1 + f_2) / 2, a ← c_expanded / 2
+24:      b ← √(a² - ||f_2 - f_1||²/4)
+25:      R ← RotationMatrix((f_2 - f_1) / ||f_2 - f_1||)
+26:      L ← diag(a, b, ..., b)
+27:      repeat
+28:          x_ball ← UniformSampleUnitBall(n)
+29:          x_sample ← R · L · x_ball + x_c
+30:      until x_sample ∈ X_free ∩ Bounds
+31:  else
+32:      /* Global uniform sampling */
+33:      x_sample ← UniformSample(Bounds)
+34:  end if
+35:  return x_sample
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -138,39 +144,80 @@ Output: x_select (selected expansion node)
 
 ---
 
+## Algorithm 4: PID-Controlled Adaptive Sampling
+
+```
+Algorithm 4: PID Sampling Controller
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Input:  c_best (current best path cost), PID_state
+Output: γ (expansion factor), p (informed sampling probability)
+
+ 1:  if PID_state = ∅ OR c_best = ∞ then
+ 2:      return (γ_max, 0)                        
+ 3:  end if
+ 4:  
+ 5:  /* Measure improvement efficiency */
+ 6:  y_k ← (c_hist[k-W] - c_best) / (c_hist[k-W] + ε)
+ 7:  ȳ_k ← ρ · ȳ_{k-1} + (1-ρ) · y_k              
+ 8:  
+ 9:  /* PID control */
+10:  e_k ← y* - ȳ_k                                 
+11:  I_k ← clip(I_{k-1} + e_k, I_min, I_max)       
+12:  d_k ← ρ_d · d_{k-1} + (1-ρ_d) · (e_k - e_{k-1}) 
+13:  u_k ← K_p · e_k + K_i · I_k + K_d · d_k
+14:  
+15:  /* Map to control variables */
+16:  γ ← clip(γ_0 · exp(α_γ · u_k), γ_min, γ_max)  
+17:  p ← clip(p_0 - α_p · tanh(u_k), p_min, p_max)  
+18:  
+19:  return (γ, p)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
 ## Notation Reference Table
 
 | Symbol | Description |
 |--------|-------------|
 | $T_A, T_B$ | Bidirectional search trees from start and goal |
 | $x_{meet}$ | Dynamic meeting point between two trees |
-| $c_{best}$ | Semi-major axis of ellipsoid (current best cost bound) |
+| $c_{best}$ | Current best path cost |
 | $c_{min}$ | Focal distance (Euclidean distance between foci) |
 | $G(x)$ | Cost-to-come from tree root to node $x$ |
-| $\hat{F}(x)$ | PID-modulated estimated total cost |
+| $\hat{F}(x)$ | Estimated total cost (F = G + H) |
 | $\beta$ | Ellipsoid buffer coefficient (default 1.2) |
 | $\tau$ | Ellipsoid update interval (iterations) |
 | $\delta$ | Step size for tree extension |
 | $p_{div}$ | Non-Pareto selection probability (default 0.1) |
 | $\mathcal{P}$ | Pareto frontier node set |
+| **PID Parameters** |
+| $\gamma$ | Ellipsoid expansion factor ($\gamma \geq 1$) |
+| $p$ | Informed sampling probability ($0 \leq p \leq 1$) |
+| $y_k$ | Improvement efficiency at iteration $k$ |
+| $\bar{y}_k$ | Smoothed improvement efficiency (EMA) |
+| $y^*$ | Target improvement efficiency (default 0.02) |
+| $W$ | Sliding window size (default 50) |
+| $K_p, K_i, K_d$ | PID gains (default 2.0, 0.2, 0.8) |
 
 ---
 
-## Adaptive PID Cost Function (Referenced in Algorithm 1)
+## PID Control Mechanism (Algorithm 4)
 
-The adaptive PID cost modulation is defined as:
+The PID controller dynamically adjusts sampling strategy based on path improvement efficiency:
 
-$$\hat{F}(x) = F(x) \cdot \psi, \quad \psi = 1 + w_\eta \cdot \tanh(u_{PID})$$
+**Measurement (Improvement Efficiency):**
+$$y_k = \frac{c_{k-W} - c_k}{c_{k-W} + \epsilon}, \quad \bar{y}_k = \rho \bar{y}_{k-1} + (1-\rho) y_k$$
 
-where:
-$$u_{PID} = K_p(\alpha) \cdot e_k + K_i(\alpha) \cdot I_k + K_d(\alpha) \cdot D_k$$
+**PID Output:**
+$$u_k = K_p e_k + K_i I_k + K_d d_k, \quad e_k = y^* - \bar{y}_k$$
 
-**Adaptive Gain Scheduling:**
-$$K_p(\alpha) = K_p^{base} \cdot (1 + \beta_p \cos(\pi\alpha))$$
-$$K_i(\alpha) = K_i^{base} \cdot (1 - \beta_i \alpha^2)$$
-$$K_d(\alpha) = K_d^{base} \cdot (1 + \beta_d \sin(\pi\alpha))$$
+**Control Variables:**
+$$\gamma = \gamma_0 \cdot e^{\alpha_\gamma u_k}, \quad p = p_0 - \alpha_p \tanh(u_k)$$
 
-where $\alpha = k/k_{max}$ is the iteration progress ratio.
+**Behavioral Response:**
+- Stagnation ($\bar{y}_k < y^*$): $u_k > 0 \Rightarrow \gamma \uparrow, p \downarrow$ (increase exploration)
+- Rapid improvement ($\bar{y}_k > y^*$): $u_k < 0 \Rightarrow \gamma \downarrow, p \uparrow$ (increase exploitation)
 
 ---
 
@@ -189,24 +236,26 @@ where $\alpha = k/k_{max}$ is the iteration progress ratio.
  1:  T_A ← {x_start}, T_B ← {x_goal}          // 初始化双向树
  2:  x_meet ← (x_start + x_goal) / 2          // 初始交汇点为中点
  3:  c_A, c_B ← ∞, ∞                          // 椭球参数初始化
- 4:  
- 5:  for k = 1 to k_max do
- 6:      /* 周期性更新双椭球体 */
- 7:      if k mod τ = 0 then
- 8:          x_meet ← 势场法更新交汇点(T_A, T_B)
- 9:          (c_A, c_B) ← 计算双椭球参数(...)           ▷ 算法 2
-10:      end if
-11:      
-12:      /* 在当前椭球内约束采样 */
-13:      x_rand ← 双椭球采样(x_start, x_meet, c_A)      ▷ 算法 2
+ 4:  PID_state ← ∅, γ ← γ_max, p ← 0        // 初始化PID控制器
+ 5:  
+ 6:  for k = 1 to k_max do
+ 7:      /* 周期性更新双椭球体 */
+ 8:      if k mod τ = 0 then
+ 9:          x_meet ← 势场法更新交汇点(T_A, T_B)
+10:          (c_A, c_B) ← 计算双椭球参数(...)           ▷ 算法 2
+11:          (γ, p) ← PID采样控制器(c_best, PID_state)  ▷ 算法 4
+12:      end if
+13:      
+14:      /* PID控制的自适应采样 */
+15:      x_rand ← 自适应采样(x_start, x_meet, c_A, γ, p) ▷ 算法 2
 14:      
 15:      /* Pareto最优节点选择 */
 16:      x_near ← Pareto节点筛选(T_A, x_meet)           ▷ 算法 3
 17:      x_new ← 扩展(x_near, x_rand, 步长δ)
 18:      
-19:      if 无碰撞(x_near, x_new) then
-20:          F̂ ← 自适应PID代价(x_new, T_A, k)          ▷ 公式 (8)-(12)
-21:          T_A ← T_A ∪ {(x_new, 父节点: x_near, 代价: F̂)}
+21:      if 无碰撞(x_near, x_new) then
+22:          F̂ ← G(x_new) + H(x_new)                   // 标准A*代价
+23:          T_A ← T_A ∪ {(x_new, 父节点: x_near, 代价: F̂)}
 22:          
 23:          /* 尝试连接对向树 */
 24:          x_connect ← 最近节点(T_B, x_new)
@@ -252,20 +301,24 @@ where $\alpha = k/k_{max}$ is the iteration progress ratio.
 17:      c_best^A ← γ · c_best^A,  c_best^B ← γ · c_best^B
 18:  end if
 
-/* ═══ B部分: 椭球内采样 ═══ */
-19:  选择当前椭球 E，焦点为 (f_1, f_2)，半长轴为 c_best
-20:  x_c ← (f_1 + f_2) / 2                     // 椭球中心
-21:  a ← c_best / 2                            // 半长轴
-22:  b ← √(a² - ||f_2 - f_1||²/4)             // 半短轴
-23:  R ← 旋转矩阵((f_2 - f_1) / ||f_2 - f_1||)
-24:  L ← diag(a, b, ..., b)                    // 缩放矩阵
-25:  
-26:  repeat
-27:      x_ball ← 单位球内均匀采样(n维)
-28:      x_sample ← R · L · x_ball + x_c       // 变换到椭球空间
-29:  until x_sample ∈ 自由空间 ∩ 边界内
-30:  
-31:  return x_sample
+/* ═══ B部分: PID控制的自适应采样 ═══ */
+19:  if Random(0,1) < p 且 c_best < ∞ then
+20:      /* 知情采样，使用PID膨胀系数 */
+21:      c_expanded ← γ · c_best                 // 应用PID膨胀系数
+22:      选择椭球 E，焦点为 (f_1, f_2)，半长轴为 c_expanded
+23:      x_c ← (f_1 + f_2) / 2, a ← c_expanded / 2
+24:      b ← √(a² - ||f_2 - f_1||²/4)
+25:      R ← 旋转矩阵((f_2 - f_1) / ||f_2 - f_1||)
+26:      L ← diag(a, b, ..., b)
+27:      repeat
+28:          x_ball ← 单位球内均匀采样(n维)
+29:          x_sample ← R · L · x_ball + x_c
+30:      until x_sample ∈ 自由空间 ∩ 边界内
+31:  else
+32:      /* 全局均匀采样 */
+33:      x_sample ← 均匀采样(边界)
+34:  end if
+35:  return x_sample
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -314,21 +367,61 @@ where $\alpha = k/k_{max}$ is the iteration progress ratio.
 
 ---
 
+## 算法 4: PID控制的自适应采样
+
+```
+算法 4: PID采样控制器
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+输入:  c_best (当前最优路径代价), PID_state
+输出:  γ (膨胀系数), p (知情采样概率)
+
+ 1:  if PID_state = ∅ 或 c_best = ∞ then
+ 2:      return (γ_max, 0)                      // 初始最大探索
+ 3:  end if
+ 4:  
+ 5:  /* 测量改进效率 */
+ 6:  y_k ← (c_hist[k-W] - c_best) / (c_hist[k-W] + ε)
+ 7:  ȳ_k ← ρ · ȳ_{k-1} + (1-ρ) · y_k           // EMA平滑
+ 8:  
+ 9:  /* PID控制 */
+10:  e_k ← y* - ȳ_k                              // 控制误差
+11:  I_k ← clip(I_{k-1} + e_k, I_min, I_max)   // 积分项（抗饱和）
+12:  d_k ← ρ_d · d_{k-1} + (1-ρ_d) · (e_k - e_{k-1}) // 滤波微分
+13:  u_k ← K_p · e_k + K_i · I_k + K_d · d_k
+14:  
+15:  /* 映射到控制变量 */
+16:  γ ← clip(γ_0 · exp(α_γ · u_k), γ_min, γ_max)  // 膨胀系数
+17:  p ← clip(p_0 - α_p · tanh(u_k), p_min, p_max)  // 采样概率
+18:  
+19:  return (γ, p)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
 ## 符号说明表
 
 | 符号 | 含义 |
 |------|------|
 | $T_A, T_B$ | 起点树和终点树 |
 | $x_{meet}$ | 动态交汇点 |
-| $c_{best}$ | 椭球半长轴（当前最优代价上界） |
+| $c_{best}$ | 当前最优路径代价 |
 | $c_{min}$ | 椭球焦距（焦点间欧氏距离） |
 | $G(x)$ | 从树根到节点 $x$ 的实际路径代价 |
-| $\hat{F}(x)$ | PID调制后的估计总代价 |
+| $\hat{F}(x)$ | 估计总代价 (F = G + H) |
 | $\beta$ | 椭球缓冲系数（默认1.2） |
 | $\tau$ | 椭球更新周期（迭代次数） |
 | $\delta$ | 树扩展步长 |
 | $p_{div}$ | 非Pareto节点选择概率（默认0.1） |
 | $\mathcal{P}$ | Pareto前沿节点集合 |
+| **PID参数** |
+| $\gamma$ | 椭球膨胀系数 ($\gamma \geq 1$) |
+| $p$ | 知情采样概率 ($0 \leq p \leq 1$) |
+| $y_k$ | 第 $k$ 次迭代的改进效率 |
+| $\bar{y}_k$ | 平滑后的改进效率 (EMA) |
+| $y^*$ | 目标改进效率（默认0.02） |
+| $W$ | 滑动窗口大小（默认50） |
+| $K_p, K_i, K_d$ | PID增益（默认2.0, 0.2, 0.8） |
 
 ---
 
