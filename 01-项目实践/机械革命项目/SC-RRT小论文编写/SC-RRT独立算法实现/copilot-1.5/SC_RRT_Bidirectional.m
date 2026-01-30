@@ -156,7 +156,6 @@ ellipsoidHandleB = [];
 meetPointHandle = [];
 paretoNodeHandleA = [];  % 帕累托最优节点A标记
 paretoNodeHandleB = [];  % 帕累托最优节点B标记
-paretoNodesCollection = [];  % 收集所有帕累托节点位置用于最终显示
 
 % ========== 可视化初始化 ==========
 figure(fig_handle);
@@ -223,22 +222,11 @@ while iterCount < maxIterations && ~success
         % 精简的进度输出（每200次迭代显示一次）
         if mod(iterCount, 200) == 0
             if strcmp(mode, 'adaptive') || strcmp(mode, 'pid')
-                % 检查pidState是否有current_y字段
-                if isfield(pidSamplingState, 'current_y')
-                    fprintf('  迭代%d: L_best=%.1f, gamma=%.2f, p=%.2f, 效率=%.0f%%, y=%.4f\n', ...
-                        iterCount, L_best_shared, gammaA, pInformedA, totalValidRate*100, pidSamplingState.current_y);
-                else
-                    fprintf('  迭代%d: L_best=%.1f, gamma=%.2f, p=%.2f, 效率=%.0f%%\n', ...
-                        iterCount, L_best_shared, gammaA, pInformedA, totalValidRate*100);
-                end
+                fprintf('  迭代%d: L_best=%.1f, gamma=%.2f, p=%.2f, 效率=%.0f%%, y=%.4f\n', ...
+                    iterCount, L_best_shared, gammaA, pInformedA, totalValidRate*100, pidSamplingState.current_y);
             else
-                if m == 2
-                    fprintf('  迭代%d: 交汇点[%.0f,%.0f], c_A=%.1f, c_B=%.1f, 效率=%.0f%%\n', ...
-                        iterCount, meetPoint(1), meetPoint(2), c_best_A, c_best_B, totalValidRate*100);
-                else
-                    fprintf('  迭代%d: 交汇点[%.0f,%.0f,%.0f], c_A=%.1f, c_B=%.1f, 效率=%.0f%%\n', ...
-                        iterCount, meetPoint(1), meetPoint(2), meetPoint(3), c_best_A, c_best_B, totalValidRate*100);
-                end
+                fprintf('  迭代%d: 交汇点[%.0f,%.0f], c_A=%.1f, c_B=%.1f, 效率=%.0f%%\n', ...
+                    iterCount, meetPoint(1), meetPoint(2), c_best_A, c_best_B, totalValidRate*100);
             end
         end
         
@@ -350,7 +338,7 @@ while iterCount < maxIterations && ~success
     end
     
     % ========== 4. 扩展A树（使用Pareto前沿动态节点） ==========
-    if useParetoFrontier && mod(iterCount, 50) == 0 && sizeA > 10
+    if useParetoFrontier && mod(iterCount, 100) == 0 && sizeA > 10
         % 使用Pareto前沿选择动态节点
         try
             [dynamicStartA, ~, ~, ~, bestNodeIdxA] = ParetoModule(treeA(1:sizeA, :), meetPoint, 0.1, m);
@@ -368,29 +356,28 @@ while iterCount < maxIterations && ~success
             
             % ========== 可视化帕累托最优节点（橙色标记） ==========
             if enableVisualization && ~isempty(bestNodeIdxA)
-                % 收集帕累托节点位置（不删除旧标记，累积显示）
-                bestNodePos = treeA(bestNodeIdxA, 1:m);
-                paretoNodesCollection = [paretoNodesCollection; bestNodePos];
+                % 安全删除旧的帕累托节点标记
+                if ~isempty(paretoNodeHandleA)
+                    try
+                        if isgraphics(paretoNodeHandleA)
+                            delete(paretoNodeHandleA);
+                        end
+                    catch
+                        % 忽略删除错误
+                    end
+                    paretoNodeHandleA = [];
+                end
                 
-                % 立即绘制当前帕累托最优节点（橙色，置于顶层）
+                % 绘制帕累托最优节点（橙色）
+                bestNodePos = treeA(bestNodeIdxA, 1:m);
                 if m == 2
-                    paretoNodeHandleA = scatter(bestNodePos(1), bestNodePos(2), 250, ...
-                        'o', 'filled', ...
-                        'MarkerFaceColor', [1, 0.5, 0], ...
-                        'MarkerEdgeColor', [0.8, 0.3, 0], ...
-                        'LineWidth', 2.5, ...
+                    paretoNodeHandleA = scatter(bestNodePos(1), bestNodePos(2), 120, [1, 0.6, 0], ...
+                        'filled', 'o', 'MarkerEdgeColor', 'k', 'LineWidth', 1.5, ...
                         'DisplayName', 'Pareto Best');
-                    % 确保橙色节点在最上层
-                    uistack(paretoNodeHandleA, 'top');
                 else
-                    paretoNodeHandleA = scatter3(bestNodePos(1), bestNodePos(2), bestNodePos(3), 250, ...
-                        'o', 'filled', ...
-                        'MarkerFaceColor', [1, 0.5, 0], ...
-                        'MarkerEdgeColor', [0.8, 0.3, 0], ...
-                        'LineWidth', 2.5, ...
+                    paretoNodeHandleA = scatter3(bestNodePos(1), bestNodePos(2), bestNodePos(3), ...
+                        120, [1, 0.6, 0], 'filled', 'o', 'MarkerEdgeColor', 'k', 'LineWidth', 1.5, ...
                         'DisplayName', 'Pareto Best');
-                    % 确保橙色节点在最上层
-                    uistack(paretoNodeHandleA, 'top');
                 end
                 drawnow limitrate;
             end
@@ -455,11 +442,11 @@ while iterCount < maxIterations && ~success
             if m == 2
                 line([nearestPointA(1), newPointA(1)], [nearestPointA(2), newPointA(2)], ...
                     'Color', [0.5, 0.9, 0.5], 'LineWidth', 0.5);
-                scatter(newPointA(1), newPointA(2), 1, 'g', 'filled');
+                scatter(newPointA(1), newPointA(2), 3, 'g', 'filled');
             else
                 line([nearestPointA(1), newPointA(1)], [nearestPointA(2), newPointA(2)], ...
                     [nearestPointA(3), newPointA(3)], 'Color', [0.5, 0.9, 0.5], 'LineWidth', 0.5);
-                scatter3(newPointA(1), newPointA(2), newPointA(3), 1, 'g', 'filled');
+                scatter3(newPointA(1), newPointA(2), newPointA(3), 3, 'g', 'filled');
             end
             drawnow;
         end
@@ -554,11 +541,11 @@ while iterCount < maxIterations && ~success
                 if m == 2
                     line([extendPointB(1), newStepB(1)], [extendPointB(2), newStepB(2)], ...
                         'Color', [0.5, 0.5, 0.9], 'LineWidth', 0.5);
-                    scatter(newStepB(1), newStepB(2), 1, 'b', 'filled');
+                    scatter(newStepB(1), newStepB(2), 3, 'b', 'filled');
                 else
                     line([extendPointB(1), newStepB(1)], [extendPointB(2), newStepB(2)], ...
                         [extendPointB(3), newStepB(3)], 'Color', [0.5, 0.5, 0.9], 'LineWidth', 0.5);
-                    scatter3(newStepB(1), newStepB(2), newStepB(3), 1, 'b', 'filled');
+                    scatter3(newStepB(1), newStepB(2), newStepB(3), 3, 'b', 'filled');
                 end
                 drawnow;
             end
@@ -642,19 +629,6 @@ computeTime = toc;
 
 % ========== 最终可视化 ==========
 if enableVisualization
-    % 重新绘制所有帕累托最优节点（确保显示，使用鲜明橙色）
-    if ~isempty(paretoNodesCollection) && size(paretoNodesCollection, 1) > 0
-        if m == 2
-            scatter(paretoNodesCollection(:,1), paretoNodesCollection(:,2), 180, [1, 0.5, 0], ...
-                'filled', 'o', 'MarkerEdgeColor', [0.8, 0.3, 0], 'LineWidth', 2.5, ...
-                'DisplayName', 'Pareto Nodes');
-        else
-            scatter3(paretoNodesCollection(:,1), paretoNodesCollection(:,2), paretoNodesCollection(:,3), ...
-                180, [1, 0.5, 0], 'filled', 'o', 'MarkerEdgeColor', [0.8, 0.3, 0], 'LineWidth', 2.5, ...
-                'DisplayName', 'Pareto Nodes');
-        end
-    end
-    
     if m == 2
         scatter(startPoint(1), startPoint(2), 150, 'g', 'filled', 'pentagram', ...
             'MarkerEdgeColor', 'k', 'LineWidth', 2, 'DisplayName', 'Start');
@@ -665,20 +639,21 @@ if enableVisualization
             plot(path(:,1), path(:,2), 'r-', 'LineWidth', 3, 'DisplayName', 'Final Path');
         end
     else
-        scatter3(startPoint(1), startPoint(2), startPoint(3), 150, 'g', 'filled', 'pentagram', ...
-            'MarkerEdgeColor', 'k', 'LineWidth', 2, 'DisplayName', 'Start');
-        scatter3(goalPoint(1), goalPoint(2), goalPoint(3), 150, 'r', 'filled', 'pentagram', ...
-            'MarkerEdgeColor', 'k', 'LineWidth', 2, 'DisplayName', 'Goal');
+        scatter3(startPoint(1), startPoint(2), startPoint(3), 150, 'g', 'filled', 'pentagram');
+        scatter3(goalPoint(1), goalPoint(2), goalPoint(3), 150, 'r', 'filled', 'pentagram');
         
         if success && ~isempty(path)
-            plot3(path(:,1), path(:,2), path(:,3), 'r-', 'LineWidth', 3, 'DisplayName', 'Final Path');
+            plot3(path(:,1), path(:,2), path(:,3), 'r-', 'LineWidth', 3);
         end
     end
     drawnow;
 end
 
-% ========== 保存最终GIF帧 ==========
+legend('Location', 'best');
+
+% 保存最后一帧
 if ~isempty(gif_filename)
+    drawnow;
     frame = getframe(gcf);
     im = frame2im(frame);
     [imind, cm] = rgb2ind(im, 256);

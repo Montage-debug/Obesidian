@@ -133,24 +133,24 @@ function obs = generateObstacles(dim,bounds,N,R,start,goal)
         % 3D障碍物生成 - 增加复杂度
         obs.spheres = zeros(N,4);
         
-        % 分配: 40% 聚簇, 25% 层状, 20% 柱状, 15% 随机
-        nCluster = floor(N * 0.40);
+        % 分配: 35% 聚簇, 25% 层状, 15% 柱状, 25% 随机
+        nCluster = floor(N * 0.35);
         nLayer = floor(N * 0.25);
-        nColumn = floor(N * 0.20);
+        nColumn = floor(N * 0.15);
         nRandom = N - nCluster - nLayer - nColumn;
         
         idx = 1;
         
-        % 1. 创建聚簇区域（3D球形聚簇） - 增强密度
-        numClusters = 5 + randi(3); % 5-7个聚簇
+        % 1. 3D聚簇区域
+        numClusters = 3 + randi(2);
         obsPerCluster = floor(nCluster / numClusters);
         for cluster = 1:numClusters
             centerOk = false;
             while ~centerOk
                 clusterCenter = bounds(1:2:5) + (bounds(2:2:6)-bounds(1:2:5)).*rand(1,3);
-                centerOk = norm(clusterCenter-start)>120 && norm(clusterCenter-goal)>120;
+                centerOk = norm(clusterCenter-start)>150 && norm(clusterCenter-goal)>150;
             end
-            clusterRadius = 100 + rand*100; % 增大聚簇半径
+            clusterRadius = 80 + rand*80;
             
             for j = 1:obsPerCluster
                 ok = false; attempts = 0;
@@ -175,8 +175,8 @@ function obs = generateObstacles(dim,bounds,N,R,start,goal)
             end
         end
         
-        % 2. 层状结构（不同高度的障碍物平面） - 增加层数
-        numLayers = 5; % 增加到5层
+        % 2. 层状结构（不同高度的障碍物平面）
+        numLayers = 3;
         obsPerLayer = floor(nLayer / numLayers);
         for layer = 1:numLayers
             zHeight = bounds(5) + (bounds(6)-bounds(5))*(layer/(numLayers+1));
@@ -201,8 +201,8 @@ function obs = generateObstacles(dim,bounds,N,R,start,goal)
             end
         end
         
-        % 3. 柱状结构（垂直排列） - 增加柱数
-        numColumns = 6; % 增加到6根柱
+        % 3. 柱状结构（垂直排列）
+        numColumns = 4;
         obsPerColumn = floor(nColumn / numColumns);
         for col = 1:numColumns
             colBase = bounds(1:2:3) + (bounds(2:2:4)-bounds(1:2:3)).*rand(1,2);
