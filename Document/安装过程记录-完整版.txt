@@ -400,6 +400,113 @@ fi
 
 
 
+#=================写入按摩头及系统管理串口udev规则======================
+cat << 'EOF' | sudo tee /etc/udev/rules.d/99-usb-serial.rules
+# USB串口设备固定规则
+# 根据USB端口位置分配固定的串口号,不受设备类型影响
+# 
+# 使用方法:
+RNEL)' 入USB设备后,运行: udevadm info -a -n /dev/ttyUSB0 | grep -E '(idVendor|idProduct|serial|KER
+# 2. 根据输出信息填写对应规则
+# 3. 重新加载规则: sudo udevadm control --reload-rules && sudo udevadm trigger
+
+# 端口1 - 根据物理USB端口位置
+SUBSYSTEM=="tty", KERNELS=="1-1", SYMLINK+="tty_massage_head_manager", MODE="0666", GROUP="dialout"
+
+# 端口2
+SUBSYSTEM=="tty", KERNELS=="1-2", SYMLINK+="tty_system_manager", MODE="0666", GROUP="dialout"
+
+         
+EOF
+
+sudo chmod 644 /etc/udev/rules.d/99-usb-serial.rules
+#=========================创建规则文件启动脚本========================
+
+cat << 'EOF' | sudo tee /usr/local/bin/activate-usb-serial-rules
+#!/bin/bash
+# USB串口规则激活脚本 - 简化版
+# 仅在真实系统中激活串口规则
+
+# 检查是否为真实系统（非chroot环境）
+if [ ! -d /sys/class ] || [ ! -d /proc/1/root/dev ]; then
+    echo "⚠ 构建环境，跳过规则激活"
+    exit 0
+fi
+
+# 检查规则文件
+if [ ! -f /etc/udev/rules.d/99-usb-serial.rules ]; then
+    exit 0
+fi
+
+# 激活规则
+if command -v udevadm > /dev/null; then
+    echo "激活USB串口规则..."
+    udevadm control --reload-rules 2>/dev/null
+EOFt 0$(date)" > /var/run/usb-serial-rules-activated 2>/dev/null || true
+sudo: unable to resolve host cubic: Temporary failure in name resolution
+#!/bin/bash
+# USB串口规则激活脚本 - 简化版
+# 仅在真实系统中激活串口规则
+
+# 检查是否为真实系统（非chroot环境）
+if [ ! -d /sys/class ] || [ ! -d /proc/1/root/dev ]; then
+    echo "⚠ 构建环境，跳过规则激活"
+    exit 0
+fi
+
+# 检查规则文件
+if [ ! -f /etc/udev/rules.d/99-usb-serial.rules ]; then
+    exit 0
+fi
+
+# 激活规则
+if command -v udevadm > /dev/null; then
+    echo "激活USB串口规则..."
+    udevadm control --reload-rules 2>/dev/null
+    udevadm trigger 2>/dev/null
+fi
+
+# 创建激活标记
+echo "$(date)" > /var/run/usb-serial-rules-activated 2>/dev/null || true
+
+
+# 配置权限
+sudo chmod +x /usr/local/bin/activate-usb-serial-rules
+
+#=================完善rc.local========================
+# 更新 rc.local，在原有内容上添加串口规则激活
+cat << 'EOF' | sudo tee /etc/rc.local
+#!/bin/bash
+# rc.local - 开机时运行系统配置
+
+# 等待系统基本就绪
+sleep 2
+
+# 运行音频配置脚本（如果存在USB设备就配置，没有就跳过）
+if [ -f /opt/scripts/generate-global-asoundconf.sh ]; then
+    echo "开机: 配置USB音频..."
+    /opt/scripts/generate-global-asoundconf.sh || echo "USB音频未连接"
+fi
+
+# 运行Deptrum USB规则配置脚本
+if [ -x /usr/local/bin/deptrum-usb-setup ]; then
+    echo "开机: 配置Deptrum USB设备..."
+    /usr/local/bin/deptrum-usb-setup
+fi
+
+# 运行USB串口规则激活脚本
+if [ -x /usr/local/bin/activate-usb-serial-rules ]; then
+    echo "开机: 激活USB串口规则..."
+    /usr/local/bin/activate-usb-serial-rules
+fi
+
+exit 0
+EOF
+
+# 确保权限正确
+sudo chmod +x /etc/rc.local
+
+
 #=================配置用户组======================
 # 创建用户并配置权限
 useradd --system --no-create-home --shell /usr/sbin/nologin wlzc
@@ -778,6 +885,18 @@ EOF
 # 设置执行权限
 chmod +x /usr/local/bin/verify-fastapi
 
+
+
+
+#===========================适配物联网卡DNS设置==========================
+sudo nano /etc/systemd/resolved.conf 
+# 增加以下内容
+[Resolve]
+DNS=8.8.8.8 1.1.1.1
+
+# 重启服务
+sudo systemdctl restart systemd-resolved
+# 或许需要物联网卡解绑后操作
 
 #===========================完整验证============================
 cat > /tmp/final-validation.sh << 'EOF'
