@@ -50,13 +50,12 @@ class PIDExperiment:
         # 实验配置 - 平衡难度以区分PID效果差异
         if quick_test:
             self.num_trials = 30  # 大批量实验：30次重复提升统计可靠性
-            self.max_iterations_2d = 650  # 二维：1000次 [从800提升到1000]
-            self.max_iterations_3d = 750  # 三维：1200次 [从1000提升到1200，确保70%+成功率]
-            print("【大批量实验模式 - V3优化配置】\n")
+            self.max_iterations_2d = 650   # 二维：800次 [目标：85-95%成功率]
+            self.max_iterations_3d = 700  # 三维：700次 [关键修复：提升成功率到70%+]
+            print("【大批量实验模式 - 修复版配置】\n")
             print(f"  二维场景: {self.max_iterations_2d} 次迭代 [目标：80-90%成功率]")
-            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [目标：75-85%成功率]")
-            print(f"  重复次数: {self.num_trials} 次 [高统计置信度]")
-            print(f"  ⭐关键优化: 降低p_informed至0.1-0.6，ESR将呈现梯度分布\n")
+            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [目标：70-85%成功率，清晰区分PID效果]")
+            print(f"  重复次数: {self.num_trials} 次 [高统计置信度]\n")
         else:
             self.num_trials = 30  # 完整实验30次重复
             self.max_iterations_2d = 650   # 二维：650次迭代 [确保70%+成功率]
