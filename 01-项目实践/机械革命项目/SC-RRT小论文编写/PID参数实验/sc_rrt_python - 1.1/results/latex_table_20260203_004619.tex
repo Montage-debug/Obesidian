@@ -1,0 +1,25 @@
+% LaTeX Table for SCI Paper
+% Copy this code into your paper
+
+\begin{table}[htbp]
+\centering
+\caption{Comparison of PID Parameters Performance in SC-RRT Algorithm}
+\label{tab:pid_comparison}
+\begin{tabular}{lcccccccc}
+\hline
+Config & $K_p$ & $K_i$ & $K_d$ & Success & Path Length & Std Dev & CV & Time(s) \\
+ & & & & Rate(\%) & (mean) & & (\%) & (mean) \\
+\hline
+P1\_VeryLow & 0.050 & 0.010 & 0.020 & 56.7 & 2716.2 & 282.4 & 10.4 & 1.766 \\
+P3\_High\_0.40 & 0.400 & 0.070 & 0.160 & 56.7 & 2746.2 & 393.2 & 14.3 & 1.655 \\
+P8\_High\_0.90 & 0.900 & 0.200 & 0.360 & 55.0 & 2686.3 & 391.1 & 14.6 & 1.810 \\
+P2\_Low & 0.200 & 0.030 & 0.080 & 51.7 & 2698.2 & 358.3 & 13.3 & 1.742 \\
+P7\_High\_0.80 & 0.800 & 0.180 & 0.320 & 48.3 & 2592.4 & 275.9 & 10.6 & 1.602 \\
+\hline
+\end{tabular}
+\end{table}
+
+% Notes:
+% - CV: Coefficient of Variation (lower is better)
+% - Std Dev: Standard Deviation
+% - All experiments repeated 30 times

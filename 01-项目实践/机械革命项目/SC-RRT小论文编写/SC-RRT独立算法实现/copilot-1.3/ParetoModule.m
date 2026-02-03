@@ -1,127 +1,83 @@
-function [xPareto, c_best, c_min, paretoIndices, bestNodeIdx] = ParetoModule(tree, goalPoint, p_nonPareto, m)
-% ParetoModule - ç»Ÿä¸€çš„Paretoå‰æ²¿é€‰æ‹©æ¨¡å—ï¼ˆæ”¹è¿›ç‰ˆï¼‰
+function [xPareto, c_best, c_min, paretoIndices] = ParetoModule(tree, goalPoint, p_nonPareto, m)
+% ParetoModule - Í³Ò»µÄParetoÇ°ÑØÑ¡ÔñÄ£¿é
 %
-% åŠŸèƒ½ï¼šåŸºäºä¸‰ç»´Paretoæ”¯é…å…³ç³»é€‰æ‹©æœ€ä¼˜èŠ‚ç‚¹
+% ¹¦ÄÜ£º»ùÓÚÈıÎ¬ParetoÖ§Åä¹ØÏµÑ¡Ôñ×îÓÅ½Ú??
 %
-% è¾“å…¥ï¼š
-%   tree         - æ ‘ç»“æ„ [NÃ—(m+4)]
-%   goalPoint    - ç›®æ ‡ç‚¹ [1Ã—m]
-%   p_nonPareto  - éParetoèŠ‚ç‚¹é€‰æ‹©æ¦‚ç‡ï¼ˆé»˜è®¤0.1ï¼‰
-%   m            - ç©ºé—´ç»´åº¦
+% ÊäÈë??
+%   tree         - ËÑË÷?? [N¡Á(m+4)]
+%   goalPoint    - Ä¿±ê?? [1¡Ám]
+%   p_nonPareto  - ·ÇPareto½ÚµãÑ¡Ôñ¸ÅÂÊ£¨Ä¬??0.1??
+%   m            - ¿Õ¼äÎ¬¶È
 %
-% è¾“å‡ºï¼š
-%   xPareto       - é€‰ä¸­çš„Paretoæœ€ä¼˜èŠ‚ç‚¹åæ ‡ [1Ã—m]
-%   c_best        - å½“å‰Paretoæœ€ä¼˜èŠ‚ç‚¹çš„è·¯å¾„ä»£ä»·
-%   c_min         - æ ¹èŠ‚ç‚¹åˆ°ç›®æ ‡ç‚¹çš„ç›´çº¿è·ç¦»
-%   paretoIndices - Paretoå‰æ²¿èŠ‚ç‚¹ç´¢å¼•åˆ—è¡¨
-%   bestNodeIdx   - ç»¼åˆè¯„åˆ†æœ€ä¼˜çš„ParetoèŠ‚ç‚¹ç´¢å¼•ï¼ˆç”¨äºå¯è§†åŒ–ï¼‰
+% Êä³ö??
+%   xPareto       - Ñ¡ÖĞµÄPareto×îÓÅ½Úµã×ø?? [1¡Ám]
+%   c_best        - µ±Ç°Pareto×îÓÅ½ÚµãµÄÂ·¾¶´ú¼Û
+%   c_min         - Æğµãµ½Ä¿±êµãµÄÀíÂÛ×î¶Ì¾à??
+%   paretoIndices - ParetoÇ°ÑØ½ÚµãË÷ÒıÁĞ±í
 
-% ========== è¾“å…¥éªŒè¯ ==========
+% ========== ²ÎÊıÑéÖ¤ ==========
 [n, cols] = size(tree);
 if cols < m + 4
-    error('ParetoModule: æ ‘ç»“æ„ç»´åº¦é”™è¯¯');
+    error('ParetoModule: Ê÷½á¹¹²»ÍêÕû');
 end
 
 if nargin < 3
     p_nonPareto = 0.1;
 end
 
-% ========== æ„å»ºä¸‰ç»´Paretoç›®æ ‡ ==========
+% ========== ¹¹ÔìÈıÎ¬ParetoÏòÁ¿ ==========
 V = zeros(n, 3);
 
 for i = 1:n
-    % ç»´åº¦1: èŠ‚ç‚¹æ·±åº¦ï¼ˆæ·±åº¦è¶Šå¤§è¶Šå¥½ï¼Œå–è´Ÿæ•°ä½¿è¶Šå°è¶Šå¥½ï¼‰
+    % Î¬¶È1: ¸º³ö¶È£¨³ö¶ÈÔ½´óÔ½ºÃ£¬È¡¸ººóÔ½Ğ¡Ô½ºÃ??
     V(i, 1) = -tree(i, m+4);
     
-    % ç»´åº¦2: F_hatæ€»ä»£ä»·
+    % Î¬¶È2: F_hat´ú¼Û¹À¼Æ
     V(i, 2) = tree(i, m+3);
     
-    % ç»´åº¦3: å½’ä¸€åŒ–è·¯å¾„æ›²æŠ˜åº¦
+    % Î¬¶È3: ¹éÒ»»¯Â·¾¶ÇúÕÛ¶È
     V(i, 3) = computePathTortuosity(tree, i, m);
 end
 
-% ========== è®¡ç®—Paretoå‰æ²¿ ==========
+% ========== ¼ÆËãParetoÇ°ÑØ ==========
 paretoIndices = computeParetoFront(V);
 nonIdx = setdiff(1:n, paretoIndices);
 
-% ========== å¤šç›®æ ‡ç»¼åˆè¯„åˆ†ï¼ˆæ”¹è¿›ç‰ˆï¼šå½’ä¸€åŒ–+æƒé‡ï¼‰ ==========
-% å¯¹Paretoå‰æ²¿èŠ‚ç‚¹è¿›è¡Œå½’ä¸€åŒ–å’ŒåŠ æƒè¯„åˆ†
-if ~isempty(paretoIndices)
-    V_pareto = V(paretoIndices, :);
-    
-    % å½’ä¸€åŒ–æ¯ä¸ªç»´åº¦åˆ°[0, 1]
-    V_norm = zeros(size(V_pareto));
-    for d = 1:3
-        min_val = min(V_pareto(:, d));
-        max_val = max(V_pareto(:, d));
-        
-        if max_val - min_val > 1e-6
-            V_norm(:, d) = (V_pareto(:, d) - min_val) / (max_val - min_val);
-        else
-            V_norm(:, d) = 0;  % æ‰€æœ‰å€¼ç›¸åŒæ—¶è®¾ä¸º0
-        end
-    end
-    
-    % å¤šç›®æ ‡æƒé‡ï¼ˆå¯è°ƒæ•´ï¼‰
-    % w1: æ·±åº¦æƒé‡ï¼ˆé¼“åŠ±æ¢ç´¢æ›´æ·±çš„èŠ‚ç‚¹ï¼‰
-    % w2: ä»£ä»·æƒé‡ï¼ˆä¸»è¦ä¼˜åŒ–ç›®æ ‡ï¼‰
-    % w3: æ›²æŠ˜åº¦æƒé‡ï¼ˆè¾…åŠ©å¹³æ»‘æ€§ä¼˜åŒ–ï¼‰
-    weights = [0.2, 0.6, 0.2];  
-    
-    % åŠ æƒç»¼åˆè¯„åˆ†ï¼ˆè¶Šå°è¶Šå¥½ï¼‰
-    scores = V_norm * weights';
-    
-    % æ‰¾åˆ°ç»¼åˆè¯„åˆ†æœ€ä¼˜çš„èŠ‚ç‚¹
-    [~, bestIdx] = min(scores);
-    bestNodeIdx = paretoIndices(bestIdx);
-else
-    % æ²¡æœ‰Paretoå‰æ²¿æ—¶ï¼Œé€‰æ‹©F_hatæœ€å°çš„èŠ‚ç‚¹
-    [~, bestNodeIdx] = min(V(:, 2));
-end
-
-% ========== é€‰æ‹©ç­–ç•¥ ==========
+% ========== Ñ¡Ôñ²ßÂÔ ==========
 if rand < p_nonPareto && ~isempty(nonIdx)
-    % ä»¥æ¦‚ç‡pé€‰æ‹©éParetoèŠ‚ç‚¹ï¼ˆå¢åŠ å¤šæ ·æ€§ï¼‰
+    % ÒÔ¸ÅÂÊpÑ¡Ôñ·ÇPareto½Úµã£¨Ôö¼Ó¶àÑùĞÔ£©
     pick = nonIdx(randi(numel(nonIdx)));
 else
-    % ä»¥æ¦‚ç‡(1-p)é€‰æ‹©Paretoå‰æ²¿èŠ‚ç‚¹
-    if ~isempty(paretoIndices)
-        % ä¼˜å…ˆé€‰æ‹©ç»¼åˆè¯„åˆ†æœ€ä¼˜çš„èŠ‚ç‚¹
-        if rand < 0.7
-            pick = bestNodeIdx;
-        else
-            % 30%æ¦‚ç‡éšæœºé€‰æ‹©å…¶ä»–ParetoèŠ‚ç‚¹ï¼ˆæ¢ç´¢ï¼‰
-            pick = paretoIndices(randi(numel(paretoIndices)));
-        end
-    else
-        pick = 1;  % é»˜è®¤é€‰æ‹©æ ¹èŠ‚ç‚¹
-    end
+    % ÒÔ¸Å??(1-p)Ñ¡ÔñParetoÇ°ÑØ½Úµã
+    pick = paretoIndices(randi(numel(paretoIndices)));
 end
 
-% ========== è¿”å›é€‰ä¸­èŠ‚ç‚¹ ==========
+% ========== ·µ»ØÑ¡ÖĞ½Úµã ==========
 xPareto = tree(pick, 1:m);
 
-% ========== è®¡ç®—è¶…æ¤­çƒå‚æ•° ==========
+% ========== ¼ÆËã³¬ÍÖÇò²Î?? ==========
 if ~isempty(paretoIndices)
-    % ä½¿ç”¨ç»¼åˆè¯„åˆ†æœ€ä¼˜èŠ‚ç‚¹çš„F_hat
+    % ´ÓParetoÇ°ÑØÖĞÕÒµ½F_hat×îĞ¡µÄ½Úµã
+    [~, minIdx] = min(V(paretoIndices, 2));
+    bestNodeIdx = paretoIndices(minIdx);
     c_best = tree(bestNodeIdx, m+3);
 else
     c_best = inf;
 end
 
-% è®¡ç®—æ ¹èŠ‚ç‚¹åˆ°ç›®æ ‡ç‚¹çš„ç›´çº¿è·ç¦»
+% ¼ÆËãÆğµãµ½Ä¿±êµãµÄÀíÂÛ×î¶Ì¾à??
 c_min = norm(tree(1, 1:m) - goalPoint(1:m));
 
 end
 
-%% ========== ï¿½Óºï¿½??1: ï¿½ï¿½ï¿½ï¿½ParetoÇ°ï¿½ï¿½ ==========
+%% ========== ×Óº¯??1: ¼ÆËãParetoÇ°ÑØ ==========
 function paretoIndices = computeParetoFront(V)
-% ï¿½ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½â£¨ParetoÇ°ï¿½ï¿½??
+% ¼ÆËã·ÇÖ§Åä½â£¨ParetoÇ°ÑØ??
 %
-% ï¿½ï¿½ï¿½ï¿½??
-%   V - Paretoï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ [nï¿½ï¿½d]
-% ï¿½ï¿½ï¿½??
-%   paretoIndices - ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+% ÊäÈë??
+%   V - ParetoÏòÁ¿¾ØÕó [n¡Ád]
+% Êä³ö??
+%   paretoIndices - ·ÇÖ§Åä½âË÷Òı
 
 n = size(V, 1);
 isDominated = false(n, 1);
@@ -129,7 +85,7 @@ isDominated = false(n, 1);
 for i = 1:n
     for j = 1:n
         if i ~= j
-            % ï¿½ï¿½ï¿½jï¿½Ç·ï¿½Ö§ï¿½ï¿½i
+            % ¼ì²éjÊÇ·ñÖ§Åäi
             if all(V(j, :) <= V(i, :)) && any(V(j, :) < V(i, :))
                 isDominated(i) = true;
                 break;
@@ -141,15 +97,15 @@ end
 paretoIndices = find(~isDominated);
 end
 
-%% ========== ï¿½Óºï¿½??2: ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?? ==========
+%% ========== ×Óº¯??2: ¼ÆËãÂ·¾¶ÇúÕÛ?? ==========
 function lambda_norm = computePathTortuosity(tree, idx, m)
-% ï¿½ï¿½ï¿½ï¿½Úµï¿½Ä¹ï¿½Ò»ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½Û¶ï¿½
+% ¼ÆËã½ÚµãµÄ¹éÒ»»¯Â·¾¶ÇúÕÛ¶È
 %
-% ï¿½ï¿½Ê½??
-%   ï¿½ï¿½_raw = G(x) / ||x - x_start||
-%   ï¿½ï¿½_norm = 1 - 1/ï¿½ï¿½_raw ?? [0, 1)
+% ¹«Ê½??
+%   ¦Ë_raw = G(x) / ||x - x_start||
+%   ¦Ë_norm = 1 - 1/¦Ë_raw ?? [0, 1)
 
-% ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½??
+% ²ÎÊı¼ì??
 if isempty(tree) || idx <= 0 || idx > size(tree, 1)
     lambda_norm = 0;
     return;
@@ -160,34 +116,34 @@ if size(tree, 2) < m + 4
     return;
 end
 
-% ï¿½ï¿½È¡ï¿½Úµï¿½ï¿½ï¿½Ï¢
-G_x = tree(idx, m+2);           % Êµï¿½ï¿½ï¿½Û»ï¿½ï¿½ï¿½ï¿½ï¿½
-x_pos = tree(idx, 1:m);         % ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½
-x_start = tree(1, 1:m);         % ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+% »ñÈ¡½ÚµãĞÅÏ¢
+G_x = tree(idx, m+2);           % Êµ¼ÊÀÛ»ı´ú¼Û
+x_pos = tree(idx, 1:m);         % ½Úµã×ø±ê
+x_start = tree(1, 1:m);         % Æğµã×ø±ê
 
-% ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ß¾ï¿½ï¿½ï¿½
+% ¼ÆËãÖ±Ïß¾àÀë
 H_direct = norm(x_pos - x_start);
 
-% ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
+% ·ÀÖ¹³ıÁã
 epsilon = 1e-6;
 
 if H_direct < epsilon
-    lambda_norm = 0;  % ï¿½ï¿½ï¿½ò¼«½ï¿½ï¿½ï¿½??
+    lambda_norm = 0;  % Æğµã»ò¼«½üÆğ??
     return;
 end
 
-% ï¿½ï¿½ï¿½ï¿½Ô­Ê¼ï¿½ï¿½ï¿½ï¿½??
+% ¼ÆËãÔ­Ê¼ÇúÕÛ??
 lambda_raw = G_x / (H_direct + epsilon);
 
-% È·ï¿½ï¿½ ï¿½ï¿½_raw >= 1
+% È·±£ ¦Ë_raw >= 1
 if lambda_raw < 1.0
     lambda_raw = 1.0;
 end
 
-% ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ [0, 1)
+% ¹éÒ»»¯µ½ [0, 1)
 lambda_norm = 1.0 - 1.0 / lambda_raw;
 
-% ï¿½ï¿½È«ï¿½Ş·ï¿½
+% °²È«ÏŞ·ù
 lambda_norm = max(0.0, min(lambda_norm, 0.9999));
 
 end
