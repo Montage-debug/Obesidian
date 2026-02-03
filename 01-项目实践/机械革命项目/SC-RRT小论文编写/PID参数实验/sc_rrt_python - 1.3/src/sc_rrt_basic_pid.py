@@ -85,16 +85,34 @@ class SCRRTBasicPID:
         # fixed_ellipsoid: 固定椭球，不使用PID调节（对照组）
         self.use_new_pid_controller = (mode not in ['no_pid', 'basic', 'fixed_ellipsoid'])
         if self.use_new_pid_controller:
-            # 创建双树的PID采样控制器
+            # 创建双树的PID采样控制器（使用V3优化参数）
             self.pid_sampling_controller_A = PIDSamplingController(
                 Kp=Kp, Ki=Ki, Kd=Kd,
-                window_size=50,
-                target_efficiency=0.02
+                window_size=10,  # ⭐V4修复：从50降低到10，减少探索阶段
+                target_efficiency=0.02,
+                # ⭐V3优化参数：降低p_informed范围，增大gamma范围
+                gamma_0=3.0,
+                gamma_min=1.5,
+                gamma_max=6.0,
+                alpha_gamma=0.8,
+                p_0=0.3,
+                p_min=0.1,
+                p_max=0.6,
+                alpha_p=0.3
             )
             self.pid_sampling_controller_B = PIDSamplingController(
                 Kp=Kp, Ki=Ki, Kd=Kd,
-                window_size=50,
-                target_efficiency=0.02
+                window_size=10,  # ⭐V4修复：从50降低到10，减少探索阶段
+                target_efficiency=0.02,
+                # ⭐V3优化参数：保持与A树相同
+                gamma_0=3.0,
+                gamma_min=1.5,
+                gamma_max=6.0,
+                alpha_gamma=0.8,
+                p_0=0.3,
+                p_min=0.1,
+                p_max=0.6,
+                alpha_p=0.3
             )
             
             # 可选：自适应PID增益调整器
@@ -324,65 +342,66 @@ class SCRRTBasicPID:
                 meet_point = self.smoothing_factor * meet_point_old + \
                             (1 - self.smoothing_factor) * meet_point_new
                 meet_point_old = meet_point.copy()
+            
+            # ★★★ V4修复：每次迭代都更新PID控制器（不依赖交汇点更新）★★★
+            if self.use_new_pid_controller:
+                # 1. 计算当前c_best（用于PID控制器）
+                c_best_A_current = self._calculate_c_best_from_tree(
+                    treeA[:sizeA], meet_point, self.start
+                )
+                c_best_B_current = self._calculate_c_best_from_tree(
+                    treeB[:sizeB], meet_point, self.goal
+                )
                 
-                # ★★★ 方案B核心修改：使用新的PID采样控制器 ★★★
-                if self.use_new_pid_controller:
-                    # 1. 计算当前c_best（用于PID控制器）
-                    c_best_A_current = self._calculate_c_best_from_tree(
-                        treeA[:sizeA], meet_point, self.start
+                # 2. 更新自适应PID增益（如果启用）
+                if self.use_adaptive_gains:
+                    pid_stage = self.adaptive_gains.update_controller_gains(
+                        self.pid_sampling_controller_A, iterations, self.max_iterations
                     )
-                    c_best_B_current = self._calculate_c_best_from_tree(
-                        treeB[:sizeB], meet_point, self.goal
+                    self.adaptive_gains.update_controller_gains(
+                        self.pid_sampling_controller_B, iterations, self.max_iterations
                     )
-                    
-                    # 2. 更新自适应PID增益（如果启用）
-                    if self.use_adaptive_gains:
-                        pid_stage = self.adaptive_gains.update_controller_gains(
-                            self.pid_sampling_controller_A, iterations, self.max_iterations
-                        )
-                        self.adaptive_gains.update_controller_gains(
-                            self.pid_sampling_controller_B, iterations, self.max_iterations
-                        )
-                    else:
-                        pid_stage = 'fixed'
-                    
-                    # 3. 更新PID采样控制器，获取gamma和p_informed
-                    gamma_A, p_informed_A, info_A = self.pid_sampling_controller_A.update(c_best_A_current)
-                    gamma_B, p_informed_B, info_B = self.pid_sampling_controller_B.update(c_best_B_current)
-                    
-                    # 4. 计算焦距
-                    c_min_A = np.linalg.norm(meet_point - self.start)
-                    c_min_B = np.linalg.norm(self.goal - meet_point)
-                    
-                    # 5. 使用gamma调整椭球大小
-                    c_best_A = c_min_A * gamma_A
-                    c_best_B = c_min_B * gamma_B
-                    
-                    # 6. 记录PID历史（用于可视化）
-                    if iterations % 20 == 0:
-                        pid_sampling_history['iterations'].append(iterations)
-                        pid_sampling_history['gamma_A'].append(gamma_A)
-                        pid_sampling_history['gamma_B'].append(gamma_B)
-                        pid_sampling_history['p_informed_A'].append(p_informed_A)
-                        pid_sampling_history['p_informed_B'].append(p_informed_B)
-                        pid_sampling_history['c_best_A'].append(c_best_A)
-                        pid_sampling_history['c_best_B'].append(c_best_B)
-                        pid_sampling_history['pid_error_A'].append(info_A['error'])
-                        pid_sampling_history['pid_error_B'].append(info_B['error'])
-                        pid_sampling_history['improvement_efficiency_A'].append(info_A.get('improvement_efficiency', 0))
-                        pid_sampling_history['improvement_efficiency_B'].append(info_B.get('improvement_efficiency', 0))
-                        pid_sampling_history['pid_u_A'].append(info_A['u'])
-                        pid_sampling_history['pid_u_B'].append(info_B['u'])
-                        pid_sampling_history['pid_stage'].append(pid_stage)
-                    
-                    # 保存到变量供采样使用
-                    self._gamma_A = gamma_A
-                    self._gamma_B = gamma_B
-                    self._p_informed_A = p_informed_A
-                    self._p_informed_B = p_informed_B
-                    
                 else:
-                    # 使用旧的椭球参数计算逻辑
+                    pid_stage = 'fixed'
+                
+                # 3. 更新PID采样控制器，获取gamma和p_informed
+                gamma_A, p_informed_A, info_A = self.pid_sampling_controller_A.update(c_best_A_current)
+                gamma_B, p_informed_B, info_B = self.pid_sampling_controller_B.update(c_best_B_current)
+                
+                # 4. 计算焦距
+                c_min_A = np.linalg.norm(meet_point - self.start)
+                c_min_B = np.linalg.norm(self.goal - meet_point)
+                
+                # 5. 使用gamma调整椭球大小
+                c_best_A = c_min_A * gamma_A
+                c_best_B = c_min_B * gamma_B
+                
+                # 6. 记录PID历史（用于可视化）
+                if iterations % 20 == 0:
+                    pid_sampling_history['iterations'].append(iterations)
+                    pid_sampling_history['gamma_A'].append(gamma_A)
+                    pid_sampling_history['gamma_B'].append(gamma_B)
+                    pid_sampling_history['p_informed_A'].append(p_informed_A)
+                    pid_sampling_history['p_informed_B'].append(p_informed_B)
+                    pid_sampling_history['c_best_A'].append(c_best_A)
+                    pid_sampling_history['c_best_B'].append(c_best_B)
+                    pid_sampling_history['pid_error_A'].append(info_A['error'])
+                    pid_sampling_history['pid_error_B'].append(info_B['error'])
+                    pid_sampling_history['improvement_efficiency_A'].append(info_A.get('improvement_efficiency', 0))
+                    pid_sampling_history['improvement_efficiency_B'].append(info_B.get('improvement_efficiency', 0))
+                    pid_sampling_history['pid_u_A'].append(info_A['u'])
+                    pid_sampling_history['pid_u_B'].append(info_B['u'])
+                    pid_sampling_history['pid_stage'].append(pid_stage)
+                
+                # 保存到变量供采样使用
+                self._gamma_A = gamma_A
+                self._gamma_B = gamma_B
+                self._p_informed_A = p_informed_A
+                self._p_informed_B = p_informed_B
+                
+            else:
+                # 使用旧的椭球参数计算逻辑（仅当不使用新PID控制器时）
+                if iterations % adaptive_interval == 0:
                     (c_best_A, c_best_B, c_min_A, c_min_B, 
                      prev_error_A, integral_error_A, prev_error_B, integral_error_B) = \
                         self._calculate_ellipsoid_params(
@@ -647,13 +666,14 @@ class SCRRTBasicPID:
                 # 知情采样：在膨胀椭球内采样
                 sample = sample_in_ellipsoid(focus1, focus2, adjusted_c, self.dim)
                 if sample is not None:
-                    in_ellipsoid = self._is_in_ellipsoid(sample, focus1, focus2, adjusted_c)
+                    # ESR应该统计"主动椭球引导采样"，而非"被动落在椭球内"
+                    in_ellipsoid = True  # 这是主动椭球引导采样
                     return sample, current_error, integral_error, in_ellipsoid
-                # 椭球采样失败，回退到随机采样
+                # 椭球采样失败，回退到随机采样（这时算探索采样）
             
-            # 探索采样：完全随机
+            # 探索采样：完全随机（不算椭球引导采样）
             sample = sample_point(self.bounds, self.dim)
-            in_ellipsoid = self._is_in_ellipsoid(sample, focus1, focus2, adjusted_c)
+            in_ellipsoid = False  # ESR只统计主动椭球引导采样，探索采样不计入
             return sample, current_error, integral_error, in_ellipsoid
             
         else:

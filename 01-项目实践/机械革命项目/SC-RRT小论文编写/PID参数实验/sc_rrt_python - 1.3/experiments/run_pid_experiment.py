@@ -47,22 +47,23 @@ class PIDExperiment:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # 实验配置 - 平衡难度以区分PID效果差异
+        # 实验配置 - ★V6挑战版：高难度配置，体现PID优势
         if quick_test:
-            self.num_trials = 30  # 大批量实验：30次重复提升统计可靠性
-            self.max_iterations_2d = 650   # 二维：800次 [目标：85-95%成功率]
-            self.max_iterations_3d = 700  # 三维：700次 [关键修复：提升成功率到70%+]
-            print("【大批量实验模式 - 修复版配置】\n")
-            print(f"  二维场景: {self.max_iterations_2d} 次迭代 [目标：80-90%成功率]")
-            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [目标：70-85%成功率，清晰区分PID效果]")
-            print(f"  重复次数: {self.num_trials} 次 [高统计置信度]\n")
+            self.num_trials = 10  # 大批量实验：10次重复快速验证
+            self.max_iterations_2d = 600  # ★★降低迭代限制，增加难度
+            self.max_iterations_3d = 750  # ★★V9优化：减少迭代配合障碍物增加，提升难度
+            print("【大批量实验模式 - V9论文配置】\n")
+            print(f"  二维场景: {self.max_iterations_2d} 次迭代 [213障碍物R22-38, 预期: 50-80%成功率]")
+            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [320障碍物R40-60, 预期: 60-75%成功率]")
+            print(f"  重复次数: {self.num_trials} 次 [快速验证配置]")
+            print(f"  关键改进V9: 三维难度优化，能区分PID配置性能\n")
         else:
-            self.num_trials = 30  # 完整实验30次重复
-            self.max_iterations_2d = 650   # 二维：650次迭代 [确保70%+成功率]
-            self.max_iterations_3d = 1200  # 三维：1200次迭代 [给PID充分空间展示优势]
-            print("【完整实验模式 - 高成功率配置】\n")
-            print(f"  二维场景: {self.max_iterations_2d} 次迭代 [目标成功率70-85%]")
-            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [目标成功率70-85%]")
+            self.num_trials = 10  # 完整实验30次重复
+            self.max_iterations_2d = 700   # 二维：700次迭代 [★平衡设置]
+            self.max_iterations_3d = 700  # 三维：700次迭代 [★平衡设置]
+            print("【完整实验模式 - 平衡难度配置】\n")
+            print(f"  二维场景: {self.max_iterations_2d} 次迭代 [目标成功率55-65%]")
+            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [目标成功率55-65%]")
             print(f"  重复次数: {self.num_trials} 次 [最高统计置信度]")
             print(f"  【核心评价】首次解迭代次数（PID应显著更快）、路径质量\n")
         
@@ -92,38 +93,38 @@ class PIDExperiment:
         """创建测试场景 - 按用户要求：二维1500x1500/225障碍物，三维1500x1500x1500/400障碍物"""
         scenarios = []
         
-        # 场景1: 二维高密度场景 (1500x1500, 150个障碍物) - 降低难度提升成功率
+        # 场景1: 二维高密度场景 (1500x1500, 213个障碍物) - ★★★V6高难度配置
         scenarios.append({
             'name': '二维高密度场景',
             'dimension': 2,
             'max_iterations': self.max_iterations_2d,
             'env': EnvironmentConfig.generate_2d_environment(
                 bounds=[0, 1500, 0, 1500],
-                num_obstacles=150,  # 从225降至150，目标成功率60-75%
+                num_obstacles=213,  # ★★实际可放置数量（94.7%放置率）
                 start_point=np.array([75, 75]),
                 goal_point=np.array([1425, 1425]),
-                radius_range=(20, 40),  # 适中半径，确保能稳定放置
-                min_spacing=16,  # 适当间距
-                clearance=20,  # 安全距离
+                radius_range=(22, 38),  # ★★★高难度：26.5%占用率
+                min_spacing=15,  # ★优化后间距
+                clearance=18,  # ★优化后安全距离
                 seed=301
             ),
             'step_size': 50.0,
             'goal_threshold': 50.0
         })
         
-        # 场景2: 三维高密度场景 (1500x1500x1500, 250个障碍物) - 降低难度提升成功率
+        # 场景2: 三维适中难度场景 (1500x1500x1500, 320个障碍物) - ★★★V9优化配置
         scenarios.append({
             'name': '三维高密度场景',
             'dimension': 3,
             'max_iterations': self.max_iterations_3d,
             'env': EnvironmentConfig.generate_3d_environment(
                 bounds=[0, 1500, 0, 1500, 0, 1500],  # 保持1500³空间
-                num_obstacles=250,  # 从400降至250，目标成功率60-75%
+                num_obstacles=320,  # ★★★V9优化：增加14%（280→320），5.0%占用率
                 start_point=np.array([75, 75, 75]),
                 goal_point=np.array([1425, 1425, 1425]),
-                radius_range=(35, 65),  # 适中半径
-                min_spacing=22,  # 适当间距
-                clearance=25,   # 安全距离
+                radius_range=(40, 60),  # ★★★保持R40-60
+                min_spacing=15,  # ★优化间距
+                clearance=18,   # ★优化安全距离
                 seed=302
             ),
             'step_size': 50.0,
@@ -138,37 +139,40 @@ class PIDExperiment:
         # ★★ 无PID对照组模式：证明PID对双向超椭球体约束采样的有效性 ★★
         if hasattr(self, 'baseline_mode') and self.baseline_mode:
             print("\n" + "="*70)
-            print("【PID有效性验证实验 - 采样行为分析】")
+            print("【PID参数优化实验 - V7精细化网格搜索】")
             print("="*70)
-            print("\n  核心创新：PID控制器 + 双向超椭球体约束采样")
-            print("\n  【实验组设计】")
-            print("    No_PID      : 无PID对照（纯双向RRT，不使用椭球约束）")
-            print("    Low_PID     : 欠调PID（Kp=0.10，探索不足）")
-            print("    Optimal_PID : 最优PID（Kp=0.25, Ki=0.04, Kd=0.06）")
-            print("    High_PID    : 过调PID（Kp=0.50，过度控制）")
-            print("\n  【三大核心指标】（直接服务于PID有效性证明）")
-            print("    1️⃣  有效采样比例(ESR)          - 证明PID引导采样进入约束区域")
-            print("    2️⃣  达到固定成功率所需采样量    - 证明PID提高单位采样价值")
-            print("    3️⃣  椭球体收缩稳定性           - 证明PID控制约束机制可控可用")
-            print("\n  【评审友好逻辑】")
-            print("    • 成功率相近时，PID在采样效率上拉开2-3倍差距")
-            print("    • ESR: No_PID~20% vs Optimal_PID~60% (预期)")
-            print("    • Sample-to-Success: No_PID~400次 vs Optimal_PID~250次 (预期)")
-            print("    • 椭球收缩: No_PID抖动 vs Optimal_PID平滑单调")
+            print("\n  实验目的：基于V6结果，在最优区间进行精细搜索")
+            print("\n  【V6结果分析】")
+            print("    • Low_PID (Kp=0.15): 50%成功率, 232次采样 ✓ 最佳")
+            print("    • No_PID: 40%成功率, 315次采样")
+            print("    • Optimal_PID (Kp=0.30): 25%成功率 ✗ 过度约束")
+            print("    • 结论: 最优点在 Kp=0.10-0.20 区间")
+            print("\n  【V7搜索策略】")
+            print("    • 密集区: Kp ∈ [0.10, 0.20]，步长0.02（6个点）")
+            print("    • 固定比例: Ki/Kp ≈ 0.13, Kd/Kp ≈ 0.40")
+            print("    • 对照组: No_PID")
+            print("\n  【预期结果】")
+            print("    • 找到最优Kp使成功率最大化（目标55-65%）")
+            print("    • ESR和Sample-to-Success同步优化")
             print("\n  【实验规模】")
             
             configs = [
                 {'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0, 'name': 'No_PID', 'mode': 'no_pid'},
-                {'Kp': 0.10, 'Ki': 0.01, 'Kd': 0.02, 'name': 'Low_PID', 'mode': 'custom_pid'},
-                {'Kp': 0.25, 'Ki': 0.04, 'Kd': 0.06, 'name': 'Optimal_PID', 'mode': 'custom_pid'},
-                {'Kp': 0.50, 'Ki': 0.10, 'Kd': 0.15, 'name': 'High_PID', 'mode': 'custom_pid'}
+                # 密集搜索区 Kp=0.10-0.20，Ki/Kp≈0.13, Kd/Kp≈0.40
+                {'Kp': 0.10, 'Ki': 0.013, 'Kd': 0.04, 'name': 'PID_Kp0.10', 'mode': 'custom_pid'},
+                {'Kp': 0.12, 'Ki': 0.016, 'Kd': 0.048, 'name': 'PID_Kp0.12', 'mode': 'custom_pid'},
+                {'Kp': 0.14, 'Ki': 0.018, 'Kd': 0.056, 'name': 'PID_Kp0.14', 'mode': 'custom_pid'},
+                {'Kp': 0.15, 'Ki': 0.020, 'Kd': 0.06, 'name': 'PID_Kp0.15', 'mode': 'custom_pid'},  # V6最佳
+                {'Kp': 0.16, 'Ki': 0.021, 'Kd': 0.064, 'name': 'PID_Kp0.16', 'mode': 'custom_pid'},
+                {'Kp': 0.18, 'Ki': 0.023, 'Kd': 0.072, 'name': 'PID_Kp0.18', 'mode': 'custom_pid'},
+                {'Kp': 0.20, 'Ki': 0.026, 'Kd': 0.08, 'name': 'PID_Kp0.20', 'mode': 'custom_pid'},
             ]
             
-            print(f"    配置数: {len(configs)} 组")
-            print(f"    场景数: 2 个（二维+三维高密度）")
+            print(f"    配置数: {len(configs)} 组（1个对照 + 7个PID）")
+            print(f"    场景数: 2 个（二维+三维高难度）")
             print(f"    重复次数: {self.num_trials} 次/配置")
             print(f"    总运行数: {len(configs)} × 2 × {self.num_trials} = {len(configs)*2*self.num_trials} 次")
-            print(f"    预计耗时: 15-18分钟")
+            print(f"    预计耗时: 7-9分钟")
             print("="*70 + "\n")
             return configs
         
