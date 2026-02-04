@@ -200,6 +200,39 @@ class SCRRTBasicPID:
             print(f"最大迭代: {self.max_iterations}")
             print("=" * 50 + "\n")
     
+    def _calculate_best_cost_to_meet(self, tree, meet_point, tree_name='A'):
+        """
+        计算树中节点到交汇点的最优代价估计（MATLAB版本的正确实现）
+        
+        Args:
+            tree: 树节点数组 (N, dim+4)
+            meet_point: 交汇点坐标
+            tree_name: 树名称（'A'或'B'）
+            
+        Returns:
+            c_best: 最优代价估计
+        """
+        if len(tree) == 0:
+            return np.inf
+        
+        c_best = np.inf
+        
+        for i in range(len(tree)):
+            # G(i): 起点/终点到节点i的实际代价
+            G_i = tree[i, self.dim + 1]  # cost_G
+            
+            # H(i, meet): 节点i到交汇点的启发式代价（欧氏距离）
+            node_pos = tree[i, :self.dim]
+            H_i_meet = np.linalg.norm(node_pos - meet_point)
+            
+            # F(i) = G(i) + H(i, meet)
+            F_i = G_i + H_i_meet
+            
+            if F_i < c_best:
+                c_best = F_i
+        
+        return c_best
+    
     def plan(self) -> Tuple[Optional[np.ndarray], Dict, bool, Dict]:
         """
         执行路径规划
@@ -372,11 +405,20 @@ class SCRRTBasicPID:
                 c_min_A = np.linalg.norm(meet_point - self.start)
                 c_min_B = np.linalg.norm(self.goal - meet_point)
                 
-                # 5. 使用gamma调整椭球大小
-                c_best_A = c_min_A * gamma_A
-                c_best_B = c_min_B * gamma_B
+                # 5. 计算基准椭球大小（基于树节点的最优路径估计）
+                # 这是MATLAB版本的正确实现！
+                c_best_A_base = self._calculate_best_cost_to_meet(treeA[:sizeA], meet_point, 'A')
+                c_best_B_base = self._calculate_best_cost_to_meet(treeB[:sizeB], meet_point, 'B')
                 
-                # 6. 记录PID历史（用于可视化）
+                # 确保基准值不小于焦距
+                c_best_A_base = max(c_best_A_base, c_min_A * 1.2)
+                c_best_B_base = max(c_best_B_base, c_min_B * 1.2)
+                
+                # 6. 使用gamma在基准值基础上扩大椭球（这才是PID的作用！）
+                c_best_A = c_best_A_base  # 不使用gamma扩大，而是直接用基准值
+                c_best_B = c_best_B_base  # gamma用于控制采样时的椭球约束
+                
+                # 7. 记录PID历史（用于可视化）
                 if iterations % 20 == 0:
                     pid_sampling_history['iterations'].append(iterations)
                     pid_sampling_history['gamma_A'].append(gamma_A)
@@ -443,15 +485,15 @@ class SCRRTBasicPID:
             in_ellipsoid_A = False  # 默认不是椭球引导采样
             if self.mode == 'no_pid':
                 # No_PID模式：使用椭球约束但不动态调节（公平对比基准）
-                # 注意：c_best_A已经在_calculate_ellipsoid_params中计算为固定值
+                # gamma固定为1.0，不扩大椭球
                 x_rand_A, _, _, in_ellipsoid_A = self._sample_with_pid(
-                    meet_point, treeA[:sizeA], c_best_A,
+                    meet_point, treeA[:sizeA], c_best_A, 1.0,
                     prev_error_A, integral_error_A, 'A'
                 )
             else:
-                # PID控制采样（使用动态调节的椭球约束）
+                # PID控制采样（使用动态调节的椭球约束，gamma扩大椭球）
                 x_rand_A, prev_error_A, integral_error_A, in_ellipsoid_A = self._sample_with_pid(
-                    meet_point, treeA[:sizeA], c_best_A,
+                    meet_point, treeA[:sizeA], c_best_A, gamma_A,  # 传入gamma！
                     prev_error_A, integral_error_A, 'A'
                 )
             
@@ -518,15 +560,15 @@ class SCRRTBasicPID:
             # ★★★ 关键修复：所有模式都使用椭球约束 ★★★
             in_ellipsoid_B = False  # 默认不是椭球引导采样
             if self.mode == 'no_pid':
-                # No_PID模式：使用固定椭球约束
+                # No_PID模式：使用固定椭球约束，gamma=1.0
                 x_rand_B, _, _, in_ellipsoid_B = self._sample_with_pid(
-                    meet_point, treeB[:sizeB], c_best_B,
+                    meet_point, treeB[:sizeB], c_best_B, 1.0,
                     prev_error_B, integral_error_B, 'B'
                 )
             else:
-                # PID控制采样：使用动态调节的椭球约束
+                # PID控制采样：使用动态调节的椭球约束，gamma扩大椭球
                 x_rand_B, prev_error_B, integral_error_B, in_ellipsoid_B = self._sample_with_pid(
-                    meet_point, treeB[:sizeB], c_best_B,
+                    meet_point, treeB[:sizeB], c_best_B, gamma_B,  # 传入gamma！
                     prev_error_B, integral_error_B, 'B'
                 )
             
@@ -610,14 +652,21 @@ class SCRRTBasicPID:
     
     def _sample_with_pid(
         self, target: np.ndarray, tree: np.ndarray,
-        c_best: float, prev_error: float, integral_error: float,
+        c_best: float, gamma: float, prev_error: float, integral_error: float,
         tree_name: str
     ) -> Tuple[Optional[np.ndarray], float, float, bool]:
         """
-        使用PID控制采样策略
+        使用PID控制采样策略（MATLAB版本的正确实现）
         
-        ★★★ 方案B核心改进：使用PID采样控制器的p_informed参数 ★★★
-        
+        Args:
+            target: 目标点（交汇点）
+            tree: 树节点
+            c_best: 基准椭球大小（不含gamma）
+            gamma: PID控制的椭球膨胀系数
+            prev_error: 前一误差
+            integral_error: 积分误差
+            tree_name: 树名称
+            
         Returns:
             sample: 采样点
             current_error: 当前误差
@@ -628,15 +677,16 @@ class SCRRTBasicPID:
         if tree_name == 'A':
             focus1, focus2 = self.start, target
             c_estimated = np.linalg.norm(target - self.start)
-            # 获取PID采样控制器的参数
-            gamma = getattr(self, '_gamma_A', 1.5)
-            p_informed = getattr(self, '_p_informed_A', 0.0)
+            # 获取PID采样控制器的p_informed参数
+            p_informed = getattr(self, '_p_informed_A', 0.8)
         else:
             focus1, focus2 = target, self.goal
             c_estimated = np.linalg.norm(self.goal - target)
-            # 获取PID采样控制器的参数
-            gamma = getattr(self, '_gamma_B', 1.5)
-            p_informed = getattr(self, '_p_informed_B', 0.0)
+            # 获取PID采样控制器的p_informed参数
+            p_informed = getattr(self, '_p_informed_B', 0.8)
+        
+        # 计算用于采样的椭球大小（基准值 × gamma）
+        c_for_sampling = c_best * gamma
         
         # 计算当前误差（保持接口兼容）
         if len(tree) > 1:
@@ -653,158 +703,22 @@ class SCRRTBasicPID:
             sample = sample_point(self.bounds, self.dim)
             return sample, current_error, integral_error, False  # in_ellipsoid=False
         
-        # ★★★ 方案B核心逻辑：根据是否使用新PID控制器选择策略 ★★★
-        if self.use_new_pid_controller:
-            # === 新策略：使用PID采样控制器的p_informed（参考MATLAB版本）===
-            # 椭球采样半径：使用gamma膨胀系数
-            c_for_sampling = c_best if c_best < np.inf else c_estimated * gamma
-            adjusted_c = c_for_sampling * gamma
-            
-            rand_val = np.random.rand()
-            
-            if rand_val < p_informed:
-                # 知情采样：在膨胀椭球内采样
-                sample = sample_in_ellipsoid(focus1, focus2, adjusted_c, self.dim)
-                if sample is not None:
-                    # ESR应该统计"主动椭球引导采样"，而非"被动落在椭球内"
-                    in_ellipsoid = True  # 这是主动椭球引导采样
-                    return sample, current_error, integral_error, in_ellipsoid
-                # 椭球采样失败，回退到随机采样（这时算探索采样）
-            
-            # 探索采样：完全随机（不算椭球引导采样）
-            sample = sample_point(self.bounds, self.dim)
-            in_ellipsoid = False  # ESR只统计主动椭球引导采样，探索采样不计入
-            return sample, current_error, integral_error, in_ellipsoid
-            
-        else:
-            # === 旧策略：Fixed_Ellipsoid模式（使用固定椭球） ===
-            if self.mode == 'fixed_ellipsoid':
-                # Fixed_Ellipsoid：使用固定倍数的椭球（不动态调节）
-                pid_control = 0.0
-                goal_bias_prob = 0.30  # 固定30%椭球采样概率
-            else:
-                # PID控制计算
-                P_term = self.custom_Kp * current_error
-                
-                integral_error += current_error * 0.05
-                integral_error = np.clip(integral_error, -2.0, 2.0)
-                I_term = self.custom_Ki * integral_error
-                
-                error_derivative = current_error - prev_error
-                D_term = self.custom_Kd * error_derivative
-                
-                pid_control = P_term + I_term + D_term
-                
-                # 映射PID输出到goal_bias_prob [0.15, 0.40]
-                goal_bias_prob = 0.15 + 0.25 * pid_control
-                goal_bias_prob = np.clip(goal_bias_prob, 0.05, 0.40)
-            
-            # 计算椭球采样半径
-            c_for_sampling = c_best if c_best < np.inf else c_estimated * 4.0
-            
-            rand_val = np.random.rand()
-            
-            # 策略1：椭球内采样
-            if rand_val < goal_bias_prob:
-                ellipsoid_scale = 1.5 + (1.0 * (1.0 - goal_bias_prob))
-                adjusted_c = c_for_sampling * ellipsoid_scale
-                
-                sample = sample_in_ellipsoid(focus1, focus2, adjusted_c, self.dim)
-                
-                if sample is not None:
-                    in_ellipsoid = self._is_in_ellipsoid(sample, focus1, focus2, adjusted_c)
-                    return sample, current_error, integral_error, in_ellipsoid
-            
-            # 策略2：定向偏置采样
-            if rand_val < min(1.0, goal_bias_prob + 0.30):
-                base_point = self.start if tree_name == 'A' else self.goal
-                direction = target - base_point
-                direction_norm = np.linalg.norm(direction)
-                
-                if direction_norm > 1e-6:
-                    direction = direction / direction_norm
-                    
-                    randomness = (1.0 - goal_bias_prob) * 150.0
-                    random_offset = np.random.randn(self.dim) * randomness
-                    
-                    distance_factor = np.random.uniform(0.2, 0.8) * goal_bias_prob * direction_norm
-                    biased_sample = base_point + direction * distance_factor + random_offset
-                    
-                    # 边界裁剪
-                    if self.dim == 2:
-                        biased_sample = np.clip(biased_sample,
-                                              [self.bounds[0], self.bounds[2]],
-                                              [self.bounds[1], self.bounds[3]])
-                    else:
-                        biased_sample = np.clip(biased_sample,
-                                              [self.bounds[0], self.bounds[2], self.bounds[4]],
-                                              [self.bounds[1], self.bounds[3], self.bounds[5]])
-                    
-                    in_ellipsoid = self._is_in_ellipsoid(biased_sample, focus1, focus2, c_for_sampling * 2.0)
-                    return biased_sample, current_error, integral_error, in_ellipsoid
-            
-            # 策略3：完全随机采样
-            sample = sample_point(self.bounds, self.dim)
-            in_ellipsoid = self._is_in_ellipsoid(sample, focus1, focus2, c_for_sampling * 2.0)
-            return sample, current_error, integral_error, in_ellipsoid
+        # ★★★ MATLAB版本正确实现：使用p_informed控制采样策略 ★★★
+        rand_val = np.random.rand()
         
-        # ==================== 策略1：椭球内采样 ====================
-        if rand_val < goal_bias_prob:
-            ellipsoid_scale = 1.5 + (1.0 * (1.0 - goal_bias_prob))
-            adjusted_c = c_for_sampling * ellipsoid_scale
-            
-            sample = sample_in_ellipsoid(focus1, focus2, adjusted_c, self.dim)
-            
+        if rand_val < p_informed:
+            # 知情采样：在膨胀椭球内采样（使用gamma扩大椭球）
+            sample = sample_in_ellipsoid(focus1, focus2, c_for_sampling, self.dim)
             if sample is not None:
-                # ★ 关键修复：使用_is_in_ellipsoid真实校验ESR
-                in_ellipsoid = self._is_in_ellipsoid(sample, focus1, focus2, adjusted_c)
+                # 主动椭球引导采样
+                in_ellipsoid = True
                 return sample, current_error, integral_error, in_ellipsoid
-            # 如果椭球采样失败，继续到下一策略
+            # 椭球采样失败，回退到随机采样
         
-        # ==================== 策略2：定向偏置采样 ====================
-        if rand_val < min(1.0, goal_bias_prob + 0.30):
-            base_point = self.start if tree_name == 'A' else self.goal
-            direction = target - base_point
-            direction_norm = np.linalg.norm(direction)
-            
-            if direction_norm > 1e-6:
-                direction = direction / direction_norm
-                
-                # 调整随机噪声幅度（更保守）
-                randomness = (1.0 - goal_bias_prob) * 150.0
-                random_offset = np.random.randn(self.dim) * randomness
-                
-                distance_factor = np.random.uniform(0.2, 0.8) * goal_bias_prob * direction_norm
-                biased_sample = base_point + direction * distance_factor + random_offset
-                
-                # 边界裁剪
-                if self.dim == 2:
-                    biased_sample = np.clip(biased_sample,
-                                          [self.bounds[0], self.bounds[2]],
-                                          [self.bounds[1], self.bounds[3]])
-                else:
-                    biased_sample = np.clip(biased_sample,
-                                          [self.bounds[0], self.bounds[2], self.bounds[4]],
-                                          [self.bounds[1], self.bounds[3], self.bounds[5]])
-                
-                # 校验是否碰巧落入椭球
-                in_ellipsoid = self._is_in_ellipsoid(biased_sample, focus1, focus2, c_for_sampling * 2.0)
-                return biased_sample, current_error, integral_error, in_ellipsoid
-        
-        # ==================== 策略3：完全随机采样 ====================
+        # 探索采样：完全随机
         sample = sample_point(self.bounds, self.dim)
-        # 校验随机样本是否碰巧落入椭球（概率极低但需统计）
-        in_ellipsoid = self._is_in_ellipsoid(sample, focus1, focus2, c_for_sampling * 2.0)
+        in_ellipsoid = False  # 随机采样不计入ESR
         return sample, current_error, integral_error, in_ellipsoid
-    
-    def _is_in_ellipsoid(self, point: np.ndarray, focus1: np.ndarray, 
-                         focus2: np.ndarray, c_max: float) -> bool:
-        """判断点是否在椭球约束内（用于ESR统计）
-        
-        椭球定义：到两焦点距离之和 <= c_max
-        """
-        dist_sum = np.linalg.norm(point - focus1) + np.linalg.norm(point - focus2)
-        return dist_sum <= c_max
     
     def _calculate_meet_point(
         self, treeA: np.ndarray, treeB: np.ndarray, current_meet: np.ndarray

@@ -1,0 +1,491 @@
+
+======================================================================
+      PID EFFECTIVENESS VALIDATION - Sampling Behavior Analysis       
+======================================================================
+
+======================================================================
+核心创新：PID控制器 + 双向超椭球体约束采样
+======================================================================
+
+【实验组设计 - V4高难度配置】
+  No_PID      : 无PID对照（纯双向RRT，不使用椭球约束）
+  Low_PID     : 欠调PID（Kp=0.15，探索不足）
+  Optimal_PID : 最优PID（Kp=0.30, Ki=0.05, Kd=0.12）
+  High_PID    : 过调PID（Kp=0.50，过度控制）
+
+【三大核心指标】（直接服务于PID有效性证明）
+  1️⃣  有效采样比例(ESR)          - 证明PID引导采样进入约束区域
+  2️⃣  达到固定成功率所需采样量    - 证明PID提高单位采样价值
+  3️⃣  椭球体收缩稳定性           - 证明PID控制约束机制可控可用
+
+【预期结果 - 高密度障碍物环境】
+  成功率对比:
+    • No_PID: 25-35% (无引导，随机搜索效率低)
+    • Optimal_PID: 50-65% (PID优化引导，成功率提升2倍)
+  效率指标:
+    • ESR: No_PID=0% vs Optimal_PID~45-60%
+    • Sample-to-Success: No_PID~800次 vs Optimal_PID~400次
+
+【实验配置】
+  配置数: 4 组
+  场景数: 2 个（二维225@R25-45 + 三维400@R45-70最佳）
+  重复次数: 30 次/配置（高统计置信度）
+  迭代限制: 2D=1200, 3D=1500 (三维最佳配置：100%放置，9.5%占用)
+  总运行数: 4 × 2 × 30 = 240 次
+  预计耗时: 20-26分钟
+======================================================================
+【扩大参数搜索实验】
+
+  二维场景: 650 次迭代
+  三维场景: 700 次迭代
+  重复次数: 10 次
+  PID范围: Kp从0.02到1.0 (20个配置)
+
+
+======================================================================
+【PID参数优化实验 - V7精细化网格搜索】
+======================================================================
+
+  实验目的：基于V6结果，在最优区间进行精细搜索
+
+  【V6结果分析】
+    • Low_PID (Kp=0.15): 50%成功率, 232次采样 ✓ 最佳
+    • No_PID: 40%成功率, 315次采样
+    • Optimal_PID (Kp=0.30): 25%成功率 ✗ 过度约束
+    • 结论: 最优点在 Kp=0.10-0.20 区间
+
+  【V7搜索策略】
+    • 密集区: Kp ∈ [0.10, 0.20]，步长0.02（6个点）
+    • 固定比例: Ki/Kp ≈ 0.13, Kd/Kp ≈ 0.40
+    • 对照组: No_PID
+
+  【预期结果】
+    • 找到最优Kp使成功率最大化（目标55-65%）
+    • ESR和Sample-to-Success同步优化
+
+  【实验规模】
+    配置数: 8 组（1个对照 + 7个PID）
+    场景数: 2 个（二维+三维高难度）
+    重复次数: 10 次/配置
+    总运行数: 8 × 2 × 10 = 160 次
+    预计耗时: 7-9分钟
+======================================================================
+
+实验配置:
+  场景数: 2
+  参数组: 8
+  重复次数: 10
+  总实验数: 160
+  输出目录: results
+
+
+开始PID有效性验证实验...
+======================================================================
+开始PID参数对比实验 - 差异化迭代次数版本
+实验时间: 2026-02-04 16:53:15
+二维最大迭代: 650
+三维最大迭代: 700
+每组重复次数: 10
+场景数量: 2
+PID配置数量: 8
+总运行数: 160
+======================================================================
+
+======================================================================
+场景: 二维高密度场景 (迭代限制: 650)
+======================================================================
+
+PID配置: No_PID (Kp=0.00, Ki=0.00, Kd=0.00)
+  Trial 1/10: [OK] [1/160, Elapsed 0.1min, Remaining 9.8min]
+  Trial 2/10: [FAIL] [2/160, Elapsed 0.1min, Remaining 10.5min]
+  Trial 3/10: [FAIL] [3/160, Elapsed 0.2min, Remaining 10.3min]
+  Trial 4/10: [OK] [4/160, Elapsed 0.2min, Remaining 9.1min]
+  Trial 5/10: [OK] [5/160, Elapsed 0.3min, Remaining 8.2min]
+  Trial 6/10: [OK] [6/160, Elapsed 0.3min, Remaining 8.4min]
+  Trial 7/10: [OK] [7/160, Elapsed 0.4min, Remaining 8.7min]
+  Trial 8/10: [OK] [8/160, Elapsed 0.4min, Remaining 8.1min]
+  Trial 9/10: [OK] [9/160, Elapsed 0.5min, Remaining 8.4min]
+  Trial 10/10: [OK] [10/160, Elapsed 0.5min, Remaining 7.9min]
+
+PID配置: PID_Kp0.10 (Kp=0.10, Ki=0.01, Kd=0.04)
+  Trial 1/10: [FAIL] [11/160, Elapsed 0.6min, Remaining 8.3min]
+  Trial 2/10: [FAIL] [12/160, Elapsed 0.7min, Remaining 8.6min]
+  Trial 3/10: [FAIL] [13/160, Elapsed 0.8min, Remaining 8.9min]
+  Trial 4/10: [FAIL] [14/160, Elapsed 0.9min, Remaining 9.1min]
+  Trial 5/10: [FAIL] [15/160, Elapsed 1.0min, Remaining 9.3min]
+  Trial 6/10: [OK] [16/160, Elapsed 1.0min, Remaining 9.0min]
+  Trial 7/10: [FAIL] [17/160, Elapsed 1.1min, Remaining 9.2min]
+  Trial 8/10: [FAIL] [18/160, Elapsed 1.2min, Remaining 9.3min]
+  Trial 9/10: [OK] [19/160, Elapsed 1.2min, Remaining 9.2min]
+  Trial 10/10: [FAIL] [20/160, Elapsed 1.3min, Remaining 9.3min]
+
+PID配置: PID_Kp0.12 (Kp=0.12, Ki=0.02, Kd=0.05)
+  Trial 1/10: [FAIL] [21/160, Elapsed 1.4min, Remaining 9.4min]
+  Trial 2/10: [FAIL] [22/160, Elapsed 1.5min, Remaining 9.5min]
+  Trial 3/10: [OK] [23/160, Elapsed 1.6min, Remaining 9.2min]
+  Trial 4/10: [OK] [24/160, Elapsed 1.6min, Remaining 9.0min]
+  Trial 5/10: [OK] [25/160, Elapsed 1.7min, Remaining 8.9min]
+  Trial 6/10: [OK] [26/160, Elapsed 1.7min, Remaining 9.0min]
+  Trial 7/10: [FAIL] [27/160, Elapsed 1.8min, Remaining 9.0min]
+  Trial 8/10: [FAIL] [28/160, Elapsed 1.9min, Remaining 9.0min]
+  Trial 9/10: [OK] [29/160, Elapsed 2.0min, Remaining 9.0min]
+  Trial 10/10: [OK] [30/160, Elapsed 2.1min, Remaining 9.0min]
+
+PID配置: PID_Kp0.14 (Kp=0.14, Ki=0.02, Kd=0.06)
+  Trial 1/10: [OK] [31/160, Elapsed 2.2min, Remaining 9.0min]
+  Trial 2/10: [OK] [32/160, Elapsed 2.2min, Remaining 8.8min]
+  Trial 3/10: [OK] [33/160, Elapsed 2.3min, Remaining 8.7min]
+  Trial 4/10: [FAIL] [34/160, Elapsed 2.4min, Remaining 8.7min]
+  Trial 5/10: [OK] [35/160, Elapsed 2.4min, Remaining 8.7min]
+  Trial 6/10: [OK] [36/160, Elapsed 2.5min, Remaining 8.5min]
+  Trial 7/10: [FAIL] [37/160, Elapsed 2.6min, Remaining 8.5min]
+  Trial 8/10: [FAIL] [38/160, Elapsed 2.6min, Remaining 8.5min]
+  Trial 9/10: [OK] [39/160, Elapsed 2.7min, Remaining 8.4min]
+  Trial 10/10: [OK] [40/160, Elapsed 2.7min, Remaining 8.2min]
+
+PID配置: PID_Kp0.15 (Kp=0.15, Ki=0.02, Kd=0.06)
+  Trial 1/10: [FAIL] [41/160, Elapsed 2.8min, Remaining 8.2min]
+  Trial 2/10: [OK] [42/160, Elapsed 2.9min, Remaining 8.2min]
+  Trial 3/10: [OK] [43/160, Elapsed 3.0min, Remaining 8.1min]
+  Trial 4/10: [FAIL] [44/160, Elapsed 3.1min, Remaining 8.1min]
+  Trial 5/10: [OK] [45/160, Elapsed 3.1min, Remaining 8.0min]
+  Trial 6/10: [FAIL] [46/160, Elapsed 3.2min, Remaining 8.0min]
+  Trial 7/10: [OK] [47/160, Elapsed 3.3min, Remaining 8.0min]
+  Trial 8/10: [OK] [48/160, Elapsed 3.4min, Remaining 8.0min]
+  Trial 9/10: [OK] [49/160, Elapsed 3.4min, Remaining 7.8min]
+  Trial 10/10: [OK] [50/160, Elapsed 3.5min, Remaining 7.7min]
+
+PID配置: PID_Kp0.16 (Kp=0.16, Ki=0.02, Kd=0.06)
+  Trial 1/10: [OK] [51/160, Elapsed 3.6min, Remaining 7.6min]
+  Trial 2/10: [OK] [52/160, Elapsed 3.6min, Remaining 7.5min]
+  Trial 3/10: [OK] [53/160, Elapsed 3.7min, Remaining 7.4min]
+  Trial 4/10: [FAIL] [54/160, Elapsed 3.8min, Remaining 7.4min]
+  Trial 5/10: [FAIL] [55/160, Elapsed 3.9min, Remaining 7.4min]
+  Trial 6/10: [OK] [56/160, Elapsed 3.9min, Remaining 7.2min]
+  Trial 7/10: [FAIL] [57/160, Elapsed 4.0min, Remaining 7.2min]
+  Trial 8/10: [OK] [58/160, Elapsed 4.1min, Remaining 7.1min]
+  Trial 9/10: [FAIL] [59/160, Elapsed 4.2min, Remaining 7.1min]
+  Trial 10/10: [FAIL] [60/160, Elapsed 4.2min, Remaining 7.1min]
+
+PID配置: PID_Kp0.18 (Kp=0.18, Ki=0.02, Kd=0.07)
+  Trial 1/10: [OK] [61/160, Elapsed 4.3min, Remaining 6.9min]
+  Trial 2/10: [OK] [62/160, Elapsed 4.3min, Remaining 6.8min]
+  Trial 3/10: [OK] [63/160, Elapsed 4.3min, Remaining 6.7min]
+  Trial 4/10: [OK] [64/160, Elapsed 4.4min, Remaining 6.6min]
+  Trial 5/10: [FAIL] [65/160, Elapsed 4.5min, Remaining 6.6min]
+  Trial 6/10: [OK] [66/160, Elapsed 4.6min, Remaining 6.5min]
+  Trial 7/10: [FAIL] [67/160, Elapsed 4.6min, Remaining 6.4min]
+  Trial 8/10: [OK] [68/160, Elapsed 4.7min, Remaining 6.3min]
+  Trial 9/10: [OK] [69/160, Elapsed 4.8min, Remaining 6.3min]
+  Trial 10/10: [FAIL] [70/160, Elapsed 4.9min, Remaining 6.3min]
+
+PID配置: PID_Kp0.20 (Kp=0.20, Ki=0.03, Kd=0.08)
+  Trial 1/10: [OK] [71/160, Elapsed 5.0min, Remaining 6.2min]
+  Trial 2/10: [FAIL] [72/160, Elapsed 5.0min, Remaining 6.2min]
+  Trial 3/10: [FAIL] [73/160, Elapsed 5.1min, Remaining 6.1min]
+  Trial 4/10: [OK] [74/160, Elapsed 5.1min, Remaining 6.0min]
+  Trial 5/10: [FAIL] [75/160, Elapsed 5.2min, Remaining 5.9min]
+  Trial 6/10: [OK] [76/160, Elapsed 5.3min, Remaining 5.9min]
+  Trial 7/10: [OK] [77/160, Elapsed 5.4min, Remaining 5.8min]
+  Trial 8/10: [OK] [78/160, Elapsed 5.4min, Remaining 5.7min]
+  Trial 9/10: [OK] [79/160, Elapsed 5.4min, Remaining 5.6min]
+  Trial 10/10: [OK] [80/160, Elapsed 5.5min, Remaining 5.5min]
+
+======================================================================
+场景: 三维高密度场景 (迭代限制: 700)
+======================================================================
+
+PID配置: No_PID (Kp=0.00, Ki=0.00, Kd=0.00)
+  Trial 1/10: [FAIL] [81/160, Elapsed 5.6min, Remaining 5.4min]
+  Trial 2/10: [FAIL] [82/160, Elapsed 5.7min, Remaining 5.4min]
+  Trial 3/10: [OK] [83/160, Elapsed 5.8min, Remaining 5.3min]
+  Trial 4/10: [FAIL] [84/160, Elapsed 5.9min, Remaining 5.3min]
+  Trial 5/10: [FAIL] [85/160, Elapsed 6.0min, Remaining 5.3min]
+  Trial 6/10: [OK] [86/160, Elapsed 6.1min, Remaining 5.3min]
+  Trial 7/10: [FAIL] [87/160, Elapsed 6.2min, Remaining 5.2min]
+  Trial 8/10: [FAIL] [88/160, Elapsed 6.3min, Remaining 5.2min]
+  Trial 9/10: [FAIL] [89/160, Elapsed 6.4min, Remaining 5.1min]
+  Trial 10/10: [OK] [90/160, Elapsed 6.5min, Remaining 5.0min]
+
+PID配置: PID_Kp0.10 (Kp=0.10, Ki=0.01, Kd=0.04)
+  Trial 1/10: [FAIL] [91/160, Elapsed 6.6min, Remaining 5.0min]
+  Trial 2/10: [FAIL] [92/160, Elapsed 6.8min, Remaining 5.0min]
+  Trial 3/10: [FAIL] [93/160, Elapsed 6.9min, Remaining 5.0min]
+  Trial 4/10: [FAIL] [94/160, Elapsed 7.0min, Remaining 4.9min]
+  Trial 5/10: [FAIL] [95/160, Elapsed 7.2min, Remaining 4.9min]
+  Trial 6/10: [FAIL] [96/160, Elapsed 7.3min, Remaining 4.9min]
+  Trial 7/10: [FAIL] [97/160, Elapsed 7.4min, Remaining 4.8min]
+  Trial 8/10: [FAIL] [98/160, Elapsed 7.6min, Remaining 4.8min]
+  Trial 9/10: [FAIL] [99/160, Elapsed 7.7min, Remaining 4.8min]
+  Trial 10/10: [FAIL] [100/160, Elapsed 7.8min, Remaining 4.7min]
+
+PID配置: PID_Kp0.12 (Kp=0.12, Ki=0.02, Kd=0.05)
+  Trial 1/10: [FAIL] [101/160, Elapsed 8.0min, Remaining 4.7min]
+  Trial 2/10: [FAIL] [102/160, Elapsed 8.1min, Remaining 4.6min]
+  Trial 3/10: [FAIL] [103/160, Elapsed 8.2min, Remaining 4.6min]
+  Trial 4/10: [FAIL] [104/160, Elapsed 8.4min, Remaining 4.5min]
+  Trial 5/10: [FAIL] [105/160, Elapsed 8.5min, Remaining 4.5min]
+  Trial 6/10: [FAIL] [106/160, Elapsed 8.7min, Remaining 4.4min]
+  Trial 7/10: [FAIL] [107/160, Elapsed 8.8min, Remaining 4.4min]
+  Trial 8/10: [FAIL] [108/160, Elapsed 8.9min, Remaining 4.3min]
+  Trial 9/10: [FAIL] [109/160, Elapsed 9.1min, Remaining 4.2min]
+  Trial 10/10: [FAIL] [110/160, Elapsed 9.2min, Remaining 4.2min]
+
+PID配置: PID_Kp0.14 (Kp=0.14, Ki=0.02, Kd=0.06)
+  Trial 1/10: [FAIL] [111/160, Elapsed 9.4min, Remaining 4.1min]
+  Trial 2/10: [FAIL] [112/160, Elapsed 9.5min, Remaining 4.1min]
+  Trial 3/10: [FAIL] [113/160, Elapsed 9.6min, Remaining 4.0min]
+  Trial 4/10: [FAIL] [114/160, Elapsed 9.8min, Remaining 3.9min]
+  Trial 5/10: [FAIL] [115/160, Elapsed 9.9min, Remaining 3.9min]
+  Trial 6/10: [FAIL] [116/160, Elapsed 10.1min, Remaining 3.8min]
+  Trial 7/10: [FAIL] [117/160, Elapsed 10.2min, Remaining 3.7min]
+  Trial 8/10: [FAIL] [118/160, Elapsed 10.3min, Remaining 3.7min]
+  Trial 9/10: [OK] [119/160, Elapsed 10.5min, Remaining 3.6min]
+  Trial 10/10: [OK] [120/160, Elapsed 10.5min, Remaining 3.5min]
+
+PID配置: PID_Kp0.15 (Kp=0.15, Ki=0.02, Kd=0.06)
+  Trial 1/10: [FAIL] [121/160, Elapsed 10.7min, Remaining 3.4min]
+  Trial 2/10: [FAIL] [122/160, Elapsed 10.8min, Remaining 3.4min]
+  Trial 3/10: [FAIL] [123/160, Elapsed 10.9min, Remaining 3.3min]
+  Trial 4/10: [FAIL] [124/160, Elapsed 11.1min, Remaining 3.2min]
+  Trial 5/10: [FAIL] [125/160, Elapsed 11.2min, Remaining 3.1min]
+  Trial 6/10: [FAIL] [126/160, Elapsed 11.3min, Remaining 3.1min]
+  Trial 7/10: [FAIL] [127/160, Elapsed 11.5min, Remaining 3.0min]
+  Trial 8/10: [FAIL] [128/160, Elapsed 11.6min, Remaining 2.9min]
+  Trial 9/10: [FAIL] [129/160, Elapsed 11.8min, Remaining 2.8min]
+  Trial 10/10: [FAIL] [130/160, Elapsed 11.9min, Remaining 2.7min]
+
+PID配置: PID_Kp0.16 (Kp=0.16, Ki=0.02, Kd=0.06)
+  Trial 1/10: [FAIL] [131/160, Elapsed 12.0min, Remaining 2.7min]
+  Trial 2/10: [FAIL] [132/160, Elapsed 12.2min, Remaining 2.6min]
+  Trial 3/10: [FAIL] [133/160, Elapsed 12.3min, Remaining 2.5min]
+  Trial 4/10: [FAIL] [134/160, Elapsed 12.5min, Remaining 2.4min]
+  Trial 5/10: [FAIL] [135/160, Elapsed 12.6min, Remaining 2.3min]
+  Trial 6/10: [FAIL] [136/160, Elapsed 12.8min, Remaining 2.3min]
+  Trial 7/10: [FAIL] [137/160, Elapsed 12.9min, Remaining 2.2min]
+  Trial 8/10: [FAIL] [138/160, Elapsed 13.0min, Remaining 2.1min]
+  Trial 9/10: [FAIL] [139/160, Elapsed 13.2min, Remaining 2.0min]
+  Trial 10/10: [FAIL] [140/160, Elapsed 13.3min, Remaining 1.9min]
+
+PID配置: PID_Kp0.18 (Kp=0.18, Ki=0.02, Kd=0.07)
+  Trial 1/10: [FAIL] [141/160, Elapsed 13.5min, Remaining 1.8min]
+  Trial 2/10: [FAIL] [142/160, Elapsed 13.6min, Remaining 1.7min]
+  Trial 3/10: [FAIL] [143/160, Elapsed 13.7min, Remaining 1.6min]
+  Trial 4/10: [OK] [144/160, Elapsed 13.8min, Remaining 1.5min]
+  Trial 5/10: [FAIL] [145/160, Elapsed 13.9min, Remaining 1.4min]
+  Trial 6/10: [FAIL] [146/160, Elapsed 14.0min, Remaining 1.3min]
+  Trial 7/10: [FAIL] [147/160, Elapsed 14.2min, Remaining 1.3min]
+  Trial 8/10: [FAIL] [148/160, Elapsed 14.3min, Remaining 1.2min]
+  Trial 9/10: [FAIL] [149/160, Elapsed 14.5min, Remaining 1.1min]
+  Trial 10/10: [FAIL] [150/160, Elapsed 14.6min, Remaining 1.0min]
+
+PID配置: PID_Kp0.20 (Kp=0.20, Ki=0.03, Kd=0.08)
+  Trial 1/10: [FAIL] [151/160, Elapsed 14.7min, Remaining 0.9min]
+  Trial 2/10: [FAIL] [152/160, Elapsed 14.9min, Remaining 0.8min]
+  Trial 3/10: [FAIL] [153/160, Elapsed 15.0min, Remaining 0.7min]
+  Trial 4/10: [FAIL] [154/160, Elapsed 15.1min, Remaining 0.6min]
+  Trial 5/10: [OK] [155/160, Elapsed 15.2min, Remaining 0.5min]
+  Trial 6/10: [FAIL] [156/160, Elapsed 15.3min, Remaining 0.4min]
+  Trial 7/10: [FAIL] [157/160, Elapsed 15.5min, Remaining 0.3min]
+  Trial 8/10: [FAIL] [158/160, Elapsed 15.6min, Remaining 0.2min]
+  Trial 9/10: [OK] [159/160, Elapsed 15.6min, Remaining 0.1min]
+  Trial 10/10: [FAIL] [160/160, Elapsed 15.8min, Remaining 0.0min]
+
+结果已保存: results/pid_experiment_results_20260204_170902.csv
+
+统计摘要已保存: results/statistical_summary_20260204_170902.txt
+LaTeX表格已生成: results/latex_table_20260204_170902.tex
+
+======================================================================
+执行ANOVA统计分析
+======================================================================
+ANOVA分析已保存: results/anova_analysis_20260204_170902.txt
+
+======================================================================
+实验完成! 总耗时: 15.8分钟
+总运行次数: 160
+成功次数: 57
+失败次数: 103
+结果已保存到: results
+日志文件: results/experiment_log_20260204_165315.txt
+======================================================================
+
+======================================================================
+                               结果分析与可视化                               
+======================================================================
+
+[SAVED] Results: results/pid_results_20260204_170902.csv
+加载数据: results/pid_results_20260204_170902.csv
+总记录数: 160
+场景数: 2
+PID配置数: 8
+
+[ANALYZING] Generating statistical summary...
+
+======================================================================
+生成汇总统计（三层评价体系 + 采样效率指标）
+======================================================================
+汇总统计已保存: results/summary_statistics.csv
+
+所有PID配置的成功率:
+pid_config   Kp    Ki    Kd  success_rate_pct  success_count  total_count
+    No_PID 0.00 0.000 0.000              55.0             11           20
+PID_Kp0.10 0.10 0.013 0.040              10.0              2           20
+PID_Kp0.12 0.12 0.016 0.048              30.0              6           20
+PID_Kp0.14 0.14 0.018 0.056              45.0              9           20
+PID_Kp0.15 0.15 0.020 0.060              35.0              7           20
+PID_Kp0.16 0.16 0.021 0.064              25.0              5           20
+PID_Kp0.18 0.18 0.023 0.072              40.0              8           20
+PID_Kp0.20 0.20 0.026 0.080              45.0              9           20
+
+成功样本的路径质量指标:
+pid_config  path_length_mean  path_length_std  path_efficiency_mean  tree_nodes_mean  planning_time_mean
+    No_PID         2728.6538         363.4819                5.1309         633.2727              3.3235
+PID_Kp0.10         2719.5026         274.1454                5.3376         531.5000              3.2968
+PID_Kp0.12         2455.2987         124.9700                4.5014         623.5000              3.8861
+PID_Kp0.14         2763.8809         289.0004                4.8532         653.7778              3.9536
+PID_Kp0.15         2669.0222         160.6567                4.5470         647.1429              4.0209
+PID_Kp0.16         2567.9353         125.6434                5.2143         612.2000              3.7642
+PID_Kp0.18         2686.9487         378.3775                5.8985         491.6250              2.9908
+PID_Kp0.20         2775.1089         349.6152                5.9645         505.8889              3.0157
+
+======================================================================
+【核心指标1】有效采样比例(ESR) - 证明PID引导采样进入约束区域
+======================================================================
+
+ESR统计（所有样本）:
+pid_config  esr_mean_pct  esr_std_pct  ellipsoid_samples_total  total_samples
+    No_PID          0.00         0.00                        0          22454
+PID_Kp0.10         30.16         1.00                     7912          26182
+PID_Kp0.12         30.63         1.44                     7751          25178
+PID_Kp0.14         30.64         1.62                     7180          23344
+PID_Kp0.15         30.89         1.45                     7769          25016
+PID_Kp0.16         31.16         1.75                     7947          25366
+PID_Kp0.18         31.10         1.89                     7071          22508
+PID_Kp0.20         31.58         1.83                     6926          21928
+
+======================================================================
+【核心指标2】Sample-to-Success - 证明PID提高单位采样价值
+======================================================================
+
+Sample-to-Success统计（成功样本）:
+pid_config  samples_to_success_mean  samples_to_success_std  samples_to_success_median  samples_to_success_min  samples_to_success_max
+    No_PID                   297.73                  237.19                      239.0                    42.0                   682.0
+PID_Kp0.10                   246.50                  118.09                      246.5                   163.0                   330.0
+PID_Kp0.12                   331.17                  210.78                      351.5                    84.0                   637.0
+PID_Kp0.14                   279.89                  192.44                      232.0                    60.0                   596.0
+PID_Kp0.15                   323.14                  170.31                      334.0                    87.0                   485.0
+PID_Kp0.16                   293.60                  204.75                      403.0                    61.0                   481.0
+PID_Kp0.18                   176.50                  137.30                      130.5                    53.0                   444.0
+PID_Kp0.20                   186.89                  169.37                       95.0                    73.0                   510.0
+
+======================================================================
+【关键指标对比】PID vs No_PID
+======================================================================
+pid_config  success_rate_pct  esr_mean  samples_to_success
+    No_PID              55.0  0.000000          297.727273
+PID_Kp0.10              10.0  0.301550          246.500000
+PID_Kp0.12              30.0  0.306340          331.166667
+PID_Kp0.14              45.0  0.306366          279.888889
+PID_Kp0.15              35.0  0.308869          323.142857
+PID_Kp0.16              25.0  0.311640          293.600000
+PID_Kp0.18              40.0  0.311045          176.500000
+PID_Kp0.20              45.0  0.315821          186.888889
+[SAVED] Summary: results/analysis_summary_20260204_170902.csv
+
+[OPTIMAL] Finding optimal PID configuration...
+
+======================================================================
+三层最优判定（成功率阈值≥70%）
+======================================================================
+⚠ 没有配置达到成功率阈值70%
+降低阈值重新筛选...
+新阈值: 37.5%
+
+✓ 第一层筛选: 4/8 个配置通过成功率筛选
+pid_config   Kp    Ki    Kd  success_rate_pct
+    No_PID 0.00 0.000 0.000              55.0
+PID_Kp0.14 0.14 0.018 0.056              45.0
+PID_Kp0.18 0.18 0.023 0.072              40.0
+PID_Kp0.20 0.20 0.026 0.080              45.0
+
+✓ 第二层比较: 成功样本的路径质量
+pid_config  success_rate_pct  path_length_mean  path_efficiency_mean  tree_nodes_mean
+    No_PID              55.0         2728.6538                5.1309         633.2727
+PID_Kp0.14              45.0         2763.8809                4.8532         653.7778
+PID_Kp0.18              40.0         2686.9487                5.8985         491.6250
+PID_Kp0.20              45.0         2775.1089                5.9645         505.8889
+
+======================================================================
+🏆 最优PID配置
+======================================================================
+配置名称: No_PID
+参数: Kp=0.00, Ki=0.00, Kd=0.00
+
+性能指标:
+  • 成功率: 55.0%
+  • 平均路径长度: 2728.65 ± 363.48
+  • 单位迭代路径效率: 5.1309 ± 2.0192
+  • 平均树节点数: 633.3 ± 309.5
+======================================================================
+
+最优配置报告已保存: results/optimal_pid_result.txt
+
+[PLOTTING] Generating visualization plots...
+
+======================================================================
+开始生成可视化图表
+======================================================================
+
+生成有效采样比例(ESR)对比图...
+已保存: results/esr_comparison.png
+
+生成Sample-to-Success对比图...
+已保存: results/sample_to_success.png
+
+生成成功率对比图...
+已保存: results/success_rate_comparison.png
+
+生成路径长度对比图...
+已保存: results/path_length_comparison.png
+
+生成路径效率对比图...
+已保存: results/path_efficiency_comparison.png
+
+生成成功率-路径质量权衡图...
+已保存: results/success_vs_quality_tradeoff.png
+
+生成搜索行为分析图...
+已保存: results/behavior_analysis.png
+
+生成参数敏感度热力图...
+已保存: results/parameter_sensitivity.png
+
+生成场景性能箱线图...
+已保存: results/performance_boxplot_by_scenario.png
+
+生成Pareto前沿图...
+已保存: results/pareto_frontier.png
+
+======================================================================
+所有图表生成完成!
+======================================================================
+[SAVED] Generated visualization plots
+
+======================================================================
+                        EXPERIMENT COMPLETED!                         
+======================================================================
+
+All results saved to: results
+
+Generated files:
+  - pid_results_*.csv           : Raw data
+  - summary_statistics.csv      : Complete statistics
+  - optimal_pid_result.txt      : Optimal PID recommendation
+  - statistical_summary_*.txt   : Statistics with ANOVA
+  - anova_analysis_*.txt        : ANOVA analysis
+  - latex_table_*.tex           : LaTeX table for paper
+  - *.png                       : High-quality figures (300dpi)
+
+🎯 推荐的最优PID配置: No_PID
+   参数: Kp=0.00, Ki=0.00, Kd=0.00

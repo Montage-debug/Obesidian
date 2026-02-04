@@ -47,25 +47,24 @@ class PIDExperiment:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # 实验配置 - ★V6挑战版：高难度配置，体现PID优势
+        # 实验配置 - 提高迭代次数获得更好的成功率
         if quick_test:
-            self.num_trials = 10  # 大批量实验：10次重复快速验证
-            self.max_iterations_2d = 600  # ★★降低迭代限制，增加难度
-            self.max_iterations_3d = 750  # ★★V9优化：减少迭代配合障碍物增加，提升难度
-            print("【大批量实验模式 - V9论文配置】\n")
-            print(f"  二维场景: {self.max_iterations_2d} 次迭代 [213障碍物R22-38, 预期: 50-80%成功率]")
-            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [320障碍物R40-60, 预期: 60-75%成功率]")
-            print(f"  重复次数: {self.num_trials} 次 [快速验证配置]")
-            print(f"  关键改进V9: 三维难度优化，能区分PID配置性能\n")
+            self.num_trials = 10  # 10次重复
+            self.max_iterations_2d = 650  # 提高到900次
+            self.max_iterations_3d = 700  # 提高到1200次
+            print("【扩大参数搜索实验】\n")
+            print(f"  二维场景: {self.max_iterations_2d} 次迭代")
+            print(f"  三维场景: {self.max_iterations_3d} 次迭代")
+            print(f"  重复次数: {self.num_trials} 次")
+            print(f"  PID范围: Kp从0.02到1.0 (20个配置)\n")
         else:
-            self.num_trials = 10  # 完整实验30次重复
-            self.max_iterations_2d = 700   # 二维：700次迭代 [★平衡设置]
-            self.max_iterations_3d = 700  # 三维：700次迭代 [★平衡设置]
-            print("【完整实验模式 - 平衡难度配置】\n")
-            print(f"  二维场景: {self.max_iterations_2d} 次迭代 [目标成功率55-65%]")
-            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [目标成功率55-65%]")
-            print(f"  重复次数: {self.num_trials} 次 [最高统计置信度]")
-            print(f"  【核心评价】首次解迭代次数（PID应显著更快）、路径质量\n")
+            self.num_trials = 10  # 完整实验
+            self.max_iterations_2d = 1000
+            self.max_iterations_3d = 1200
+            print("【完整实验模式】\n")
+            print(f"  二维场景: {self.max_iterations_2d} 次迭代")
+            print(f"  三维场景: {self.max_iterations_3d} 次迭代")
+            print(f"  重复次数: {self.num_trials} 次\n")
         
         # 兼容性：保留max_iterations属性（用于报告）
         self.max_iterations = f"2D:{self.max_iterations_2d}, 3D:{self.max_iterations_3d}"
@@ -282,26 +281,39 @@ class PIDExperiment:
             print("    • Optimal_PID: 75-85%成功率，ESR=70-80%")
             print("="*70 + "\n")
             
-            # 快速测试: 11个配置（2个对照组 + 9个PID参数网格）
+            # 快速测试: 扩大参数范围搜索最优配置（调整Ki/Kd比例）
             return [
-                # === 对照组：证明PID有效性 ===
+                # === 对照组 ===
                 {'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0, 'name': 'No_PID', 'mode': 'no_pid'},
-                {'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0, 'name': 'Fixed_Ellipsoid', 'mode': 'fixed_ellipsoid'},
                 
-                # === 欠调区 ===
-                {'Kp': 0.08, 'Ki': 0.01, 'Kd': 0.03, 'name': 'PID_Underdamped'},
+                # === 超低区 (0.02-0.08) - Ki和Kd更保守 ===
+                {'Kp': 0.02, 'Ki': 0.002, 'Kd': 0.004, 'name': 'PID_Kp0.02'},
+                {'Kp': 0.04, 'Ki': 0.004, 'Kd': 0.008, 'name': 'PID_Kp0.04'},
+                {'Kp': 0.06, 'Ki': 0.006, 'Kd': 0.012, 'name': 'PID_Kp0.06'},
+                {'Kp': 0.08, 'Ki': 0.008, 'Kd': 0.016, 'name': 'PID_Kp0.08'},
                 
-                # === 临界阻尼区（预期最优） ===
-                {'Kp': 0.15, 'Ki': 0.02, 'Kd': 0.06, 'name': 'PID_Critical_1'},
-                {'Kp': 0.20, 'Ki': 0.03, 'Kd': 0.08, 'name': 'PID_Critical_2'},
-                {'Kp': 0.25, 'Ki': 0.04, 'Kd': 0.10, 'name': 'PID_Critical_3'},
-                {'Kp': 0.30, 'Ki': 0.05, 'Kd': 0.12, 'name': 'PID_Critical_4'},
+                # === 低区 (0.10-0.20) - Ki/Kp≈0.10, Kd/Kp≈0.20 ===
+                {'Kp': 0.10, 'Ki': 0.010, 'Kd': 0.020, 'name': 'PID_Kp0.10'},
+                {'Kp': 0.12, 'Ki': 0.012, 'Kd': 0.024, 'name': 'PID_Kp0.12'},
+                {'Kp': 0.14, 'Ki': 0.014, 'Kd': 0.028, 'name': 'PID_Kp0.14'},
+                {'Kp': 0.16, 'Ki': 0.016, 'Kd': 0.032, 'name': 'PID_Kp0.16'},
+                {'Kp': 0.18, 'Ki': 0.018, 'Kd': 0.036, 'name': 'PID_Kp0.18'},
+                {'Kp': 0.20, 'Ki': 0.020, 'Kd': 0.040, 'name': 'PID_Kp0.20'},
                 
-                # === 过阻尼区 ===
-                {'Kp': 0.35, 'Ki': 0.05, 'Kd': 0.14, 'name': 'PID_Overdamped_1'},
-                {'Kp': 0.40, 'Ki': 0.06, 'Kd': 0.16, 'name': 'PID_Overdamped_2'},
-                {'Kp': 0.45, 'Ki': 0.07, 'Kd': 0.18, 'name': 'PID_Overdamped_3'},
-                {'Kp': 0.50, 'Ki': 0.08, 'Kd': 0.20, 'name': 'PID_High'}
+                # === 中区 (0.25-0.40) ===
+                {'Kp': 0.25, 'Ki': 0.025, 'Kd': 0.050, 'name': 'PID_Kp0.25'},
+                {'Kp': 0.30, 'Ki': 0.030, 'Kd': 0.060, 'name': 'PID_Kp0.30'},
+                {'Kp': 0.35, 'Ki': 0.035, 'Kd': 0.070, 'name': 'PID_Kp0.35'},
+                {'Kp': 0.40, 'Ki': 0.040, 'Kd': 0.080, 'name': 'PID_Kp0.40'},
+                
+                # === 高区 (0.50-0.80) ===
+                {'Kp': 0.50, 'Ki': 0.050, 'Kd': 0.100, 'name': 'PID_Kp0.50'},
+                {'Kp': 0.60, 'Ki': 0.060, 'Kd': 0.120, 'name': 'PID_Kp0.60'},
+                {'Kp': 0.70, 'Ki': 0.070, 'Kd': 0.140, 'name': 'PID_Kp0.70'},
+                {'Kp': 0.80, 'Ki': 0.080, 'Kd': 0.160, 'name': 'PID_Kp0.80'},
+                
+                # === 超高区 (1.0) ===
+                {'Kp': 1.00, 'Ki': 0.100, 'Kd': 0.200, 'name': 'PID_Kp1.00'},
             ]
         else:
             # 完整实验: 33个参数组（精细网格搜索）
@@ -375,6 +387,85 @@ class PIDExperiment:
             with open(self.log_file, 'a', encoding='utf-8') as f:
                 f.write('\n'.join(self.log_buffer) + '\n')
             self.log_buffer = []
+    
+    def _override_configs_improved(self):
+        """改进版配置覆盖 - 提高成功率和ESR"""
+        print("\n" + "="*70)
+        print("【应用改进版配置】")
+        print("="*70)
+        
+        # 1. 提高迭代次数
+        self.max_iterations_2d = 600
+        self.max_iterations_3d = 750
+        
+        # 2. 调整场景配置
+        self.scenarios = []
+        
+        # 2D场景：降低障碍物密度
+        self.scenarios.append({
+            'name': '二维优化场景',
+            'dimension': 2,
+            'max_iterations': self.max_iterations_2d,
+            'env': EnvironmentConfig.generate_2d_environment(
+                bounds=[0, 1500, 0, 1500],
+                num_obstacles=200,  # 从213降到200
+                start_point=np.array([75, 75]),
+                goal_point=np.array([1425, 1425]),
+                radius_range=(20, 35),  # 从(22,38)降到(20,35)
+                min_spacing=15,
+                clearance=18,
+                seed=301
+            ),
+            'step_size': 50.0,
+            'goal_threshold': 50.0
+        })
+        
+        # 3D场景：适度增加障碍物
+        self.scenarios.append({
+            'name': '三维优化场景',
+            'dimension': 3,
+            'max_iterations': self.max_iterations_3d,
+            'env': EnvironmentConfig.generate_3d_environment(
+                bounds=[0, 1500, 0, 1500, 0, 1500],
+                num_obstacles=350,  # 从320增到350
+                start_point=np.array([75, 75, 75]),
+                goal_point=np.array([1425, 1425, 1425]),
+                radius_range=(38, 58),  # 从(40,60)降到(38,58)
+                min_spacing=15,
+                clearance=18,
+                seed=302
+            ),
+            'step_size': 50.0,
+            'goal_threshold': 50.0
+        })
+        
+        # 3. 优化PID参数配置
+        self.pid_configs = [
+            # 对照组
+            {'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0, 'name': 'No_PID', 'mode': 'no_pid'},
+            
+            # 超低档（探索下界）
+            {'Kp': 0.05, 'Ki': 0.01, 'Kd': 0.02, 'name': 'PID_Kp0.05'},
+            
+            # 低档
+            {'Kp': 0.08, 'Ki': 0.01, 'Kd': 0.03, 'name': 'PID_Kp0.08'},
+            {'Kp': 0.10, 'Ki': 0.01, 'Kd': 0.04, 'name': 'PID_Kp0.10'},
+            
+            # 中档（最优区间）
+            {'Kp': 0.12, 'Ki': 0.02, 'Kd': 0.05, 'name': 'PID_Kp0.12'},
+            {'Kp': 0.14, 'Ki': 0.02, 'Kd': 0.06, 'name': 'PID_Kp0.14'},
+            {'Kp': 0.16, 'Ki': 0.02, 'Kd': 0.06, 'name': 'PID_Kp0.16'},
+            {'Kp': 0.18, 'Ki': 0.03, 'Kd': 0.07, 'name': 'PID_Kp0.18'},
+            
+            # 高档（对照）
+            {'Kp': 0.20, 'Ki': 0.03, 'Kd': 0.08, 'name': 'PID_Kp0.20'},
+        ]
+        
+        print(f"✓ 迭代次数: 2D={self.max_iterations_2d}, 3D={self.max_iterations_3d}")
+        print(f"✓ 障碍物密度: 2D=200, 3D=350")
+        print(f"✓ PID配置数: {len(self.pid_configs)}")
+        print(f"✓ 总实验数: {len(self.pid_configs)} × 2 × {self.num_trials} = {len(self.pid_configs)*2*self.num_trials}")
+        print("="*70 + "\n")
     
     def run_single_trial(
         self,

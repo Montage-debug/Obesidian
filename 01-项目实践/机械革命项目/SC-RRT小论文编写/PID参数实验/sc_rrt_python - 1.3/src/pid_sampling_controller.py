@@ -42,16 +42,16 @@ class PIDSamplingController:
         # 平滑参数
         rho_y: float = 0.9,  # 改进率平滑系数
         rho_d: float = 0.8,  # 微分平滑系数
-        # gamma参数（增大范围以拉开差距）
-        gamma_0: float = 3.0,  # 从1.5增至3.0
-        gamma_min: float = 1.5,  # 从1.0增至1.5
-        gamma_max: float = 6.0,  # 从4.0增至6.0
-        alpha_gamma: float = 0.8,  # 从0.5增至0.8，增强控制力度
-        # p_informed参数（降低范围以增加随机探索）
-        p_0: float = 0.3,  # 从0.8降至0.3
-        p_min: float = 0.1,  # 从0.2降至0.1
-        p_max: float = 0.6,  # 从0.95降至0.6，关键修改！
-        alpha_p: float = 0.3,  # 从0.5降至0.3
+        # gamma参数（放宽约束，避免过度收缩）
+        gamma_0: float = 8.0,  # 提高基准值
+        gamma_min: float = 3.0,  # 提高下限，避免过小
+        gamma_max: float = 15.0,  # 大幅提高上限
+        alpha_gamma: float = 0.3,  # 降低响应速度，避免过快收缩
+        # p_informed参数（提高知情采样概率）
+        p_0: float = 0.7,  # 提高基准值
+        p_min: float = 0.4,  # 提高下限
+        p_max: float = 0.9,  # 提高上限
+        alpha_p: float = 0.2,  # 降低响应速度
         # 其他
         epsilon: float = 1e-6
     ):
