@@ -1,0 +1,67 @@
+{
+  "负压手柄": {
+    "start": {
+      "ret_enabled": true,
+      "ret_energy": 10,
+      "micro_enabled": true,
+      "micro_energy": 25,
+      "negative_pressure_enabled": true,
+      "negative_suction": 5
+    },
+    "stop": {
+      "ret_enabled": false,
+      "micro_enabled": false,
+      "negative_pressure_enabled": false
+    }
+  },
+  "波纹平手柄": {
+    "start": {
+      "ret_enabled": true,
+      "ret_energy": 10,
+      "micro_enabled": true,
+      "micro_energy": 25,
+      "temperature": 35
+    },
+    "stop": {
+      "ret_enabled": false,
+      "micro_enabled": false,
+      "temperature": 0
+    }
+  },
+  "旋转手柄": {
+    "start": {
+      "ret_enabled": true,
+      "ret_energy": 10,
+      "micro_enabled": true,
+      "micro_energy": 25,
+      "motor_state": 1
+    },
+    "stop": {
+      "ret_enabled": false,
+      "micro_enabled": false,
+      "motor_state": 0
+    }
+  },
+  "指疗手柄": {
+    "start": {
+      "ret_enabled": true,
+      "ret_energy": 10,
+      "micro_enabled": true,
+      "micro_energy": 25
+    },
+    "stop": {
+      "ret_enabled": false,
+      "micro_enabled": false
+    }
+  },
+  "冲击波手柄": {
+    "start": {
+      "shock_wave_enabled": true,
+      "shock_wave_energy": 1,
+      "shock_wave_freq": 1
+    },
+    "stop": {
+      "shock_wave_enabled": false
+    }
+  }
+}
