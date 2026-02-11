@@ -1,0 +1,240 @@
+# Dynamic RRT: Fast Feasible Path Planning in Randomly Distributed Obstacle Environments (2023)
+
+- 论文类型：Short Paper
+- 核心目标：在随机分布障碍环境中，让基于 RRT 的规划**同时兼顾收敛时间（convergence time）与路径长度（path length）**，并在实验上做到“更快于 RRT、路径更优于 RRT*”。:contentReference[oaicite:1]{index=1}
+
+---
+
+## 1. Introduction（要点复述）
+### 1.1 背景与问题
+- 传统 RRT：扩展随机，收敛快但路径不保证好；容易出现窄通道、可复现性差、路径不光滑等问题。
+- RRT*：渐近最优，但重连/择父等操作导致计算更慢。
+- Informed RRT*：在得到初始解后，将采样限制到 informed subset（椭球/超椭球）内，加速后续优化，但在没有先验或尚未有初始可行路径时会退化。  
+- LBT-RRT：试图折中，但仍不足以兼顾速度与质量。
+
+### 1.2 本文贡献（复述）
+1) 不等到先找出初始路径再优化，而是：  
+   对“经过当前扩展节点 c 的 start→goal 路径长度”做估计 F̂(c)，并把它当作 informed subset 超椭球的主轴直径，从而**直接在该子集内采样**提高新节点质量。:contentReference[oaicite:2]{index=2}  
+2) 用动态规划思想：周期性地用 Pareto dominance 选“新的 start 节点”，把大问题分解为子问题，进一步缩短到 goal 的距离、提升收敛速度。:contentReference[oaicite:3]{index=3}  
+3) 通过 interval（执行 Pareto 选择的间隔）实现速度 vs 路径长度的可控折中。:contentReference[oaicite:4]{index=4}
+
+---
+
+## 2. Problem statement & notation（要点复述）
+- 规划空间：workspace X∈R^m 或 C-space C∈R^n；定义 X_free / X_obs 等。:contentReference[oaicite:5]{index=5}
+- 本文关注静态规划：在有限时间找到一条无碰撞可行路径 δ。:contentReference[oaicite:6]{index=6}
+
+### 2.1 关键符号/函数（实现接口清单）
+- `CalCostHat(x_start, x_goal, x_cur, c_cur)`：估计经过 x_cur 的路径长度 F̂(c)，作为超椭球主轴参数。:contentReference[oaicite:7]{index=7}  
+- `SampleEllipsoid(xa, xb, X, c_hat)`：在以 xa/xb 为焦点、主轴直径 c_hat 的超椭球内采样 x_rand。:contentReference[oaicite:8]{index=8}  
+- `Nearest(V, x_rand)`、`Steer(x_nearest, x_rand, step)`、`CheckCollision(x_nearest, x_new)`、`LineDistance`、`Cost`。:contentReference[oaicite:9]{index=9}  
+- `ChooseNodePareto(V, F̂(x), x_goal, p)`：基于 Pareto dominance 选新的 start 候选。:contentReference[oaicite:10]{index=10}  
+
+---
+
+## 3. Proposed methods（要点复述）
+### 3.1 Heuristic sampling range limits（估计 F̂(c) + informed subset）
+- 定义：经过某节点 x 的总成本 F(x)=C_sx + C_xg。
+- 关键：F(x) 不可得，因此构造估计 F̂(c)。:contentReference[oaicite:11]{index=11}  
+- 估计思路：环境障碍随机分布；用路径片段的最小包围矩形/超矩形（MBR）体积来近似成本项，并通过“重复与缩放”得到从 c 到 goal 的估计（论文图 2）。:contentReference[oaicite:12]{index=12}  
+- 最终得到估计公式 F̂(c)，并定义 informed subset：ζ(x) = { x∈X_free : G(x)+H(x) ≤ F̂(c) }。:contentReference[oaicite:13]{index=13}  
+- informed subset 形状：m 维超椭球（焦点为 start/goal，主轴直径为 F̂(c)）。:contentReference[oaicite:14]{index=14}  
+
+### 3.2 Dynamic programming（Pareto dominance 选新 start）
+- 用 Pareto dominance 给树节点排序：同时希望 F̂(x) 小、且 out-degree O(x) 大（孩子多意味着该节点“更值得作为中间起点”）。:contentReference[oaicite:15]{index=15}  
+- 考虑避免局部最优：以概率 p 随机选择“非最优”节点，而不是总选 Pareto-optimal。:contentReference[oaicite:16]{index=16}  
+- interval：每隔一定迭代触发一次 Pareto 选择；interval 影响速度/质量折中。:contentReference[oaicite:17]{index=17}  
+
+---
+
+## 4. Simulation（实验设置与结论要点）
+### 4.1 实验环境与指标
+- 指标：收敛时间=首次收敛到可行解的时间；路径长度=路径 cost。:contentReference[oaicite:18]{index=18}  
+- 配置：MATLAB 2019a；CPU AMD R7-4800H 2.9GHz；16GB RAM。:contentReference[oaicite:19]{index=19}  
+- 典型环境（Table 1）：
+  - 2D：1500×1500，障碍 225，start(400,400)，goal(1100,1100)
+  - 3D：1500×1500×1500，障碍 400，start(1,1,1)，goal(1100,1100,1100) :contentReference[oaicite:20]{index=20}  
+
+### 4.1.2 interval 的影响（核心结论）
+- interval 从 20→4：一般收敛更快、路径更短；但太小（如 3）会因 Pareto 节点过少导致随机性变大、路径不平滑且耗时反增。:contentReference[oaicite:21]{index=21}  
+- 文中给出示例均值（Table 2）：interval=4 时约 0.034s、path cost≈1157.4。:contentReference[oaicite:22]{index=22}  
+
+### 4.2 与 RRT / RRT* / Informed RRT* / LBT-RRT 对比
+- Table 3：Dynamic RRT（interval=4/6/8）在时间与长度上显示更好的折中。:contentReference[oaicite:23]{index=23}  
+- Table 4：Informed RRT* 为达到与 Dynamic RRT 相近长度，耗时显著更高（2.849s vs 0.034s）。:contentReference[oaicite:24]{index=24}  
+- 对 LBT-RRT 的相对结论：Dynamic RRT 更好地平衡收敛与长度。:contentReference[oaicite:25]{index=25}  
+
+### 4.2.3 稳定性
+- 不同环境尺度 env1/env2/env3 下，Dynamic RRT 的收敛时间和路径长度更稳定（Table 6/7）。:contentReference[oaicite:26]{index=26}  
+
+---
+
+## 5. Conclusion（要点复述）
+- Dynamic RRT：通过 informed subset 采样 + Pareto 分解子问题，实现收敛速度与路径长度的可调折中，并在实验中优于多种 RRT 变体。:contentReference[oaicite:27]{index=27}
+# Dynamic RRT 复现手册（实现 + 实验 + 对齐）
+
+> 目标：实现论文中的 Dynamic RRT，并复现其“速度-路径长度折中”与对比实验趋势。
+
+---
+
+## A. 你需要实现的模块（按论文 Notation 对齐）
+
+### A1. 基础 RRT 框架（必须）
+- 数据结构
+  - Node: state x（m维向量）、parent 指针、cost_from_start（路径累计长度）
+  - Tree V: nodes 列表 + 可选 KDTree/ball tree 加速 Nearest
+- 函数
+  - Nearest(V, x_rand): 最近邻
+  - Steer(x_nearest, x_rand, step): 沿方向走一步生成 x_new
+  - CheckCollision(x_a, x_b): 线段碰撞检测
+  - Cost(x_start, x_i): 从 start 沿 parent 回溯的长度（或累计字段）
+
+论文对这些函数的接口定义：:contentReference[oaicite:28]{index=28}
+
+---
+
+### A2. 关键新增 1：CalCostHat —— 估计 F̂(c)
+论文核心是用 F̂(c) 决定 informed subset（超椭球主轴直径）:contentReference[oaicite:29]{index=29}。
+
+你要做两件事：
+1) **定义 sc：** start 到当前扩展节点 c 的路径（沿 parent 回溯得到点序列）。
+2) **计算 sc 的 MBR（最小包围超矩形）体积/边长：**
+   - 对 m 维，每一维取 min/max -> 得到边长 l_i
+   - 体积 S_sc = ∏ l_i
+
+论文中：为便于计算，选 sc 的 MBR 来表达 G(c) :contentReference[oaicite:30]{index=30}。
+
+3) **估计 Ĥ(c)：** 论文描述为对 sc 在某一维“重复与缩放”来匹配 c→goal 的欧式距离比例（见图2的文字描述）:contentReference[oaicite:31]{index=31}。
+   - 复现时的关键是“你如何把这段描述落到代码上”：
+     - 最小实现：用距离比例 r = ||c-goal|| / ||start-c|| 去缩放某一维边长（例如第一维）；
+     - 进阶实现：按论文的“只在一维缩放，其他维保持不变”的约束（文中出现 i=2..m 维保持一致的描述片段）:contentReference[oaicite:32]{index=32}。
+
+4) **得到 F̂(c)：**
+- 论文给出最终估计表达式，并约定 c==x_start 时 F̂(c)=∞ :contentReference[oaicite:33]{index=33}。
+
+> ⚠️ 复现风险点：论文公式里有若干符号在 PDF 解析时丢失（例如某些比例项写成 1/1），你必须在实现里“明确化”这些比例项，否则会出现维度不一致或恒等式退化。  
+> 建议：把 F̂(c) 做成“可插拔估计器”，先用一个简单但单调合理的估计（例如：F̂(c)=cost(start→c)+α*||c-goal||，α 与障碍密度有关），再逐步逼近论文的 MBR 估计逻辑，用实验趋势校准。
+
+---
+
+### A3. 关键新增 2：SampleEllipsoid —— 在超椭球内采样
+论文说明：informed subset 是以 start/goal 为焦点、主轴直径 F̂(c) 的 m 维超椭球 :contentReference[oaicite:34]{index=34}。
+
+实现建议（通用做法）：
+1) 在 unit m-ball（或 unit hypersphere 内）均匀采样向量 u
+2) 通过线性变换把 u 映射到椭球坐标系：
+   - 椭球的半轴长度：a = F̂(c)/2；其余半轴 b_i 由 (a^2 - (focal_length/2)^2) 推出（论文给出 minor axis 形式）:contentReference[oaicite:35]{index=35}
+3) 再旋转/平移到以 start→goal 为主轴的坐标系中心
+
+> ⚠️ 复现风险点：2D/3D 好做，m>3 要保证旋转矩阵构造正确（主轴对齐）。  
+> 最小可行：仅复现 2D/3D（论文实验也主要呈现这两种）:contentReference[oaicite:36]{index=36}。
+
+---
+
+### A4. 关键新增 3：ChooseNodePareto —— Pareto dominance 选新 start
+论文说明：
+- Pareto 向量由 out-degree O(x) 与估计成本 F̂(x) 构造，并引入随机选择避免局部最优 :contentReference[oaicite:37]{index=37}。
+- interval 决定触发频率，从而影响速度/路径折中 :contentReference[oaicite:38]{index=38}。
+
+实现要点：
+1) 对树中每个节点 x：
+   - O(x) = 子节点数（需要维护 children 列表）
+   - F̂(x) = 你用于 informed subset 的同类估计（可用 CalCostHat(start, goal, x, cost(start→x)) 计算）
+2) 构造 Pareto 向量 v(x) = [-O(x), F̂(x)]（符号方向取“越小越优”）
+3) 对每对节点做 dominance 判断，计算“它支配了多少其他点”（论文把这个数也称 out-degree，并用它选 Pareto-optimal）:contentReference[oaicite:39]{index=39}
+4) 若 Pareto-optimal 有多个，随机选一个（论文明确说会随机选）:contentReference[oaicite:40]{index=40}
+5) 以概率 p 不走 Pareto-optimal，改为某个“非最优节点”（论文动机：避免陷入局部最优）:contentReference[oaicite:41]{index=41}
+
+---
+
+## B. Dynamic RRT 主循环（你应对齐的“行为逻辑”）
+论文对 Dynamic RRT 的描述要点：
+- 每次新增节点后，用“离 goal 最近的节点”作为 c 来计算 F̂(c)，决定下一次采样的超椭球形状 :contentReference[oaicite:42]{index=42}
+- counter 到达 interval 且碰撞检查通过时，触发 ChooseNodePareto 更新 start :contentReference[oaicite:43]{index=43}
+
+> 最小复现版伪代码（我用自己的话写，不逐字复刻原文）：
+1) start = x_start；V={start}；counter=0
+2) while not reach_goal:
+   - c = argmin_{v∈V} ||v - x_goal||   （最近 goal 的节点）
+   - F_hat = CalCostHat(start, goal, c, cost(start→c))
+   - x_rand = SampleEllipsoid(start, goal, X_total, F_hat)
+   - x_near = Nearest(V, x_rand)
+   - x_new = Steer(x_near, x_rand, step)
+   - if collision_free(x_near, x_new):
+       add x_new to V with parent=x_near; update costs; counter++
+   - if counter==interval:
+       x_pareto = ChooseNodePareto(V, F_hat(·), goal, p)
+       if collision_free(start, x_pareto)   （论文里写的是一次碰撞检查门槛）:contentReference[oaicite:44]{index=44}
+           start = x_pareto
+       counter=0
+
+---
+
+## C. 实验复现配置（与论文对齐）
+### C1. 环境（Table 1）
+- 2D: 1500×1500, obstacles=225, start(400,400), goal(1100,1100)
+- 3D: 1500×1500×1500, obstacles=400, start(1,1,1), goal(1100,1100,1100) :contentReference[oaicite:45]{index=45}
+
+### C2. 对比算法与运行方式（论文设置）
+- 每个条件重复 runs=100（论文在对比处强调 100 runs）:contentReference[oaicite:46]{index=46}
+- 每个算法给 10s（用于生成路径的时间上限）:contentReference[oaicite:47]{index=47}
+- 指标：
+  - convergence time：首次找到可行解的时间
+  - path length：路径 cost（总长度）:contentReference[oaicite:48]{index=48}
+
+### C3. interval 的关键参考点（Table 2）
+论文给出的 2D 平均结果（100 trials）：
+- interval 3 -> 0.195s, 1136.0
+- interval 4 -> 0.034s, 1157.4
+- interval 10 -> 0.072s, 1197.5
+- interval 20 -> 0.108s, 1250.7 :contentReference[oaicite:49]{index=49}
+
+> 你不一定能数值完全一致（实现细节、随机种子、碰撞检测粒度都会影响），但趋势应相近：  
+> interval 从 20→4：一般更快且更短；但过小（如 3）可能出现耗时上升与路径不平滑的现象 :contentReference[oaicite:50]{index=50}。
+
+---
+# Dynamic RRT 复现成功验收标准（强判据 + 弱判据）
+
+> 复现成功不是“跑出来一条路”就算，而是要在 **定义一致、设置一致、指标一致、趋势一致** 四个层面过关。
+
+---
+
+## 1) 强判据（必须满足）
+
+### 1.1 问题定义与指标一致
+- 你测的 convergence time 必须是“**首次**收敛到可行解的时间”，不是优化到某阈值后的时间。:contentReference[oaicite:51]{index=51}
+- path length 必须是最终输出路径的总长度（cost）。:contentReference[oaicite:52]{index=52}
+
+### 1.2 算法行为一致（结构性对齐）
+必须同时具备：
+1) 通过 F̂(c) 形成 informed subset，并在其内采样（而不是全空间均匀采样）。:contentReference[oaicite:53]{index=53}  
+2) 按 interval 触发 Pareto dominance 选新 start（子问题分解）。:contentReference[oaicite:54]{index=54}  
+3) 为避免局部最优，ChooseNodePareto 含概率 p 的随机选择策略。:contentReference[oaicite:55]{index=55}
+
+### 1.3 环境与对比设置一致
+- 至少复现 Table 1 的 2D 环境（1500×1500, 225 obstacles, 指定 start/goal）。:contentReference[oaicite:56]{index=56}
+- runs=100 的统计平均（至少给均值；最好给方差/箱线图）。:contentReference[oaicite:57]{index=57}
+
+---
+
+## 2) 弱判据（趋势一致即可；数值不要求完全相同）
+
+### 2.1 interval 的折中趋势
+- 在 2D 环境里：
+  - interval 从 20→4：一般 convergence time 下降、path cost 下降（或至少不升太多），符合论文“能调折中”的结论。:contentReference[oaicite:58]{index=58}  
+  - interval 太小（如 3）可能出现耗时反增、路径不够平滑的现象。:contentReference[oaicite:59]{index=59}  
+- 参考论文 Table 2 的典型点：interval=4 约 0.034s、cost≈1157.4。:contentReference[oaicite:60]{index=60}
+
+### 2.2 对比算法的相对关系（至少满足其中两条）
+- Dynamic RRT 相比 Informed RRT*：在达到“相近路径长度”时，Dynamic RRT 用时显著更短（论文例：0.034s vs 2.849s）。:contentReference[oaicite:61]{index=61}  
+- Dynamic RRT 的折中性：论文讨论指出其 convergence time 可短于 RRT，且 path length 可优于 RRT*（讨论段总结）。:contentReference[oaicite:62]{index=62}  
+
+### 2.3 稳定性（跨环境尺度）
+- 在 env1/env2/env3 这种尺度变化下，Dynamic RRT 的 time 和 length 更稳定（论文 Table 6/7）。:contentReference[oaicite:63]{index=63}
+
+---
+
+## 3) 复现失败的典型信号（快速排错）
+- 你实现了 Pareto 选点，但没有真正改变 start（或没有按 interval 触发）→ 往往看不到速度提升趋势。
+- 你“椭球采样”其实仍在全空间采样（或椭球参数不随 F̂(c) 更新）→ 结果退化为 RRT/biased RRT。
+- 你没有按论文定义计算 convergence time（比如记录的是跑满 10s 后的 best cost）→ 与论文不可比。:contentReference[oaicite:64]{index=64}

@@ -336,30 +336,17 @@ class ResultAnalyzer:
                 ax.set_title(f'{metric} 敏感度', fontsize=12, fontweight='bold')
                 continue
             
-            # 计算相关性 - 修复形状不一致问题
+            # 计算相关性
             corr_data = []
-            max_len = 0
             for param in param_names:
                 if metric == 'success':
                     corr = data.groupby(param)[metric].mean()
                 else:
                     corr = data.groupby(param)[metric].mean()
                 corr_data.append(corr.values)
-                max_len = max(max_len, len(corr.values))
-            
-            # 填充到相同长度
-            corr_data_padded = []
-            for corr_values in corr_data:
-                if len(corr_values) < max_len:
-                    # 用NaN填充
-                    padded = np.full(max_len, np.nan)
-                    padded[:len(corr_values)] = corr_values
-                    corr_data_padded.append(padded)
-                else:
-                    corr_data_padded.append(corr_values)
             
             # 归一化到0-1
-            corr_matrix = np.array(corr_data_padded)
+            corr_matrix = np.array(corr_data)
             
             # 绘制
             im = ax.imshow(corr_matrix, cmap='YlOrRd', aspect='auto')

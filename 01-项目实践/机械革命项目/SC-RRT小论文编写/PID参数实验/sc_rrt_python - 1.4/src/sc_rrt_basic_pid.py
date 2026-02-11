@@ -45,6 +45,8 @@ class SCRRTBasicPID:
         smoothing_factor: float = 0.7,
         ellipsoid_buffer: float = 1.2,
         use_pareto: bool = True,
+        pareto_interval: int = 100,
+        pareto_prob: float = 0.8,
         verbose: bool = True
     ):
         """
@@ -75,10 +77,16 @@ class SCRRTBasicPID:
         self.smoothing_factor = smoothing_factor
         self.ellipsoid_buffer = ellipsoid_buffer
         self.use_pareto = use_pareto
+        self.pareto_interval = pareto_interval
+        self.pareto_prob = pareto_prob
         self.verbose = verbose
         
         # 新增：详细指标跟踪
         self.track_detailed_metrics = True
+        
+        # ★★★ Pareto节点选择策略计数器 ★★★
+        self.pareto_counter = 0
+        self.pareto_selections = []  # 记录Pareto选择历史
         
         # ★★★ 新增：PID采样控制器（方案B核心改进）★★★
         # 根据模式决定是否使用新的PID采样控制器
@@ -200,39 +208,6 @@ class SCRRTBasicPID:
             print(f"步长: {self.step_size:.2f}, 目标阈值: {self.goal_threshold:.2f}")
             print(f"最大迭代: {self.max_iterations}")
             print("=" * 50 + "\n")
-    
-    def _calculate_best_cost_to_meet(self, tree, meet_point, tree_name='A'):
-        """
-        计算树中节点到交汇点的最优代价估计（MATLAB版本的正确实现）
-        
-        Args:
-            tree: 树节点数组 (N, dim+4)
-            meet_point: 交汇点坐标
-            tree_name: 树名称（'A'或'B'）
-            
-        Returns:
-            c_best: 最优代价估计
-        """
-        if len(tree) == 0:
-            return np.inf
-        
-        c_best = np.inf
-        
-        for i in range(len(tree)):
-            # G(i): 起点/终点到节点i的实际代价
-            G_i = tree[i, self.dim + 1]  # cost_G
-            
-            # H(i, meet): 节点i到交汇点的启发式代价（欧氏距离）
-            node_pos = tree[i, :self.dim]
-            H_i_meet = np.linalg.norm(node_pos - meet_point)
-            
-            # F(i) = G(i) + H(i, meet)
-            F_i = G_i + H_i_meet
-            
-            if F_i < c_best:
-                c_best = F_i
-        
-        return c_best
     
     def plan(self) -> Tuple[Optional[np.ndarray], Dict, bool, Dict]:
         """
@@ -367,6 +342,44 @@ class SCRRTBasicPID:
             if sizeB >= len(treeB):
                 treeB = np.vstack([treeB, np.zeros((initial_capacity, self.dim + 4))])
             
+            # ★★★ Pareto节点选择策略：周期性选择更优节点作为新的采样参考点 ★★★
+            self.pareto_counter += 1
+            if self.use_pareto and self.pareto_counter >= self.pareto_interval and sizeA > 10 and sizeB > 10:
+                # 为树A选择Pareto最优节点，更新meet_point的A侧参考
+                ref_A_idx = 0  # 当前从start开始
+                new_ref_A_idx, new_ref_A = self._choose_node_pareto(
+                    treeA[:sizeA], meet_point, ref_A_idx, self.pareto_prob
+                )
+                
+                # 为树B选择Pareto最优节点，更新meet_point的B侧参考
+                ref_B_idx = 0  # 当前从goal开始
+                new_ref_B_idx, new_ref_B = self._choose_node_pareto(
+                    treeB[:sizeB], meet_point, ref_B_idx, self.pareto_prob
+                )
+                
+                # 如果选择了不同的节点，更新meet_point为两个新参考点的中点
+                if new_ref_A_idx != ref_A_idx or new_ref_B_idx != ref_B_idx:
+                    # 计算新的meet_point（两个Pareto最优节点的中点）
+                    meet_point_pareto = (new_ref_A + new_ref_B) / 2
+                    
+                    # 平滑更新meet_point（避免突变）
+                    meet_point = 0.7 * meet_point + 0.3 * meet_point_pareto
+                    meet_point_old = meet_point.copy()
+                    
+                    # 记录Pareto选择历史
+                    self.pareto_selections.append({
+                        'iteration': iterations,
+                        'ref_A_idx': new_ref_A_idx,
+                        'ref_B_idx': new_ref_B_idx,
+                        'new_meet_point': meet_point.copy(),
+                        'distance': np.linalg.norm(new_ref_A - new_ref_B)
+                    })
+                    
+                    if self.verbose:
+                        print(f"  ★ Pareto选择: A节点{new_ref_A_idx}, B节点{new_ref_B_idx}, 新meet_point距离={np.linalg.norm(new_ref_A - new_ref_B):.2f}")
+                
+                self.pareto_counter = 0  # 重置计数器
+            
             # 交汇点更新
             adaptive_interval = max(20, min(100, int(50 * (1 - iterations / self.max_iterations))))
             if iterations % adaptive_interval == 0 and sizeA > 1 and sizeB > 1:
@@ -406,20 +419,11 @@ class SCRRTBasicPID:
                 c_min_A = np.linalg.norm(meet_point - self.start)
                 c_min_B = np.linalg.norm(self.goal - meet_point)
                 
-                # 5. 计算基准椭球大小（基于树节点的最优路径估计）
-                # 这是MATLAB版本的正确实现！
-                c_best_A_base = self._calculate_best_cost_to_meet(treeA[:sizeA], meet_point, 'A')
-                c_best_B_base = self._calculate_best_cost_to_meet(treeB[:sizeB], meet_point, 'B')
+                # 5. 使用gamma调整椭球大小
+                c_best_A = c_min_A * gamma_A
+                c_best_B = c_min_B * gamma_B
                 
-                # 确保基准值不小于焦距
-                c_best_A_base = max(c_best_A_base, c_min_A * 1.2)
-                c_best_B_base = max(c_best_B_base, c_min_B * 1.2)
-                
-                # 6. 使用gamma在基准值基础上扩大椭球（这才是PID的作用！）
-                c_best_A = c_best_A_base  # 不使用gamma扩大，而是直接用基准值
-                c_best_B = c_best_B_base  # gamma用于控制采样时的椭球约束
-                
-                # 7. 记录PID历史（用于可视化）
+                # 6. 记录PID历史（用于可视化）
                 if iterations % 20 == 0:
                     pid_sampling_history['iterations'].append(iterations)
                     pid_sampling_history['gamma_A'].append(gamma_A)
@@ -486,15 +490,15 @@ class SCRRTBasicPID:
             in_ellipsoid_A = False  # 默认不是椭球引导采样
             if self.mode == 'no_pid':
                 # No_PID模式：使用椭球约束但不动态调节（公平对比基准）
-                # gamma固定为1.0，不扩大椭球
+                # 注意：c_best_A已经在_calculate_ellipsoid_params中计算为固定值
                 x_rand_A, _, _, in_ellipsoid_A = self._sample_with_pid(
-                    meet_point, treeA[:sizeA], c_best_A, 1.0,
+                    meet_point, treeA[:sizeA], c_best_A,
                     prev_error_A, integral_error_A, 'A'
                 )
             else:
-                # PID控制采样（使用动态调节的椭球约束，gamma扩大椭球）
+                # PID控制采样（使用动态调节的椭球约束）
                 x_rand_A, prev_error_A, integral_error_A, in_ellipsoid_A = self._sample_with_pid(
-                    meet_point, treeA[:sizeA], c_best_A, gamma_A,  # 传入gamma！
+                    meet_point, treeA[:sizeA], c_best_A,
                     prev_error_A, integral_error_A, 'A'
                 )
             
@@ -561,15 +565,15 @@ class SCRRTBasicPID:
             # ★★★ 关键修复：所有模式都使用椭球约束 ★★★
             in_ellipsoid_B = False  # 默认不是椭球引导采样
             if self.mode == 'no_pid':
-                # No_PID模式：使用固定椭球约束，gamma=1.0
+                # No_PID模式：使用固定椭球约束
                 x_rand_B, _, _, in_ellipsoid_B = self._sample_with_pid(
-                    meet_point, treeB[:sizeB], c_best_B, 1.0,
+                    meet_point, treeB[:sizeB], c_best_B,
                     prev_error_B, integral_error_B, 'B'
                 )
             else:
-                # PID控制采样：使用动态调节的椭球约束，gamma扩大椭球
+                # PID控制采样：使用动态调节的椭球约束
                 x_rand_B, prev_error_B, integral_error_B, in_ellipsoid_B = self._sample_with_pid(
-                    meet_point, treeB[:sizeB], c_best_B, gamma_B,  # 传入gamma！
+                    meet_point, treeB[:sizeB], c_best_B,
                     prev_error_B, integral_error_B, 'B'
                 )
             
@@ -653,21 +657,14 @@ class SCRRTBasicPID:
     
     def _sample_with_pid(
         self, target: np.ndarray, tree: np.ndarray,
-        c_best: float, gamma: float, prev_error: float, integral_error: float,
+        c_best: float, prev_error: float, integral_error: float,
         tree_name: str
     ) -> Tuple[Optional[np.ndarray], float, float, bool]:
         """
-        使用PID控制采样策略（MATLAB版本的正确实现）
+        使用PID控制采样策略
         
-        Args:
-            target: 目标点（交汇点）
-            tree: 树节点
-            c_best: 基准椭球大小（不含gamma）
-            gamma: PID控制的椭球膨胀系数
-            prev_error: 前一误差
-            integral_error: 积分误差
-            tree_name: 树名称
-            
+        ★★★ 方案B核心改进：使用PID采样控制器的p_informed参数 ★★★
+        
         Returns:
             sample: 采样点
             current_error: 当前误差
@@ -678,16 +675,15 @@ class SCRRTBasicPID:
         if tree_name == 'A':
             focus1, focus2 = self.start, target
             c_estimated = np.linalg.norm(target - self.start)
-            # 获取PID采样控制器的p_informed参数
-            p_informed = getattr(self, '_p_informed_A', 0.8)
+            # 获取PID采样控制器的参数
+            gamma = getattr(self, '_gamma_A', 1.5)
+            p_informed = getattr(self, '_p_informed_A', 0.0)
         else:
             focus1, focus2 = target, self.goal
             c_estimated = np.linalg.norm(self.goal - target)
-            # 获取PID采样控制器的p_informed参数
-            p_informed = getattr(self, '_p_informed_B', 0.8)
-        
-        # 计算用于采样的椭球大小（基准值 × gamma）
-        c_for_sampling = c_best * gamma
+            # 获取PID采样控制器的参数
+            gamma = getattr(self, '_gamma_B', 1.5)
+            p_informed = getattr(self, '_p_informed_B', 0.0)
         
         # 计算当前误差（保持接口兼容）
         if len(tree) > 1:
@@ -704,22 +700,158 @@ class SCRRTBasicPID:
             sample = sample_point(self.bounds, self.dim)
             return sample, current_error, integral_error, False  # in_ellipsoid=False
         
-        # ★★★ MATLAB版本正确实现：使用p_informed控制采样策略 ★★★
-        rand_val = np.random.rand()
+        # ★★★ 方案B核心逻辑：根据是否使用新PID控制器选择策略 ★★★
+        if self.use_new_pid_controller:
+            # === 新策略：使用PID采样控制器的p_informed（参考MATLAB版本）===
+            # 椭球采样半径：使用gamma膨胀系数
+            c_for_sampling = c_best if c_best < np.inf else c_estimated * gamma
+            adjusted_c = c_for_sampling * gamma
+            
+            rand_val = np.random.rand()
+            
+            if rand_val < p_informed:
+                # 知情采样：在膨胀椭球内采样
+                sample = sample_in_ellipsoid(focus1, focus2, adjusted_c, self.dim)
+                if sample is not None:
+                    # ESR应该统计"主动椭球引导采样"，而非"被动落在椭球内"
+                    in_ellipsoid = True  # 这是主动椭球引导采样
+                    return sample, current_error, integral_error, in_ellipsoid
+                # 椭球采样失败，回退到随机采样（这时算探索采样）
+            
+            # 探索采样：完全随机（不算椭球引导采样）
+            sample = sample_point(self.bounds, self.dim)
+            in_ellipsoid = False  # ESR只统计主动椭球引导采样，探索采样不计入
+            return sample, current_error, integral_error, in_ellipsoid
+            
+        else:
+            # === 旧策略：Fixed_Ellipsoid模式（使用固定椭球） ===
+            if self.mode == 'fixed_ellipsoid':
+                # Fixed_Ellipsoid：使用固定倍数的椭球（不动态调节）
+                pid_control = 0.0
+                goal_bias_prob = 0.30  # 固定30%椭球采样概率
+            else:
+                # PID控制计算
+                P_term = self.custom_Kp * current_error
+                
+                integral_error += current_error * 0.05
+                integral_error = np.clip(integral_error, -2.0, 2.0)
+                I_term = self.custom_Ki * integral_error
+                
+                error_derivative = current_error - prev_error
+                D_term = self.custom_Kd * error_derivative
+                
+                pid_control = P_term + I_term + D_term
+                
+                # 映射PID输出到goal_bias_prob [0.15, 0.40]
+                goal_bias_prob = 0.15 + 0.25 * pid_control
+                goal_bias_prob = np.clip(goal_bias_prob, 0.05, 0.40)
+            
+            # 计算椭球采样半径
+            c_for_sampling = c_best if c_best < np.inf else c_estimated * 4.0
+            
+            rand_val = np.random.rand()
+            
+            # 策略1：椭球内采样
+            if rand_val < goal_bias_prob:
+                ellipsoid_scale = 1.5 + (1.0 * (1.0 - goal_bias_prob))
+                adjusted_c = c_for_sampling * ellipsoid_scale
+                
+                sample = sample_in_ellipsoid(focus1, focus2, adjusted_c, self.dim)
+                
+                if sample is not None:
+                    in_ellipsoid = self._is_in_ellipsoid(sample, focus1, focus2, adjusted_c)
+                    return sample, current_error, integral_error, in_ellipsoid
+            
+            # 策略2：定向偏置采样
+            if rand_val < min(1.0, goal_bias_prob + 0.30):
+                base_point = self.start if tree_name == 'A' else self.goal
+                direction = target - base_point
+                direction_norm = np.linalg.norm(direction)
+                
+                if direction_norm > 1e-6:
+                    direction = direction / direction_norm
+                    
+                    randomness = (1.0 - goal_bias_prob) * 150.0
+                    random_offset = np.random.randn(self.dim) * randomness
+                    
+                    distance_factor = np.random.uniform(0.2, 0.8) * goal_bias_prob * direction_norm
+                    biased_sample = base_point + direction * distance_factor + random_offset
+                    
+                    # 边界裁剪
+                    if self.dim == 2:
+                        biased_sample = np.clip(biased_sample,
+                                              [self.bounds[0], self.bounds[2]],
+                                              [self.bounds[1], self.bounds[3]])
+                    else:
+                        biased_sample = np.clip(biased_sample,
+                                              [self.bounds[0], self.bounds[2], self.bounds[4]],
+                                              [self.bounds[1], self.bounds[3], self.bounds[5]])
+                    
+                    in_ellipsoid = self._is_in_ellipsoid(biased_sample, focus1, focus2, c_for_sampling * 2.0)
+                    return biased_sample, current_error, integral_error, in_ellipsoid
+            
+            # 策略3：完全随机采样
+            sample = sample_point(self.bounds, self.dim)
+            in_ellipsoid = self._is_in_ellipsoid(sample, focus1, focus2, c_for_sampling * 2.0)
+            return sample, current_error, integral_error, in_ellipsoid
         
-        if rand_val < p_informed:
-            # 知情采样：在膨胀椭球内采样（使用gamma扩大椭球）
-            sample = sample_in_ellipsoid(focus1, focus2, c_for_sampling, self.dim)
+        # ==================== 策略1：椭球内采样 ====================
+        if rand_val < goal_bias_prob:
+            ellipsoid_scale = 1.5 + (1.0 * (1.0 - goal_bias_prob))
+            adjusted_c = c_for_sampling * ellipsoid_scale
+            
+            sample = sample_in_ellipsoid(focus1, focus2, adjusted_c, self.dim)
+            
             if sample is not None:
-                # 主动椭球引导采样
-                in_ellipsoid = True
+                # ★ 关键修复：使用_is_in_ellipsoid真实校验ESR
+                in_ellipsoid = self._is_in_ellipsoid(sample, focus1, focus2, adjusted_c)
                 return sample, current_error, integral_error, in_ellipsoid
-            # 椭球采样失败，回退到随机采样
+            # 如果椭球采样失败，继续到下一策略
         
-        # 探索采样：完全随机
+        # ==================== 策略2：定向偏置采样 ====================
+        if rand_val < min(1.0, goal_bias_prob + 0.30):
+            base_point = self.start if tree_name == 'A' else self.goal
+            direction = target - base_point
+            direction_norm = np.linalg.norm(direction)
+            
+            if direction_norm > 1e-6:
+                direction = direction / direction_norm
+                
+                # 调整随机噪声幅度（更保守）
+                randomness = (1.0 - goal_bias_prob) * 150.0
+                random_offset = np.random.randn(self.dim) * randomness
+                
+                distance_factor = np.random.uniform(0.2, 0.8) * goal_bias_prob * direction_norm
+                biased_sample = base_point + direction * distance_factor + random_offset
+                
+                # 边界裁剪
+                if self.dim == 2:
+                    biased_sample = np.clip(biased_sample,
+                                          [self.bounds[0], self.bounds[2]],
+                                          [self.bounds[1], self.bounds[3]])
+                else:
+                    biased_sample = np.clip(biased_sample,
+                                          [self.bounds[0], self.bounds[2], self.bounds[4]],
+                                          [self.bounds[1], self.bounds[3], self.bounds[5]])
+                
+                # 校验是否碰巧落入椭球
+                in_ellipsoid = self._is_in_ellipsoid(biased_sample, focus1, focus2, c_for_sampling * 2.0)
+                return biased_sample, current_error, integral_error, in_ellipsoid
+        
+        # ==================== 策略3：完全随机采样 ====================
         sample = sample_point(self.bounds, self.dim)
-        in_ellipsoid = False  # 随机采样不计入ESR
+        # 校验随机样本是否碰巧落入椭球（概率极低但需统计）
+        in_ellipsoid = self._is_in_ellipsoid(sample, focus1, focus2, c_for_sampling * 2.0)
         return sample, current_error, integral_error, in_ellipsoid
+    
+    def _is_in_ellipsoid(self, point: np.ndarray, focus1: np.ndarray, 
+                         focus2: np.ndarray, c_max: float) -> bool:
+        """判断点是否在椭球约束内（用于ESR统计）
+        
+        椭球定义：到两焦点距离之和 <= c_max
+        """
+        dist_sum = np.linalg.norm(point - focus1) + np.linalg.norm(point - focus2)
+        return dist_sum <= c_max
     
     def _calculate_meet_point(
         self, treeA: np.ndarray, treeB: np.ndarray, current_meet: np.ndarray
@@ -773,6 +905,97 @@ class SCRRTBasicPID:
                    0.2 * current_meet)
         
         return new_meet
+    
+    def _choose_node_pareto(
+        self, tree: np.ndarray, target: np.ndarray, 
+        current_ref_idx: int, pareto_prob: float
+    ) -> Tuple[int, np.ndarray]:
+        """
+        ★★★ Pareto优势选择策略 ★★★
+        从树中选择Pareto前沿上的节点作为新的采样参考点
+        
+        目标：选择同时优化两个目标的节点：
+        1. 到目标点的距离（距离越小越好）
+        2. 路径代价（cost越小越好）
+        
+        Args:
+            tree: 节点树 [position | parent_idx | cost_G | cost_F_hat | num_children]
+            target: 目标点（通常是meet_point）
+            current_ref_idx: 当前参考节点索引
+            pareto_prob: Pareto选择概率（用于随机性）
+            
+        Returns:
+            new_ref_idx: 新的参考节点索引
+            new_ref_point: 新的参考节点位置
+        """
+        if len(tree) < 5:  # 节点太少，不进行选择
+            return current_ref_idx, tree[current_ref_idx, :self.dim]
+        
+        # 1. 计算所有节点的两个目标值
+        positions = tree[:, :self.dim]
+        costs = tree[:, self.dim+1]  # cost_G
+        
+        # 目标1：到目标点的距离
+        distances_to_target = np.linalg.norm(positions - target, axis=1)
+        
+        # 目标2：路径代价
+        path_costs = costs
+        
+        # 2. 归一化目标值（便于比较）
+        dist_min, dist_max = distances_to_target.min(), distances_to_target.max()
+        cost_min, cost_max = path_costs.min(), path_costs.max()
+        
+        if dist_max > dist_min:
+            norm_distances = (distances_to_target - dist_min) / (dist_max - dist_min)
+        else:
+            norm_distances = np.zeros_like(distances_to_target)
+        
+        if cost_max > cost_min:
+            norm_costs = (path_costs - cost_min) / (cost_max - cost_min)
+        else:
+            norm_costs = np.zeros_like(path_costs)
+        
+        # 3. 找出Pareto前沿节点（非支配解）
+        pareto_front = []
+        for i in range(len(tree)):
+            is_dominated = False
+            for j in range(len(tree)):
+                if i == j:
+                    continue
+                # 如果j支配i（j在两个目标上都不差于i，且至少一个更好）
+                if (distances_to_target[j] <= distances_to_target[i] and 
+                    path_costs[j] <= path_costs[i] and
+                    (distances_to_target[j] < distances_to_target[i] or 
+                     path_costs[j] < path_costs[i])):
+                    is_dominated = True
+                    break
+            
+            if not is_dominated:
+                pareto_front.append(i)
+        
+        if len(pareto_front) == 0:
+            pareto_front = [0]  # 回退到根节点
+        
+        # 4. 从Pareto前沿中选择节点（基于概率和综合得分）
+        if np.random.rand() < pareto_prob:
+            # 高概率选择：根据综合得分（平衡距离和代价）
+            # 综合得分 = 0.6 * 归一化距离 + 0.4 * 归一化代价（距离更重要）
+            scores = 0.6 * norm_distances[pareto_front] + 0.4 * norm_costs[pareto_front]
+            best_idx_in_front = np.argmin(scores)
+            selected_idx = pareto_front[best_idx_in_front]
+        else:
+            # 低概率随机选择：增加探索性
+            selected_idx = np.random.choice(pareto_front)
+        
+        # 5. 碰撞检测：确保从当前参考点到新参考点的路径无碰撞
+        current_ref = tree[current_ref_idx, :self.dim]
+        new_ref = tree[selected_idx, :self.dim]
+        
+        if not is_collision_free(current_ref, new_ref, self.obstacles, self.dim):
+            # 如果有碰撞，保持当前参考点
+            return current_ref_idx, current_ref
+        
+        return selected_idx, new_ref
     
     def _calculate_ellipsoid_params(
         self, treeA: np.ndarray, treeB: np.ndarray, meet_point: np.ndarray,

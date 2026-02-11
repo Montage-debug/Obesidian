@@ -15,7 +15,7 @@ addpath(genpath(pwd));
 % =================== 参数结构体集中管理 ===================
 configParams = struct(...
     'sc_rrt_mode', 'adaptive', ...              % 算法模式: 'basic'|'pid'|'adaptive'
-    'env_idx', 2, ...                           % 环境索引 1-4
+    'env_idx', 3, ...                           % 环境索引 1-4
     'enable_path_smoothing', true, ...          % 启用路径平滑
     'path_smoothing_points', 150, ...           % 平滑后路径点数
     'use_pareto_optimization', true, ...        % 启用Pareto前沿优化
@@ -26,7 +26,7 @@ configParams = struct(...
     'dual_ellipsoid_buffer', 2.0, ...           % 椭球体缓冲系数
     'visualize_dual_ellipsoid', true, ...       % 启用椭球体可视化
     'max_iterations', 10000, ...                % 最大迭代次数
-    'enable_realtime_visualization', false, ... % 实时可视化(关闭更快)
+    'enable_realtime_visualization', true, ... % 实时可视化(关闭更快)
     'visualization_interval', 2, ...            % 可视化更新间隔
     'enable_gif_recording', false, ...          % GIF录制
     'gif_frame_interval', 10, ...
