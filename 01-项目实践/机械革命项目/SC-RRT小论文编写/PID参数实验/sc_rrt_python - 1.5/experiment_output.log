@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/mnt/data/home/wlzc/WorkSpace/Obesidian/01-项目实践/机械革命项目/SC-RRT小论文编写/PID参数实验/sc_rrt_python - 1.2/run_local_pid_experiment.py", line 28, in <module>
+    from experiments.run_pid_experiment import PIDExperiment
+  File "/mnt/data/home/wlzc/WorkSpace/Obesidian/01-项目实践/机械革命项目/SC-RRT小论文编写/PID参数实验/sc_rrt_python - 1.2/experiments/run_pid_experiment.py", line 10, in <module>
+    import scipy.stats
+  File "/usr/lib/python3/dist-packages/scipy/stats/__init__.py", line 453, in <module>
+    from ._stats_py import *
+  File "/usr/lib/python3/dist-packages/scipy/stats/_stats_py.py", line 38, in <module>
+    from scipy.spatial.distance import cdist
+  File "/usr/lib/python3/dist-packages/scipy/spatial/__init__.py", line 102, in <module>
+    from ._kdtree import *
+  File "/usr/lib/python3/dist-packages/scipy/spatial/_kdtree.py", line 5, in <module>
+    from ._ckdtree import cKDTree, cKDTreeNode
+  File "_ckdtree.pyx", line 1, in init scipy.spatial._ckdtree
+ValueError: numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject

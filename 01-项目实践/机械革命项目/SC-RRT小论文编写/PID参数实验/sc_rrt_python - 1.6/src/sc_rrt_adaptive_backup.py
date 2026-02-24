@@ -45,6 +45,8 @@ class SCRRTBasicPID:
         smoothing_factor: float = 0.7,
         ellipsoid_buffer: float = 1.2,
         use_pareto: bool = True,
+        pareto_interval: int = 100,
+        pareto_prob: float = 0.8,
         verbose: bool = True
     ):
         """
@@ -75,10 +77,16 @@ class SCRRTBasicPID:
         self.smoothing_factor = smoothing_factor
         self.ellipsoid_buffer = ellipsoid_buffer
         self.use_pareto = use_pareto
+        self.pareto_interval = pareto_interval
+        self.pareto_prob = pareto_prob
         self.verbose = verbose
         
         # 新增：详细指标跟踪
         self.track_detailed_metrics = True
+        
+        # ★★★ Pareto节点选择策略计数器 ★★★
+        self.pareto_counter = 0
+        self.pareto_selections = []  # 记录Pareto选择历史
         
         # ★★★ 新增：PID采样控制器（方案B核心改进）★★★
         # 根据模式决定是否使用新的PID采样控制器
@@ -333,6 +341,44 @@ class SCRRTBasicPID:
                 treeA = np.vstack([treeA, np.zeros((initial_capacity, self.dim + 4))])
             if sizeB >= len(treeB):
                 treeB = np.vstack([treeB, np.zeros((initial_capacity, self.dim + 4))])
+            
+            # ★★★ Pareto节点选择策略：周期性选择更优节点作为新的采样参考点 ★★★
+            self.pareto_counter += 1
+            if self.use_pareto and self.pareto_counter >= self.pareto_interval and sizeA > 10 and sizeB > 10:
+                # 为树A选择Pareto最优节点，更新meet_point的A侧参考
+                ref_A_idx = 0  # 当前从start开始
+                new_ref_A_idx, new_ref_A = self._choose_node_pareto(
+                    treeA[:sizeA], meet_point, ref_A_idx, self.pareto_prob
+                )
+                
+                # 为树B选择Pareto最优节点，更新meet_point的B侧参考
+                ref_B_idx = 0  # 当前从goal开始
+                new_ref_B_idx, new_ref_B = self._choose_node_pareto(
+                    treeB[:sizeB], meet_point, ref_B_idx, self.pareto_prob
+                )
+                
+                # 如果选择了不同的节点，更新meet_point为两个新参考点的中点
+                if new_ref_A_idx != ref_A_idx or new_ref_B_idx != ref_B_idx:
+                    # 计算新的meet_point（两个Pareto最优节点的中点）
+                    meet_point_pareto = (new_ref_A + new_ref_B) / 2
+                    
+                    # 平滑更新meet_point（避免突变）
+                    meet_point = 0.7 * meet_point + 0.3 * meet_point_pareto
+                    meet_point_old = meet_point.copy()
+                    
+                    # 记录Pareto选择历史
+                    self.pareto_selections.append({
+                        'iteration': iterations,
+                        'ref_A_idx': new_ref_A_idx,
+                        'ref_B_idx': new_ref_B_idx,
+                        'new_meet_point': meet_point.copy(),
+                        'distance': np.linalg.norm(new_ref_A - new_ref_B)
+                    })
+                    
+                    if self.verbose:
+                        print(f"  ★ Pareto选择: A节点{new_ref_A_idx}, B节点{new_ref_B_idx}, 新meet_point距离={np.linalg.norm(new_ref_A - new_ref_B):.2f}")
+                
+                self.pareto_counter = 0  # 重置计数器
             
             # 交汇点更新
             adaptive_interval = max(20, min(100, int(50 * (1 - iterations / self.max_iterations))))
@@ -859,6 +905,97 @@ class SCRRTBasicPID:
                    0.2 * current_meet)
         
         return new_meet
+    
+    def _choose_node_pareto(
+        self, tree: np.ndarray, target: np.ndarray, 
+        current_ref_idx: int, pareto_prob: float
+    ) -> Tuple[int, np.ndarray]:
+        """
+        ★★★ Pareto优势选择策略 ★★★
+        从树中选择Pareto前沿上的节点作为新的采样参考点
+        
+        目标：选择同时优化两个目标的节点：
+        1. 到目标点的距离（距离越小越好）
+        2. 路径代价（cost越小越好）
+        
+        Args:
+            tree: 节点树 [position | parent_idx | cost_G | cost_F_hat | num_children]
+            target: 目标点（通常是meet_point）
+            current_ref_idx: 当前参考节点索引
+            pareto_prob: Pareto选择概率（用于随机性）
+            
+        Returns:
+            new_ref_idx: 新的参考节点索引
+            new_ref_point: 新的参考节点位置
+        """
+        if len(tree) < 5:  # 节点太少，不进行选择
+            return current_ref_idx, tree[current_ref_idx, :self.dim]
+        
+        # 1. 计算所有节点的两个目标值
+        positions = tree[:, :self.dim]
+        costs = tree[:, self.dim+1]  # cost_G
+        
+        # 目标1：到目标点的距离
+        distances_to_target = np.linalg.norm(positions - target, axis=1)
+        
+        # 目标2：路径代价
+        path_costs = costs
+        
+        # 2. 归一化目标值（便于比较）
+        dist_min, dist_max = distances_to_target.min(), distances_to_target.max()
+        cost_min, cost_max = path_costs.min(), path_costs.max()
+        
+        if dist_max > dist_min:
+            norm_distances = (distances_to_target - dist_min) / (dist_max - dist_min)
+        else:
+            norm_distances = np.zeros_like(distances_to_target)
+        
+        if cost_max > cost_min:
+            norm_costs = (path_costs - cost_min) / (cost_max - cost_min)
+        else:
+            norm_costs = np.zeros_like(path_costs)
+        
+        # 3. 找出Pareto前沿节点（非支配解）
+        pareto_front = []
+        for i in range(len(tree)):
+            is_dominated = False
+            for j in range(len(tree)):
+                if i == j:
+                    continue
+                # 如果j支配i（j在两个目标上都不差于i，且至少一个更好）
+                if (distances_to_target[j] <= distances_to_target[i] and 
+                    path_costs[j] <= path_costs[i] and
+                    (distances_to_target[j] < distances_to_target[i] or 
+                     path_costs[j] < path_costs[i])):
+                    is_dominated = True
+                    break
+            
+            if not is_dominated:
+                pareto_front.append(i)
+        
+        if len(pareto_front) == 0:
+            pareto_front = [0]  # 回退到根节点
+        
+        # 4. 从Pareto前沿中选择节点（基于概率和综合得分）
+        if np.random.rand() < pareto_prob:
+            # 高概率选择：根据综合得分（平衡距离和代价）
+            # 综合得分 = 0.6 * 归一化距离 + 0.4 * 归一化代价（距离更重要）
+            scores = 0.6 * norm_distances[pareto_front] + 0.4 * norm_costs[pareto_front]
+            best_idx_in_front = np.argmin(scores)
+            selected_idx = pareto_front[best_idx_in_front]
+        else:
+            # 低概率随机选择：增加探索性
+            selected_idx = np.random.choice(pareto_front)
+        
+        # 5. 碰撞检测：确保从当前参考点到新参考点的路径无碰撞
+        current_ref = tree[current_ref_idx, :self.dim]
+        new_ref = tree[selected_idx, :self.dim]
+        
+        if not is_collision_free(current_ref, new_ref, self.obstacles, self.dim):
+            # 如果有碰撞，保持当前参考点
+            return current_ref_idx, current_ref
+        
+        return selected_idx, new_ref
     
     def _calculate_ellipsoid_params(
         self, treeA: np.ndarray, treeB: np.ndarray, meet_point: np.ndarray,

@@ -60,10 +60,10 @@ def stage1_coarse_search():
     print(f"Kd: {kd_coarse}")
     print(f"Pareto Interval: {PARETO_INTERVAL} (fixed)")
     
-    env = EnvironmentConfig.generate_2d_environment(
-        bounds=[0, 800, 0, 800], num_obstacles=15,
-        start_point=np.array([50, 50]), goal_point=np.array([750, 750]),
-        radius_range=(10.0, 25.0), seed=42
+    env = EnvironmentConfig.generate_3d_environment(
+        bounds=[0, 1500, 0, 1500, 0, 1500], num_obstacles=400,
+        start_point=np.array([100, 100, 100]), goal_point=np.array([1400, 1400, 1400]),
+        radius_range=(15.0, 30.0), seed=42
     )
     
     results = []
@@ -75,9 +75,9 @@ def stage1_coarse_search():
                 config_num += 1
                 print(f"\n[{config_num}/{total_configs}] Kp={kp:.2f}, Ki={ki:.3f}, Kd={kd:.2f}", end=' ')
                 
-                # Run 3 trials per configuration
+                # Run 7 trials per configuration for reliable statistics
                 run_data = []
-                for trial in range(3):
+                for trial in range(7):
                     planner = SCRRTBasicPID(
                         env=env, max_iterations=5000, mode='custom_pid',
                         Kp=kp, Ki=ki, Kd=kd,
@@ -169,10 +169,10 @@ def stage2_fine_tuning(stage1_results):
     total_configs = len(kp_fine) * len(ki_fine) * len(kd_fine)
     print(f"\nTesting {total_configs} configurations")
     
-    env = EnvironmentConfig.generate_2d_environment(
-        bounds=[0, 800, 0, 800], num_obstacles=15,
-        start_point=np.array([50, 50]), goal_point=np.array([750, 750]),
-        radius_range=(10.0, 25.0), seed=42
+    env = EnvironmentConfig.generate_3d_environment(
+        bounds=[0, 1500, 0, 1500, 0, 1500], num_obstacles=400,
+        start_point=np.array([100, 100, 100]), goal_point=np.array([1400, 1400, 1400]),
+        radius_range=(15.0, 30.0), seed=42
     )
     
     results = []
@@ -184,9 +184,9 @@ def stage2_fine_tuning(stage1_results):
                 config_num += 1
                 print(f"\n[{config_num}/{total_configs}] Kp={kp:.2f}, Ki={ki:.3f}, Kd={kd:.2f}", end=' ')
                 
-                # Run 5 trials for better statistics
+                # Run 10 trials for high-precision fine-tuning
                 run_data = []
-                for trial in range(5):
+                for trial in range(10):
                     planner = SCRRTBasicPID(
                         env=env, max_iterations=5000, mode='custom_pid',
                         Kp=kp, Ki=ki, Kd=kd,
@@ -246,10 +246,10 @@ def stage2_fine_tuning(stage1_results):
 
 
 def stage3_final_validation(stage2_results):
-    """Stage 3: Final validation of best configuration with 20 runs"""
+    """Stage 3: Final validation of best configuration with 30 runs"""
     
     print("\n" + "="*90)
-    print("STAGE 3: FINAL VALIDATION (20 RUNS)")
+    print("STAGE 3: FINAL VALIDATION (30 RUNS)")
     print("="*90)
     
     best = stage2_results.iloc[0]
@@ -269,8 +269,8 @@ def stage3_final_validation(stage2_results):
     )
     
     run_data = []
-    for trial in range(20):
-        print(f"\n  Trial {trial+1}/20: ", end='', flush=True)
+    for trial in range(30):
+        print(f"\n  Trial {trial+1}/30: ", end='', flush=True)
         
         planner = SCRRTBasicPID(
             env=env, max_iterations=5000, mode='custom_pid',
@@ -336,9 +336,9 @@ def main():
     print(f"\nTotal parameter space: {len(KP_RANGE)}×{len(KI_RANGE)}×{len(KD_RANGE)} = {len(KP_RANGE)*len(KI_RANGE)*len(KD_RANGE)} combinations")
     print(f"Pareto Interval: {PARETO_INTERVAL} (fixed)")
     print(f"\nStrategy: 3-stage intelligent search")
-    print(f"  Stage 1: Coarse grid (6×6×5 = 180 configs, 3 runs each)")
-    print(f"  Stage 2: Fine-tuning around best region (5 runs each)")
-    print(f"  Stage 3: Final validation (20 runs)")
+    print(f"  Stage 1: Coarse grid (6×6×5 = 180 configs, 7 runs each)")
+    print(f"  Stage 2: Fine-tuning around best region (10 runs each)")
+    print(f"  Stage 3: Final validation (30 runs)")
     
     start_time = datetime.now()
     

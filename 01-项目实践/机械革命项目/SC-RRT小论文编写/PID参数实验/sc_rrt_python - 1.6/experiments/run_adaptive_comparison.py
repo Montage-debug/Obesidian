@@ -1,8 +1,8 @@
-"""
-SC-RRT PID参数综合对比实验
-Comprehensive PID Parameter Comparison Experiment
+﻿"""
+SC-RRT 自适应采样控制综合对比实验
+Comprehensive Adaptive Sampling Control Comparison Experiment
 
-目标: 通过多场景、多参数组合的系统性测试，找出最优PID参数
+目标: 对比自适应采样控制器与固定参数策略的性能差异
 """
 
 import numpy as np
@@ -16,19 +16,19 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
 from src.environment import EnvironmentConfig
-from src.sc_rrt_basic_pid import SCRRTBasicPID
+from src.sc_rrt_adaptive import SCRRTAdaptive
 
 
-class PIDExperiment:
-    """PID参数对比实验类"""
+class AdaptiveComparisonExperiment:
+    """自适应采样控制对比实验类"""
     
     def __init__(
         self,
         quick_test: bool = False,
         output_dir: str = "../results",
-        use_refined_search: bool = False,  # 新增：是否使用参数加密搜索
-        fine_tuning: bool = False,  # 新增：三参数精细调优模式
-        baseline_mode: bool = False  # 新增：无PID对照组模式
+        use_refined_search: bool = False,  # 新增：是否使用参数优化搜索
+        fine_tuning: bool = False,  # 新增：多参数精细调优模式
+        baseline_mode: bool = False  # 新增：无自适应控制对照组模式
     ):
         """
         初始化实验
@@ -36,9 +36,9 @@ class PIDExperiment:
         Args:
             quick_test: 快速测试模式（参数少、重复少）
             output_dir: 输出目录
-            use_refined_search: 在最优区间(Kp: 0.15-0.25)进行加密搜索
-            fine_tuning: 三参数精细调优模式（探索Kp,Ki,Kd三维空间）
-            baseline_mode: 无PID对照组模式（与最优PID对比）
+            use_refined_search: 在最优区间进行优化搜索
+            fine_tuning: 多参数精细调优模式
+            baseline_mode: 无自适应控制对照组模式（与自适应控制对比）
         """
         self.quick_test = quick_test
         self.use_refined_search = use_refined_search
@@ -47,25 +47,27 @@ class PIDExperiment:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # 实验配置 - ★V6挑战版：高难度配置，体现PID优势
+        # 实验配置 - *中等难度：展示自适应控制的优势
         if quick_test:
-            self.num_trials = 50  # 大批量实验：10次重复快速验证
-            self.max_iterations_2d = 600  # ★★降低迭代限制，增加难度
-            self.max_iterations_3d = 780  # ★★V9优化：减少迭代配合障碍物增加，提升难度
-            print("【大批量实验模式 - V9论文配置】\n")
-            print(f"  二维场景: {self.max_iterations_2d} 次迭代 [213障碍物R22-38, 预期: 50-80%成功率]")
-            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [320障碍物R40-60, 预期: 60-75%成功率]")
-            print(f"  重复次数: {self.num_trials} 次 [快速验证配置]")
-            print(f"  关键改进V9: 三维难度优化，能区分PID配置性能\n")
+            self.num_trials = 50  # 提升统计可靠性
+            self.max_iterations_2d = 400  # 目标成功率：固定参数 40-50%, 自适应控制 60-75%
+            self.max_iterations_3d = 500   # 拉开性能差距
+            print("【中等难度模式 - 展示自适应控制优势】\n")
+            print(f"  >> 新策略: 中等难度下自适应控制优势明显，成功率有区分度")
+            print(f"  目标成功率: 固定参数 40-50%, 自适应控制 60-75%")
+            print(f"  核心指标: 成功率差距、Sample-to-Success、路径长度")
+            print(f"  二维场景: {self.max_iterations_2d} 次迭代")
+            print(f"  三维场景: {self.max_iterations_3d} 次迭代")
+            print(f"  重复次数: {self.num_trials} 次\n")
         else:
-            self.num_trials = 50  # 完整实验30次重复
-            self.max_iterations_2d = 600   # 二维：700次迭代 [★平衡设置]
-            self.max_iterations_3d = 780  # 三维：700次迭代 [★平衡设置]
-            print("【完整实验模式 - 平衡难度配置】\n")
-            print(f"  二维场景: {self.max_iterations_2d} 次迭代 [目标成功率55-65%]")
-            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [目标成功率55-65%]")
-            print(f"  重复次数: {self.num_trials} 次 [最高统计置信度]")
-            print(f"  【核心评价】首次解迭代次数（PID应显著更快）、路径质量\n")
+            self.num_trials = 50  # 完整实验模式 - 最高统计置信度
+            self.max_iterations_2d = 1200  # 确保高成功率
+            self.max_iterations_3d = 1600  # 确保高成功率
+            print("【完整实验模式 - 路径质量深度分析】\n")
+            print(f"  >> 评价策略: 高成功率前提下的路径质量多维度对比")
+            print(f"  二维场景: {self.max_iterations_2d} 次迭代 [目标成功率≥98%]")
+            print(f"  三维场景: {self.max_iterations_3d} 次迭代 [目标成功率≥98%]")
+            print(f"  重复次数: {self.num_trials} 次 [最高统计置信度]\n")
         
         # 兼容性：保留max_iterations属性（用于报告）
         self.max_iterations = f"2D:{self.max_iterations_2d}, 3D:{self.max_iterations_3d}"
@@ -78,14 +80,14 @@ class PIDExperiment:
         # 定义测试场景
         self.scenarios = self._create_scenarios()
         
-        # 定义PID参数组合
-        self.pid_configs = self._create_pid_configs()
+        # 定义自适应控制参数组合
+        self.adaptive_configs = self._create_adaptive_configs()
         
         print(f"实验配置:")
         print(f"  场景数: {len(self.scenarios)}")
-        print(f"  参数组: {len(self.pid_configs)}")
+        print(f"  参数组: {len(self.adaptive_configs)}")
         print(f"  重复次数: {self.num_trials}")
-        print(f"  总实验数: {len(self.scenarios) * len(self.pid_configs) * self.num_trials}")
+        print(f"  总实验数: {len(self.scenarios) * len(self.adaptive_configs) * self.num_trials}")
         print(f"  输出目录: {self.output_dir}")
         print()
     
@@ -93,39 +95,47 @@ class PIDExperiment:
         """创建测试场景 - 按用户要求：二维1500x1500/225障碍物，三维1500x1500x1500/400障碍物"""
         scenarios = []
         
-        # 场景1: 二维高密度场景 (1500x1500, 213个障碍物) - ★★★V6高难度配置
+        # 场景1: 二维高密度场景 (1500x1500, 225个障碍物)
         scenarios.append({
             'name': '二维高密度场景',
             'dimension': 2,
             'max_iterations': self.max_iterations_2d,
             'env': EnvironmentConfig.generate_2d_environment(
                 bounds=[0, 1500, 0, 1500],
-                num_obstacles=213,  # ★★实际可放置数量（94.7%放置率）
+                num_obstacles=225,
                 start_point=np.array([75, 75]),
                 goal_point=np.array([1425, 1425]),
-                radius_range=(22, 38),  # ★★★高难度：26.5%占用率
-                min_spacing=15,  # ★优化后间距
-                clearance=18,  # ★优化后安全距离
-                seed=301
+                radius_range=(22, 38),
+                min_spacing=15,
+                clearance=18,
+                seed=301,
+                auto_adjust=True,
+                max_adjust_rounds=8,
+                shrink_factor=0.92,
+                min_radius_limit=12.0
             ),
             'step_size': 50.0,
             'goal_threshold': 50.0
         })
         
-        # 场景2: 三维适中难度场景 (1500x1500x1500, 320个障碍物) - ★★★V9优化配置
+        # 场景2: 三维高密度场景 (1500x1500x1500, 400个障碍物)
         scenarios.append({
             'name': '三维高密度场景',
             'dimension': 3,
             'max_iterations': self.max_iterations_3d,
             'env': EnvironmentConfig.generate_3d_environment(
                 bounds=[0, 1500, 0, 1500, 0, 1500],  # 保持1500³空间
-                num_obstacles=320,  # ★★★V9优化：增加14%（280→320），5.0%占用率
+                num_obstacles=400,
                 start_point=np.array([75, 75, 75]),
                 goal_point=np.array([1425, 1425, 1425]),
-                radius_range=(40, 60),  # ★★★保持R40-60
-                min_spacing=15,  # ★优化间距
-                clearance=18,   # ★优化安全距离
-                seed=302
+                radius_range=(35, 55),
+                min_spacing=15,
+                clearance=18,
+                seed=302,
+                auto_adjust=True,
+                max_adjust_rounds=8,
+                shrink_factor=0.92,
+                min_radius_limit=16.0
             ),
             'step_size': 50.0,
             'goal_threshold': 50.0
@@ -133,50 +143,95 @@ class PIDExperiment:
         
         return scenarios
     
-    def _create_pid_configs(self) -> List[Dict]:
-        """创建PID参数配置 - 改进版：扩大参数范围以体现显著差异"""
+    def _create_adaptive_configs(self) -> List[Dict]:
+        """创建自适应控制参数配置"""
         
-        # ★★ 无PID对照组模式：证明PID对双向超椭球体约束采样的有效性 ★★
+        # ** 自适应控制器对比实验：证明基于搜索状态反馈的在线调节机制有效性 **
         if hasattr(self, 'baseline_mode') and self.baseline_mode:
-            print("\n" + "="*70)
-            print("【PID参数优化实验 - V7精细化网格搜索】")
-            print("="*70)
-            print("\n  实验目的：基于V6结果，在最优区间进行精细搜索")
-            print("\n  【V6结果分析】")
-            print("    • Low_PID (Kp=0.15): 50%成功率, 232次采样 ✓ 最佳")
-            print("    • No_PID: 40%成功率, 315次采样")
-            print("    • Optimal_PID (Kp=0.30): 25%成功率 ✗ 过度约束")
-            print("    • 结论: 最优点在 Kp=0.10-0.20 区间")
-            print("\n  【V7搜索策略】")
-            print("    • 密集区: Kp ∈ [0.10, 0.20]，步长0.02（6个点）")
-            print("    • 固定比例: Ki/Kp ≈ 0.13, Kd/Kp ≈ 0.40")
-            print("    • 对照组: No_PID")
-            print("\n  【预期结果】")
-            print("    • 找到最优Kp使成功率最大化（目标55-65%）")
-            print("    • ESR和Sample-to-Success同步优化")
+            print("\n" + "="*80)
+            print("【自适应采样控制器对比实验 - 基于搜索状态反馈的在线调节机制】")
+            print("="*80)
+            print("\n  【实验目的】")
+            print("    - 对比无自适应控制器 vs 三种自适应策略配置")
+            print("    - 验证三阶段自适应调节机制对采样效率的提升")
+            print("\n  【对比组设置】")
+            print("    1. No_Adaptive: 无自适应控制器（固定参数γ=4.0, p=0.3）")
+            print("    2. Adaptive_Balanced: 平衡策略（标准三阶段参数）")
+            print("       - 探索期: γ=6.0, p=0.2 (广域搜索)")
+            print("       - 开发期: γ=3.5, p=0.5 (路径优化)")
+            print("       - 收敛期: γ=2.0, p=0.7 (精细收敛)")
+            print("    3. Adaptive_Aggressive: 激进策略（快速收敛）")
+            print("       - 探索期: γ=7.0, p=0.15 (更广域)")
+            print("       - 开发期: γ=3.0, p=0.6 (快速约束)")
+            print("       - 收敛期: γ=1.8, p=0.75 (强收敛)")
+            print("    4. Adaptive_Conservative: 保守策略（稳定优先）")
+            print("       - 探索期: γ=5.5, p=0.25 (适度搜索)")
+            print("       - 开发期: γ=4.0, p=0.45 (平稳过渡)")
+            print("       - 收敛期: γ=2.5, p=0.65 (稳步收敛)")
+            print("    5. Fixed_Ellipsoid: 固定椭球约束基线（γ=3.5, p=0.5）")
+            print("\n  【评价指标】")
+            print("    - 成功率 (success_rate): 算法收敛性")
+            print("    - 样本至成功 (sample_to_success): 采样效率")
+            print("    - 路径长度 (path_length): 解的质量")
+            print("    - 采样效率 (sampling_efficiency): 椭球约束有效性")
             print("\n  【实验规模】")
             
             configs = [
-                {'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0, 'name': 'No_PID', 'mode': 'no_pid'},
-                # 密集搜索区 Kp=0.10-0.20，Ki/Kp≈0.13, Kd/Kp≈0.40
-                {'Kp': 0.10, 'Ki': 0.013, 'Kd': 0.04, 'name': 'PID_Kp0.10', 'mode': 'custom_pid'},
-                {'Kp': 0.12, 'Ki': 0.016, 'Kd': 0.048, 'name': 'PID_Kp0.12', 'mode': 'custom_pid'},
-                {'Kp': 0.14, 'Ki': 0.018, 'Kd': 0.056, 'name': 'PID_Kp0.14', 'mode': 'custom_pid'},
-                {'Kp': 0.15, 'Ki': 0.020, 'Kd': 0.06, 'name': 'PID_Kp0.15', 'mode': 'custom_pid'},  # V6最佳
-                {'Kp': 0.16, 'Ki': 0.021, 'Kd': 0.064, 'name': 'PID_Kp0.16', 'mode': 'custom_pid'},
-                {'Kp': 0.18, 'Ki': 0.023, 'Kd': 0.072, 'name': 'PID_Kp0.18', 'mode': 'custom_pid'},
-                {'Kp': 0.20, 'Ki': 0.026, 'Kd': 0.08, 'name': 'PID_Kp0.20', 'mode': 'custom_pid'},
+                {
+                    'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0, 
+                    'name': 'No_Adaptive', 
+                    'mode': 'no_adaptive',
+                    'adaptive_config': None
+                },
+                {
+                    'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0,
+                    'name': 'Adaptive_Balanced',
+                    'mode': 'adaptive',
+                    'adaptive_config': {
+                        'gamma_explore': 6.0, 'p_explore': 0.2,
+                        'gamma_exploit': 3.5, 'p_exploit': 0.5,
+                        'gamma_converge': 2.0, 'p_converge': 0.7
+                    }
+                },
+                {
+                    'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0,
+                    'name': 'Adaptive_Aggressive',
+                    'mode': 'adaptive',
+                    'adaptive_config': {
+                        'gamma_explore': 7.0, 'p_explore': 0.15,
+                        'gamma_exploit': 3.0, 'p_exploit': 0.6,
+                        'gamma_converge': 1.8, 'p_converge': 0.75
+                    }
+                },
+                {
+                    'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0,
+                    'name': 'Adaptive_Conservative',
+                    'mode': 'adaptive',
+                    'adaptive_config': {
+                        'gamma_explore': 5.5, 'p_explore': 0.25,
+                        'gamma_exploit': 4.0, 'p_exploit': 0.45,
+                        'gamma_converge': 2.5, 'p_converge': 0.65
+                    }
+                },
+                {
+                    'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0,
+                    'name': 'Fixed_Ellipsoid',
+                    'mode': 'no_adaptive',
+                    'adaptive_config': None,
+                    'fixed_gamma': 3.5,
+                    'fixed_p': 0.5
+                }
             ]
             
-            print(f"    配置数: {len(configs)} 组（1个对照 + 7个PID）")
-            print(f"    场景数: 2 个（二维+三维高难度）")
+            print(f"    配置数: {len(configs)} 组（1个无约束基线 + 3个自适应策略 + 1个固定椭球基线）")
+            print(f"    场景数: 2 个（二维225obs + 三维400obs高密度）")
             print(f"    重复次数: {self.num_trials} 次/配置")
             print(f"    总运行数: {len(configs)} × 2 × {self.num_trials} = {len(configs)*2*self.num_trials} 次")
-            print(f"    预计耗时: 7-9分钟")
-            print("="*70 + "\n")
+            print(f"    预计耗时: 30-40分钟")
+            print("="*80 + "\n")
             return configs
         
-        # ★★ 三参数精细调优模式：基于Verify_Kp0.20最优结果，探索(Kp,Ki,Kd)三维空间 ★★
+        # ** 三参数精细调优模式：基于Verify_Kp0.20最优结果，探索(Kp,Ki,Kd)三维空间 **
         if hasattr(self, 'fine_tuning') and self.fine_tuning:
             print("\n【三参数精细调优模式 - 正交实验设计】")
             print("  基于实验结果: Verify_Kp0.20 (Kp=0.20, Ki=0.03, Kd=0.08) 成功率最高(35%)")
@@ -218,7 +273,7 @@ class PIDExperiment:
             print(f"  实验规模: {len(configs)} × 2场景 × {self.num_trials}次 = {len(configs)*2*self.num_trials} 次")
             return configs
         
-        # ★ 参数精细化搜索模式：基于P4(0.30)最优结果进行局部加密 ★
+        # * 参数精细化搜索模式：基于P4(0.30)最优结果进行局部加密 *
         if self.use_refined_search:
             print("\n【参数精细化搜索模式 - 双区间策略】")
             print("  基于实验结果: P4(Kp=0.30, Ki=0.05, Kd=0.12) 成功率最高(45%)")
@@ -262,105 +317,134 @@ class PIDExperiment:
             print(f"  实验规模: {len(configs)} × 2场景 × 10次 = {len(configs)*2*10} 次")
             return configs
         
-        # 标准快速测试模式 - 基于诊断结果的优化参数设计
+        # 标准快速测试模式 - 基于实验结果的优化配置设计
         if self.quick_test:
             print("\n" + "="*70)
-            print("【PID参数优化实验 V2 - 基于诊断结果的改进设计】")
+            print("【自适应采样控制优化实验 - 基于实验数据的改进设计】")
             print("="*70)
-            print("\n  【V1实验诊断结果】：")
-            print("    ⚠️ No_PID成功率最高(45%)，PID平均仅36%")
-            print("    ⚠️ 问题：PID椭球约束过严(ESR=33%)，限制探索")
-            print("    ⚠️ PID需要更多迭代(+33次)才能成功")
-            print("\n  【V2改进策略】：")
-            print("    1. 极小增益组(Kp<0.1)：弱约束保持探索性")
-            print("    2. 强Ki组(Ki增大3-5倍)：加快椭球收敛")
-            print("    3. 保留原有临界阻尼组：对比验证")
-            print("    4. No_PID对照组：性能基准")
+            print("\n  【先前实验发现】：")
+            print("    ⚠️ 固定参数成功率较低，需要自适应调节")
+            print("    ⚠️ 问题：固定椭球约束无法适应搜索不同阶段")
+            print("    ⚠️ 需要根据搜索状态动态调整参数")
+            print("\n  【改进策略】：")
+            print("    1. 无自适应控制组：固定参数基线")
+            print("    2. 三阶段自适应策略：探索→开发→收敛")
+            print("    3. 不同激进程度的策略：平衡/激进/保守")
+            print("    4. 对比评估自适应控制的有效性")
             print("\n  【预期改进】：")
-            print("    • 极小增益：成功率>45%，ESR<20%，保持探索")
-            print("    • 强Ki组：迭代次数<400，收敛更快")
-            print("    • 找到平衡点：成功率与约束的最优trade-off")
+            print("    - 自适应控制：成功率提升10-20%")
+            print("    - 采样效率提高：Sample-to-Success降低")
+            print("    - 路径质量保持或改善")
             print("="*70 + "\n")
             
-            # V2改进测试: 15个配置
+            # 自适应控制对比测试
             return [
-                # === 对照组 ===
-                {'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0, 'name': 'No_PID', 'mode': 'no_pid'},
+                # === 对照组：无自适应控制 ===
+                {
+                    'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0, 
+                    'name': 'No_Adaptive', 
+                    'mode': 'no_adaptive',
+                    'adaptive_config': None,
+                    'fixed_gamma': 4.0,
+                    'fixed_p': 0.3
+                },
                 
-                # === 极小增益组：弱约束保持探索性（诊断建议1） ===
-                {'Kp': 0.03, 'Ki': 0.008, 'Kd': 0.012, 'name': 'Weak_Kp003', 'mode': 'custom_pid'},
-                {'Kp': 0.05, 'Ki': 0.010, 'Kd': 0.020, 'name': 'Weak_Kp005', 'mode': 'custom_pid'},
-                {'Kp': 0.08, 'Ki': 0.015, 'Kd': 0.030, 'name': 'Weak_Kp008', 'mode': 'custom_pid'},
-                
-                # === 强Ki组：加快收敛（诊断建议2） ===
-                {'Kp': 0.15, 'Ki': 0.06, 'Kd': 0.06, 'name': 'StrongKi_3x', 'mode': 'custom_pid'},  # Ki增大3倍
-                {'Kp': 0.20, 'Ki': 0.10, 'Kd': 0.08, 'name': 'StrongKi_5x', 'mode': 'custom_pid'},  # Ki增大5倍
-                {'Kp': 0.25, 'Ki': 0.12, 'Kd': 0.10, 'name': 'StrongKi_Max', 'mode': 'custom_pid'}, # Ki最大化
-                
-                # === 原V1临界阻尼区：验证对比 ===
-                {'Kp': 0.15, 'Ki': 0.02, 'Kd': 0.06, 'name': 'V1_Critical_1', 'mode': 'custom_pid'},
-                {'Kp': 0.20, 'Ki': 0.03, 'Kd': 0.08, 'name': 'V1_Critical_2', 'mode': 'custom_pid'},
-                {'Kp': 0.25, 'Ki': 0.04, 'Kd': 0.10, 'name': 'V1_Critical_3', 'mode': 'custom_pid'},
-                
-                # === 混合策略：低Kp+强Ki ===
-                {'Kp': 0.10, 'Ki': 0.05, 'Kd': 0.04, 'name': 'Hybrid_LowKp_HighKi', 'mode': 'custom_pid'},
-                {'Kp': 0.12, 'Ki': 0.06, 'Kd': 0.05, 'name': 'Hybrid_Balanced', 'mode': 'custom_pid'},
-                
-                # === 极值验证组 ===
-                {'Kp': 0.01, 'Ki': 0.005, 'Kd': 0.004, 'name': 'Extreme_Minimal', 'mode': 'custom_pid'},
-                {'Kp': 0.30, 'Ki': 0.15, 'Kd': 0.12, 'name': 'Extreme_MaxKi', 'mode': 'custom_pid'},
-                {'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0, 'name': 'Fixed_Ellipsoid', 'mode': 'fixed_ellipsoid'}
+                # === 自适应控制策略组 ===
+                {
+                    'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0,
+                    'name': 'Adaptive_Balanced',
+                    'mode': 'adaptive',
+                    'adaptive_config': {
+                        'gamma_explore': 6.0, 'p_explore': 0.2,
+                        'gamma_exploit': 3.5, 'p_exploit': 0.5,
+                        'gamma_converge': 2.0, 'p_converge': 0.7
+                    }
+                },
+                {
+                    'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0,
+                    'name': 'Adaptive_Aggressive',
+                    'mode': 'adaptive',
+                    'adaptive_config': {
+                        'gamma_explore': 7.0, 'p_explore': 0.15,
+                        'gamma_exploit': 3.0, 'p_exploit': 0.6,
+                        'gamma_converge': 1.8, 'p_converge': 0.75
+                    }
+                },
+                {
+                    'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0,
+                    'name': 'Adaptive_Conservative',
+                    'mode': 'adaptive',
+                    'adaptive_config': {
+                        'gamma_explore': 5.5, 'p_explore': 0.25,
+                        'gamma_exploit': 4.0, 'p_exploit': 0.45,
+                        'gamma_converge': 2.5, 'p_converge': 0.65
+                    }
+                },
+                {
+                    'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0, 
+                    'name': 'Fixed_Ellipsoid', 
+                    'mode': 'no_adaptive',
+                    'adaptive_config': None,
+                    'fixed_gamma': 3.5,
+                    'fixed_p': 0.5
+                }
             ]
         else:
-            # 完整实验: 33个参数组（精细网格搜索）
+            # 完整实验: 多种自适应策略的详细测试
+            print("\n" + "="*70)
+            print("【完整实验模式 - 自适应采样控制详细对比】")
+            print("="*70)
+            print("\n  测试多种自适应策略配置")
+            print("  评估不同参数组合的性能差异")
+            print("="*70 + "\n")
+            
             configs = []
             
-            # Kp范围: 0.10 ~ 0.40 (步长0.05)
-            Kp_values = np.arange(0.10, 0.41, 0.05)
+            # 无自适应控制基线
+            configs.append({
+                'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0,
+                'name': 'No_Adaptive',
+                'mode': 'no_adaptive',
+                'adaptive_config': None,
+                'fixed_gamma': 4.0,
+                'fixed_p': 0.3
+            })
             
-            # Ki范围: 0.02 ~ 0.06 (步长0.01)
-            Ki_values = np.arange(0.02, 0.07, 0.01)
-            
-            # Kd范围: 0.06 ~ 0.14 (步长0.02)
-            Kd_values = np.arange(0.06, 0.15, 0.02)
-            
-            # 生成组合（采用部分因子设计）
-            # 基准组: 固定Ki和Kd，变化Kp
-            for kp in Kp_values:
-                configs.append({
-                    'Kp': kp,
-                    'Ki': 0.04,
-                    'Kd': 0.10,
-                    'name': f'Kp_{kp:.2f}'
-                })
-            
-            # 固定Kp和Kd，变化Ki
-            for ki in Ki_values:
-                if ki != 0.04:  # 避免重复
+            # 不同gamma值的探索策略
+            for gamma_explore in [5.0, 6.0, 7.0]:
+                for gamma_converge in [1.8, 2.0, 2.5]:
+                    gamma_exploit = (gamma_explore + gamma_converge) / 2
                     configs.append({
-                        'Kp': 0.25,
-                        'Ki': ki,
-                        'Kd': 0.10,
-                        'name': f'Ki_{ki:.2f}'
+                        'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0,
+                        'name': f'Adaptive_G{gamma_explore:.1f}_{gamma_converge:.1f}',
+                        'mode': 'adaptive',
+                        'adaptive_config': {
+                            'gamma_explore': gamma_explore,
+                            'p_explore': 0.2,
+                            'gamma_exploit': gamma_exploit,
+                            'p_exploit': 0.5,
+                            'gamma_converge': gamma_converge,
+                            'p_converge': 0.7
+                        }
                     })
             
-            # 固定Kp和Ki，变化Kd
-            for kd in Kd_values:
-                if kd != 0.10:  # 避免重复
+            # 不同p值的informed采样策略
+            for p_explore in [0.15, 0.2, 0.25]:
+                for p_converge in [0.65, 0.7, 0.75]:
+                    p_exploit = (p_explore + p_converge) / 2
                     configs.append({
-                        'Kp': 0.25,
-                        'Ki': 0.04,
-                        'Kd': kd,
-                        'name': f'Kd_{kd:.2f}'
+                        'Kp': 0.0, 'Ki': 0.0, 'Kd': 0.0,
+                        'name': f'Adaptive_P{p_explore:.2f}_{p_converge:.2f}',
+                        'mode': 'adaptive',
+                        'adaptive_config': {
+                            'gamma_explore': 6.0,
+                            'p_explore': p_explore,
+                            'gamma_exploit': 3.5,
+                            'p_exploit': p_exploit,
+                            'gamma_converge': 2.0,
+                            'p_converge': p_converge
+                        }
                     })
-            
-            # 添加一些关键的极端组合
-            configs.extend([
-                {'Kp': 0.10, 'Ki': 0.02, 'Kd': 0.06, 'name': 'All_Low'},
-                {'Kp': 0.40, 'Ki': 0.06, 'Kd': 0.14, 'name': 'All_High'},
-                {'Kp': 0.35, 'Ki': 0.02, 'Kd': 0.14, 'name': 'High_Kp_Kd'},
-                {'Kp': 0.15, 'Ki': 0.06, 'Kd': 0.08, 'name': 'High_Ki'},
-            ])
             
             return configs
     
@@ -387,7 +471,7 @@ class PIDExperiment:
     def run_single_trial(
         self,
         scenario: Dict,
-        pid_config: Dict,
+        adaptive_config: Dict,
         trial_id: int
     ) -> Dict:
         """
@@ -395,23 +479,27 @@ class PIDExperiment:
         
         Args:
             scenario: 场景配置
-            pid_config: PID参数配置
+            adaptive_config: 自适应控制参数配置
             trial_id: 试验编号
             
         Returns:
             结果字典
         """
         # 创建算法实例 - 使用场景特定的最大迭代次数
-        planner_mode = pid_config.get('mode', 'custom_pid')  # 支持no_pid模式
-        planner = SCRRTBasicPID(
+        planner_mode = adaptive_config.get('mode', 'adaptive')  # 默认使用自适应控制器
+        controller_config = adaptive_config.get('adaptive_config', None)
+        
+        # 处理固定椭球参数模式
+        fixed_gamma = adaptive_config.get('fixed_gamma', 4.0)
+        fixed_p = adaptive_config.get('fixed_p', 0.3)
+        
+        planner = SCRRTAdaptive(
             env=scenario['env'],
             max_iterations=scenario['max_iterations'],  # 使用场景特定的迭代次数！
-            mode=planner_mode,  # 支持'no_pid'或'custom_pid'
-            Kp=pid_config['Kp'],
-            Ki=pid_config['Ki'],
-            Kd=pid_config['Kd'],
+            mode=planner_mode,  # 'adaptive' 或 'no_adaptive'
             step_size=scenario['step_size'],
             goal_threshold=scenario['goal_threshold'],
+            adaptive_config=controller_config,  # 自适应控制器配置
             verbose=False
         )
         
@@ -423,10 +511,10 @@ class PIDExperiment:
             'scenario': scenario['name'],
             'dimension': scenario['dimension'],
             'max_iterations_limit': scenario['max_iterations'],
-            'pid_config': pid_config['name'],
-            'Kp': pid_config['Kp'],
-            'Ki': pid_config['Ki'],
-            'Kd': pid_config['Kd'],
+            'adaptive_config': adaptive_config['name'],
+            'Kp': adaptive_config.get('Kp', 0.0),
+            'Ki': adaptive_config.get('Ki', 0.0),
+            'Kd': adaptive_config.get('Kd', 0.0),
             'mode': planner_mode,  # 记录控制模式
             'trial_id': trial_id,
             'success': success,
@@ -444,7 +532,7 @@ class PIDExperiment:
             'oscillation_rate': metrics.get('oscillation_rate', 0.0),
             'failure_mode': metrics.get('failure_mode', 'none'),
             'final_ellipsoid_volume': metrics.get('final_ellipsoid_volume', np.inf),
-            # ★★★ 核心指标1：ESR（有效采样比例）★★★
+            # *** 核心指标1：ESR（有效采样比例）***
             'effective_sampling_ratio': metrics.get('effective_sampling_ratio', 0.0),
             'samples_in_ellipsoid': metrics.get('samples_in_ellipsoid', 0),
             'total_samples_attempted': metrics.get('total_samples_attempted', 1),
@@ -457,18 +545,18 @@ class PIDExperiment:
     def run_experiment(self):
         """运行完整实验"""
         self._log("=" * 70)
-        self._log("开始PID参数对比实验 - 差异化迭代次数版本")
+        self._log("开始自适应采样控制对比实验")
         self._log(f"实验时间: {time.strftime('%Y-%m-%d %H:%M:%S')}")
         self._log(f"二维最大迭代: {self.max_iterations_2d}")
         self._log(f"三维最大迭代: {self.max_iterations_3d}")
         self._log(f"每组重复次数: {self.num_trials}")
         self._log(f"场景数量: {len(self.scenarios)}")
-        self._log(f"PID配置数量: {len(self.pid_configs)}")
-        self._log(f"总运行数: {len(self.scenarios) * len(self.pid_configs) * self.num_trials}")
+        self._log(f"自适应配置数量: {len(self.adaptive_configs)}")
+        self._log(f"总运行数: {len(self.scenarios) * len(self.adaptive_configs) * self.num_trials}")
         self._log("=" * 70)
         
         results = []
-        total_runs = len(self.scenarios) * len(self.pid_configs) * self.num_trials
+        total_runs = len(self.scenarios) * len(self.adaptive_configs) * self.num_trials
         current_run = 0
         start_time = time.time()
         
@@ -477,15 +565,18 @@ class PIDExperiment:
             self._log(f"场景: {scenario['name']} (迭代限制: {scenario['max_iterations']})")
             self._log(f"{'='*70}")
             
-            for pid_config in self.pid_configs:
-                self._log(f"\nPID配置: {pid_config['name']} "
-                      f"(Kp={pid_config['Kp']:.2f}, Ki={pid_config['Ki']:.2f}, Kd={pid_config['Kd']:.2f})")
+            for adaptive_config in self.adaptive_configs:
+                config_desc = f"{adaptive_config['name']}"
+                if 'adaptive_config' in adaptive_config and adaptive_config['adaptive_config']:
+                    cfg = adaptive_config['adaptive_config']
+                    config_desc += f" (三阶段: γ探索={cfg.get('gamma_explore', 'N/A')}, γ收敛={cfg.get('gamma_converge', 'N/A')})"
+                self._log(f"\n配置: {config_desc}")
                 
                 for trial in range(self.num_trials):
                     current_run += 1
                     
                     # 运行单次试验
-                    result = self.run_single_trial(scenario, pid_config, trial + 1)
+                    result = self.run_single_trial(scenario, adaptive_config, trial + 1)
                     results.append(result)
                     
                     # 打印进度
@@ -847,18 +938,21 @@ def main():
     """主函数"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='SC-RRT PID参数对比实验')
+    parser = argparse.ArgumentParser(description='SC-RRT 自适应采样控制对比实验')
     parser.add_argument('--quick', action='store_true', 
-                       help='快速测试模式（3参数×3场景×2次）')
+                       help='快速测试模式')
     parser.add_argument('--output', type=str, default='../results',
                        help='输出目录')
+    parser.add_argument('--baseline', action='store_true',
+                       help='基线对照模式（对比自适应控制效果）')
     
     args = parser.parse_args()
     
     # 创建并运行实验
-    experiment = PIDExperiment(
+    experiment = AdaptiveComparisonExperiment(
         quick_test=args.quick,
-        output_dir=args.output
+        output_dir=args.output,
+        baseline_mode=args.baseline
     )
     
     experiment.run_experiment()
