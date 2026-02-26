@@ -15,7 +15,7 @@ addpath(genpath(pwd));
 % =================== 参数结构体集中管理 ===================
 configParams = struct(...
     'sc_rrt_mode', 'adaptive', ...              % 算法模式: 'basic'|'pid'|'adaptive'
-    'env_idx', 3, ...                           % 环境索引 1-4
+    'env_idx', 2, ...                           % 环境索引 1-4
     'enable_path_smoothing', true, ...          % 启用路径平滑
     'path_smoothing_points', 150, ...           % 平滑后路径点数
     'use_pareto_optimization', true, ...        % 启用Pareto前沿优化

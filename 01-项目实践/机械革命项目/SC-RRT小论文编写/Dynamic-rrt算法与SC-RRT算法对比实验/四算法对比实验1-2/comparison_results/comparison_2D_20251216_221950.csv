@@ -1,0 +1,2 @@
+Algorithm,Success Rate (%),Path Length Mean,Path Length Std,Time Mean (s),Time Std (s),Nodes Mean,Nodes Std,Smoothness Mean,Smoothness Std
+SC_RRT_Basic,100.00,1909.85,1.16,1.1076,1.4480,3,1,0.0048,0.0108
