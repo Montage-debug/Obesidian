@@ -68,7 +68,7 @@ function runAlgorithmComparison(varargin)
     %% ========== 参数解析 ==========
     p = inputParser;
     addParameter(p, 'NumRuns', 1, @isnumeric);              % 每个算法运行次数
-    addParameter(p, 'Dimension', '2D', @ischar);          % '2D', '3D', 'both'
+    addParameter(p, 'Dimension', '3D', @ischar);          % '2D', '3D', 'both'
     addParameter(p, 'NumObstacles2D', 225, @isnumeric);      % 2D环境障碍物数量 (1500×1500环境)
     addParameter(p, 'NumObstacles3D', 400, @isnumeric);     % 3D环境障碍物数量 (1500³环境)
     addParameter(p, 'MaxIterations2D', 5000, @isnumeric);   % 2D最大迭代次数 (大环境需更多迭代)
