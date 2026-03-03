@@ -1,15 +1,16 @@
 function [path, tree, success, metrics] = SC_RRT_Basic(env, max_iterations, varargin)
-% SC_RRT_Basic - SC-RRT算法全面优化版本
+% SC_RRT_Basic - SC-RRT算法：自适应双向超椭球约束采样路径规划
 %
 % 功能特点:
-%   1. 双向RRT with 非对称双椭球约束采样
-%   2. 动态交汇点转移机制
-%   3. Pareto前沿多目标优化
-%   4. 自适应PID控制代价调节
-%   5. 模糊推理增益调优
-%   6. 节点重连策略(Rewiring)
-%   7. 势场法交汇点计算
-%   8. 完整的性能指标追踪
+%   1. 双向RRT with 非对称双椭球约束采样 (ADCS)
+%   2. 动态交汇点转移机制（加权质心法）
+%   3. Pareto前沿引导的对树连接目标选择
+%   4. 基于搜索状态反馈的在线调节机制 (SSFOR)
+%   5. LinUCB上下文老虎机驱动的SSFOR参数自适应 (OnlineParamTuner)
+%   6. 节点重连策略(Rewiring) + Connect贪心扩展
+%   7. 双椭球交集可达性保障
+%   8. 七阶段路径后处理管线
+%   9. 完整的性能指标追踪（含在线学习统计）
 %
 % 输入参数:
 %   env             - 环境结构体 (来自EnvironmentConfig)
@@ -299,9 +300,14 @@ while iterations < max_iterations && ~success
         % 知情采样：在gamma膨胀的椭球内采样（SSFOR控制的约束域）
         sample_A = sampleInEllipsoid(start_point, meet_point, c_best_A * gamma_A, bounds, dim);
     elseif r_val < p_informed_A + (1 - p_informed_A) * current_cross_tree_ratio
-        % 对树连接偏置：采样树B最近节点附近（比例由OnlineParamTuner在线调节）
-        if sizeB > 1
-            rand_B_idx = max(1, sizeB - randi(min(sizeB, 5)) + 1);  % 从树B最新节点中选
+        % Pareto前沿引导的对树连接偏置（比例由OnlineParamTuner在线调节）
+        if sizeB > 3 && use_pareto
+            % 从树B的Pareto前沿中选取高质量目标节点（多目标：代价+生长度+路径曲折度）
+            [pareto_target, ~, ~, ~] = ParetoModule(treeB(1:sizeB, :), meet_point, 0.15, dim);
+            sample_A = pareto_target + randn(1, dim) * step_size * 0.3;
+            sample_A = max(bounds_lo, min(bounds_hi, sample_A));
+        elseif sizeB > 1
+            rand_B_idx = max(1, sizeB - randi(min(sizeB, 5)) + 1);
             sample_A = treeB(rand_B_idx, 1:dim) + randn(1, dim) * step_size;
             sample_A = max(bounds_lo, min(bounds_hi, sample_A));
         else
@@ -461,9 +467,14 @@ while iterations < max_iterations && ~success
         % 知情采样：在gamma膨胀的椭球内采样（SSFOR控制的约束域）
         sample_B = sampleInEllipsoid(meet_point, goal_point, c_best_B * gamma_B, bounds, dim);
     elseif r_val < p_informed_B + (1 - p_informed_B) * current_cross_tree_ratio
-        % 对树连接偏置（比例由OnlineParamTuner在线调节）
-        if sizeA > 1
-            rand_A_idx = max(1, sizeA - randi(min(sizeA, 5)) + 1);  % 从树A最新节点中选
+        % Pareto前沿引导的对树连接偏置（比例由OnlineParamTuner在线调节）
+        if sizeA > 3 && use_pareto
+            % 从树A的Pareto前沿中选取高质量目标节点（多目标：代价+生长度+路径曲折度）
+            [pareto_target, ~, ~, ~] = ParetoModule(treeA(1:sizeA, :), meet_point, 0.15, dim);
+            sample_B = pareto_target + randn(1, dim) * step_size * 0.3;
+            sample_B = max(bounds_lo, min(bounds_hi, sample_B));
+        elseif sizeA > 1
+            rand_A_idx = max(1, sizeA - randi(min(sizeA, 5)) + 1);
             sample_B = treeA(rand_A_idx, 1:dim) + randn(1, dim) * step_size;
             sample_B = max(bounds_lo, min(bounds_hi, sample_B));
         else
@@ -633,35 +644,87 @@ if ~isempty(tuner_state) && tuner_state.round > 0
         tuner_avg_reward);
 end
 
-%% ========== 路径后处理（多阶段高质量平滑） ==========
+%% ========== 路径后处理（七阶段高质量平滑与安全保障） ==========
 if success && ~isempty(path)
     path_raw = path;  % 保存原始路径用于回退
     
-    % Step 1: 强力Shortcut优化 - 贪心 + 随机对捷径
+    % Step 0: 移除近共线冗余节点（预清理，减少后续计算量）
     try
-        path = shortcutPath(path, obstacles, dim, 12);
+        if size(path, 1) > 4
+            keep_mask = true(size(path, 1), 1);
+            for ci = 2:size(path, 1)-1
+                v1 = path(ci, :) - path(ci-1, :);
+                v2 = path(ci+1, :) - path(ci, :);
+                len1 = norm(v1); len2 = norm(v2);
+                if len1 > 1e-8 && len2 > 1e-8
+                    cos_a = dot(v1, v2) / (len1 * len2);
+                    if cos_a > cosd(3)  % 偏差<3度视为共线
+                        keep_mask(ci) = false;
+                    end
+                end
+            end
+            path = path(keep_mask, :);
+        end
     catch
     end
     
-    % Step 2: 弹性带拉直优化 - 将路径节点拉向局部最优位置
+    % Step 1: 强力Shortcut优化 - 贪心 + 随机对捷径（增强迭代）
     try
-        path = pullPathToOptimal(path, obstacles, dim, 20);
+        path = shortcutPath(path, obstacles, dim, 18);
+    catch
+    end
+    
+    % Step 2: 弹性带拉直优化 - 将路径节点拉向局部最优位置（增强迭代）
+    try
+        path = pullPathToOptimal(path, obstacles, dim, 30);
     catch
     end
     
     % Step 3: 二次Shortcut - 拉直后可能产生新的可跳过段
     try
-        path = shortcutPath(path, obstacles, dim, 5);
+        path = shortcutPath(path, obstacles, dim, 10);
     catch
     end
     
-    % Step 4: 多阶段路径平滑 (渐进加权平均 + 曲率自适应 + 高密度PCHIP + 二次平滑)
+    % Step 4: 自适应重采样 - 确保点间距均匀，避免PCHIP插值振荡
     try
-        path = smoothPathSimple(path, obstacles, dim, 12);
+        seg_lens_r = vecnorm(diff(path), 2, 2);
+        max_gap = step_size * 1.5;
+        if max(seg_lens_r) > max_gap * 2
+            cum_lens_r = [0; cumsum(seg_lens_r)];
+            total_len_r = cum_lens_r(end);
+            target_n_r = max(size(path,1), ceil(total_len_r / max_gap));
+            t_target_r = linspace(0, total_len_r, target_n_r)';
+            path_resamp = zeros(target_n_r, dim);
+            path_resamp(1,:) = path(1,:);
+            path_resamp(end,:) = path(end,:);
+            for ri = 2:target_n_r-1
+                idx_r = find(cum_lens_r <= t_target_r(ri), 1, 'last');
+                idx_r = min(idx_r, size(path,1)-1);
+                alpha_r = (t_target_r(ri) - cum_lens_r(idx_r)) / max(seg_lens_r(idx_r), 1e-10);
+                alpha_r = max(0, min(1, alpha_r));
+                path_resamp(ri,:) = path(idx_r,:)*(1-alpha_r) + path(idx_r+1,:)*alpha_r;
+            end
+            resamp_ok = true;
+            for ri = 1:size(path_resamp,1)-1
+                if ~isCollisionFree(path_resamp(ri,:), path_resamp(ri+1,:), obstacles, dim)
+                    resamp_ok = false; break;
+                end
+            end
+            if resamp_ok
+                path = path_resamp;
+            end
+        end
     catch
     end
     
-    % Step 5: 圆角平滑 - 对残余的尖锐拐角进行贝塞尔曲线过渡
+    % Step 5: 多阶段路径平滑 (渐进加权平均 + 曲率自适应 + 高密度PCHIP + 二次平滑)
+    try
+        path = smoothPathSimple(path, obstacles, dim, 15);
+    catch
+    end
+    
+    % Step 6: 圆角平滑 - 对残余的尖锐拐角进行贝塞尔曲线过渡
     try
         seg_lengths = vecnorm(diff(path), 2, 2);
         fillet_r = mean(seg_lengths) * 0.4;
@@ -672,7 +735,7 @@ if success && ~isempty(path)
     catch
     end
     
-    % Step 4: 最终安全验证
+    % Step 7: 最终安全验证（解析碰撞检测已保证精确性）
     final_safe = true;
     for i = 1:size(path, 1)-1
         if ~isCollisionFree(path(i, :), path(i+1, :), obstacles, dim)
