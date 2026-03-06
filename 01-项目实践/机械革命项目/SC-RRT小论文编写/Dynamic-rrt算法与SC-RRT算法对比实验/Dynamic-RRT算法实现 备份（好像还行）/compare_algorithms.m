@@ -34,7 +34,7 @@ experiment_config.obstacleRadius = 15;
 experiment_config.seed = 42;  % 固定种子
 
 % 实验参数
-experiment_config.num_runs = 100;  % 每个算法运行次数 (论文标准100次，这里先30次)
+experiment_config.num_runs = 30;  % 每个算法运行次数 (论文标准100次，这里先30次)
 experiment_config.max_iterations = 10000;
 experiment_config.time_limit = 10;  % 时间限制(秒)
 
