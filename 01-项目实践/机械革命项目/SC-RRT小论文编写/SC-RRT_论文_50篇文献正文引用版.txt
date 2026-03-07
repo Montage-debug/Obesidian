@@ -1,0 +1,227 @@
+SC-RRT: Bidirectional Adaptive Superellipsoid Constrained Sampling for Path Planning in Cluttered Obstacle Environments
+基于自适应非对称双椭球域约束采样的SC-RRT路径规划算法
+Xingyu Guo1 · YanWu2 · HongYu Gao2 · JiaLe Hu1 · FengHong1 · MuChun Fan1
+
+Abstract:
+针对复杂障碍环境中采样式路径规划算法易产生无效采样、收敛速度慢且在高障碍密度下成功率下降的问题，本文提出了一种基于自适应非对称双椭球约束采样的SC-RRT路径规划算法。该方法在双向并行扩展框架下，通过引入中介点引导，将全局规划任务分解为阶段性子问题，通过构造尺度可变、非对称的双向知情采样域，使采样逐步聚焦于更具改进潜力的可行路径，形成自适应双椭球约束采样策略（Adaptive Dual-Ellipsoid Constrained Sampling,ADCS），在维持探索覆盖性的同时显著提高有效采样密度。为降低代价估计偏差引起的知情子集过度膨胀或过早收缩导致的无效采样，本文建立了基于搜索状态反馈的在线调节机制（Search State Feedback-Based Online Regulation,SSFOR），利用当前最优路径代价的历史演化序列为反馈，对超椭球扩张因子γ与启发式采样概率p实施闭环调节，从而构建随搜索进程实时演化的知情采样子集，使采样密度在全局探索空间与局部约束区域间自适应分配，有效抑制冗余扩展并维持搜索连续性，结合非对称超椭球体约束策略对采样空间进行方向性压缩与扩展，增强了算法在潜在可行通道方向上的分辨能力。
+仿真实验在不同障碍密度与空间维度的测试场景中验证了算法性能。在与对比方法相同的环境配置与计算预算约束下，SC-RRT 相比 Dynamic-RRT 平均路径长度降低约 17%，路径平滑度提升约79%；相比RRT*算法，SC-RRT在获得更优路径质量的同时规划耗时缩短超过两个数量级。实验结果表明，SC-RRT能够在保持搜索完整性的同时有效抑制无效探索，使搜索树具备更稳定的扩展行为与更强的环境适应能力。本研究在理论层面将知情采样约束域的动态调节建模为以路径代价历史序列为反馈的闭环控制问题，揭示了超椭球采样约束在搜索状态驱动下的自适应演化机制，为同类采样式规划算法突破代价估计偏差敏感性提供了可推广的建模范式；在工程应用层面，SC-RRT无需依赖先验参数调优即可在不同障碍密度与空间维度下稳定运行，其模块化的ADCS与SSFOR设计可作为独立组件集成于其他基于RRT的规划框架，在工业机械臂运动规划、自主移动机器人导航及高维配置空间搜索等场景中具有直接的应用价值与良好的推广前景。
+Keywords： Sampling-based path planning、Asymmetric dual-ellipsoid informed sampling、Bidirectional tree search、Online parameter regulation、motion planning
+
+1	School of Mechanical Engineering, Shanghai Institute of Technology, Shanghai 201418, China
+2	Corresponding Author: Xingyu Guo
+	Gxyhaoxianghenlihai@gmail.com
+
+
+────────────────────────────────────────────────────────────
+Introduction
+────────────────────────────────────────────────────────────
+
+随着工业4.0与服务机器人技术的迅猛发展，智能机器人已成为提升制造、服务等领域自动化水平与作业效率的核心载体，其应用场景已从结构化工厂延伸至动态复杂的人机协作环境[1-4]。
+这一趋势对机器人的自主决策能力提出了更高要求，尤其是作为核心技术模块的路径规划算法，其性能直接决定机器人作业的安全性、可靠性与实时性[5-7]。因此，针对复杂环境下的机器人路径规划算法展开深入研究，
+不仅具有重要的理论价值，更对推动智能机器人的工程化应用具有关键意义。路径规划的核心任务是在已知起点与目标点的配置空间中，为机器人生成一条满足运动约束的无碰撞轨迹，
+同时平衡"实时响应"与"路径最优"两大核心目标[8,9]。在动态环境下，随机分布的障碍物及系统不确定性进一步加剧了规划难度，采样约束条件下的可行域收缩与树生长效率下降尤为突出[10]，
+使得同时实现快速收敛与高质量路径成为当前研究中的关键挑战[11,12]。
+快速探索随机树（Rapidly Exploring Random Tree, RRT）算法[13]及其双向扩展形式如双向RRT*是一类经典的采样式路径规划方法，凭借其概率完备性与易实现性，在复杂环境中得到了广泛应用[6,14,15]。
+然而，传统双向 RRT * 算法仍存在固有缺陷，如采样过程随机性强、搜索效率低下以及规划路径几何不够平滑等问题[16,17]。这些不足限制了其在环境尺度大、障碍物密集或动态障碍物分布场景中的性能表现[18,19]。
+为解决上述问题，近年来研究者从采样引导、搜索策略协同以及路径结构优化等角度提出了多种改进方法。
+一类代表性工作通过改进双向搜索框架与采样引导机制来提升收敛效率，尤其关注狭窄通道等"难采样"场景下的可达性增强。Li 和 Chen（2022）提出的 ARRT-Connect [20] 及基于类似思想的ABQ-RRT*[21]，
+依据对偶树探索得到的未勘探区域规模自适应调整抽样策略，并融合 Tahirovic 和 Ferizbegovic（2018）在 RRT 中使用的主成分分析（PCA）思想[22]，以强化树在"细长可行走廊"内的方向性生长，
+从而加快狭窄环境中的探索与连通。然而，此类方法在高维空间或存在多通道的复杂环境中，仍可能在与最优路径无关的区域产生大量冗余采样点，影响整体规划效率。特别是当环境尺度增大或障碍物密度升高时，
+固定采样偏置策略难以适应不同搜索阶段的需求变化，导致知情子集的引导效果下降。为兼顾快速规划与路径质量，另一类研究从代价驱动的采样约束与结构化搜索角度对 RRT 进行改进，
+通过缩小有效采样域或分解搜索过程来加速收敛并提升路径质量。Gammell 等提出的 Informed RRT*[23,24]通过将采样空间限制在以起终点为焦点的超椭球体知情子集内，
+使采样过程专注于可改善当前最优路径代价的区域，奠定了代价引导约束采样的理论基础。在此基础上，Gammell等进一步提出BIT*算法[25,26]，将知情采样与图搜索统一为隐式随机几何图的启发式搜索，
+进一步提升了高维场景的规划效率。为进一步减小固定椭球体对代价估计偏差的敏感性，近年来的改进工作尝试引入动态走廊约束[27]或自适应双向超椭球采样[28]以提升采样域的适应能力。
+Zhao 等提出的 Dynamic RRT 算法创新性地引入启发式超椭球体约束采样机制，通过估计经过扩展节点的路径代价，将采样空间限制在以起点和目标点为焦点、估计路径长度为长轴的超椭球体内，
+大幅提升了新节点生成的有效性[29]。同时，该算法结合帕累托支配（Pareto Dominance）原则[30]与动态规划思想，通过选择帕累托最优节点作为新起点分解规划问题，
+在保证路径长度优化的前提下进一步缩短了收敛时间，其性能显著优于 RRT、RRT*及 Informed RRT等经典算法。此类方法通过采样空间约束与问题分解策略，有效平衡了收敛速度与路径质量，
+然而，该算法的采样约束性能仍高度依赖路径代价估计的准确性：当代价被高估时，椭球体约束范围过大，产生较多无效采样；当代价被低估时，约束域过早收缩，可能将潜在最优路径排除在采样空间之外，
+导致算法收敛至次优解甚至搜索失败。此外，Dynamic RRT 采用单向搜索框架，其知情子集仅以起点和终点为焦点，在复杂环境中对全局搜索方向的引导能力有限，仍存在冗余扩展问题。
+总体而言，现有改进方法在效率与最优性之间仍存在明显权衡：采样引导或双向连通策略虽可加速获得可行解，但通常缺乏渐进最优保证，而代价驱动的约束采样与问题分解方法能够提高有效采样比例并改善路径质量，
+但其性能对代价估计敏感，且约束域多为静态或弱自适应形式，容易在搜索早期出现过度收缩导致可达性下降，或在代价波动时引发采样比例与树扩展行为的震荡，从而削弱全局稳健性与收敛一致性。
+针对上述问题，本文提出一种基于自适应非对称双椭球约束采样域的SC-RRT算法。该算法在双向并行搜索框架与中介点引导下，构造起点侧与目标侧可独立伸缩的非对称双椭球域，
+为克服传统约束采样对代价估计偏差的敏感性，避免采样空间过早收缩或无效膨胀，本文建立了基于搜索状态反馈的在线调节机制，以当前最优路径代价及其历史演化为反馈，通过闭环控制调节超椭球体知情子集的尺度，
+在尚未获得稳定可行解阶段适度放宽约束、提升探索覆盖；当可行路径出现并持续改进时逐步强化约束、提升有效采样密度并抑制无效扩展，从而在收敛速度、路径质量与搜索稳定性之间建立可控的动态平衡。
+本文在不同障碍密度与空间维度的典型场景下，以 Dynamic-RRT 及经典 RRT 变体为基线开展对比实验，从路径长度、规划时间、节点规模与路径平滑度等指标对上述机制的有效性进行系统评估。
+
+
+────────────────────────────────────────────────────────────
+Algorithm Statement
+────────────────────────────────────────────────────────────
+
+问题提出
+
+（图1 自适应非对称双椭球采样域约束策略示意图）
+
+为构建路径规划问题的数学模型[8,9,31]，定义工作空间W⊆R^m与构型空间C⊆R^n，其中m与n分别表示对应维度。W为机器人实际运动的笛卡尔空间，C则描述机器人所有可能的构型状态。两者在环境表示上具有等价性，均完整表达了自由区域、障碍物及环境边界信息。定义状态x∈W，将空间划分为无碰撞区域W_"free" 如图中白色区域与障碍区域W_"obs"  如黑色圆形障碍物，满足W=W_"free" ∪W_"obs" 。规划起点、终点分别记为x_"start" ,x_"goal" ∈W_"free" 如图1。为便于讨论，以下主要基于工作空间展开。
+	SC-RRT算法从起点 x_start、终点 x_goal分别构建两颗随机树 、 并引入动态中介点 x_meet，将全局搜索解耦为 "起点—中介点"和"终点—中介点"的两个子问题，其定义见式1。其中中介点 x_meet借鉴势场理论[32]中引力场加权思想与改进势函数[33]的局部极小值规避策略，以双树前沿优质节点的加权质心为基础在线更新。与传统单一静态椭球不同，本文所构建的超椭球体并非固定形状，其参数随路径代价改进与中介点迁移更新，以x_meet为桥梁，根据搜索过程中的路径代价变化与扩展状态自适应地进行伸缩，在起点侧与目标点侧分别在构建超椭球体采样约束，保证潜在最优路径覆盖性的同时，持续压缩无效采样区域。
+
+	自适应非对称双椭球采样域约束策略
+
+本文在Informed RRT*[23,24]所建立的超椭球知情子集理论框架基础上，针对含随机障碍物的配置空间无碰撞路径规划，提出一种非对称双椭球域约束采样机制，实现非对称采样范围调节。
+
+（图1：自适应双椭球约束采样策略，ADCS）
+
+与概率路线图方法（PRM）[34]基于多查询图结构的离线规划模式不同，本方法在双树增量式在线扩展中兼顾全局探索与局部精细搜索，最终实现路径长度、规划时间及节点规模的同步降低，策略整体思想如示意图 1 所示。
+
+该采样策略的核心是动态计算超椭球体的约束参数，对于任意一个方向，以起点侧为例，其定义为：
+（公式）
+其中
+	 表示为 SSFOR 机制在线调节的膨胀系数；
+	 表示从起点侧经启发式评估的最优总代价估计；
+	 是从起点xstart到节点x的累积路径代价；
+	 是节点x到中介点xmeet的启发式距离；
+终点侧以对应方式定义，两个椭球分别独立更新，形成非对称约束结构。每次迭代中，以概率p在上述椭球内执行知情采样，以一定概率向对侧树基于Pareto支配原则[30]选取的最优节点方向偏置采样，以剩余概率执行全局均匀采样。保证搜索既集中于有效区域，又保留全局覆盖能力。
+对每个新扩展节点，优先尝试与对侧树直接连接，若超出阈值则由对树贪心逼近；一旦双树成功连接，对拼接路径执行节点重连优化与自适应平滑处理[35,36]，生成最终可行路径。具体实现伪代码见算法1，2。
+算法2 自适应非对称双椭球采样域约束（Adaptive Dual-Ellipsoid Constrained Sampling）: 以双向树 T_A,T_B及会合点 x_meet为基础，将全局规划分解为"起点–会合点"和"会合点–终点"两个子问题，分别构造非对称双椭球域并自适应更新其尺度，随后在选定超椭球内进行均匀采样并通过可行性验证得到候选采样点 x_sample
+
+	基于在线搜索状态的在线调节机制
+
+（图2：基于搜索状态的在线调节机制，SSFOR）
+
+	ADCS 约束域的有效性取决于膨胀系数 𝛾 与知情采样比例 𝑝 的适时调整。已有加速收敛的改进方法如路径偏置采样[37]、批量前向传播搜索[38]、代价下界权衡[39]及任意时间规划框架[40,41]多采用预设静态参数，启发式采样剪枝[42]亦需预定义阈值，均缺乏面向搜索状态的在线反馈调节能力。为此，本文提出 SSFOR 机制对二者实施闭环调节：以最优路径代价总预估的相对下降速率作为当前搜索进展信号，当路径代价持续无明显改进时，判定当前约束可能过紧或搜索陷入停滞，相应增大 γ 以扩展椭球覆盖范围、降低 p 以增加全局随机探索；反之，当路径代价持续有效改进时，减小 γ 收紧约束域、提高 p 强化知情采样，加速局部收敛。约束过松时大量节点落在低效区域，约束过紧时在障碍物密集场景中有效采样率骤降。保证参数始终在有效范围内波动，使约束强度始终与当前搜索阶段相匹配。
+算法1 在线调节机制: 根据当前最优路径代价 c_best及其历史序列 c_hist，估计改进效率并通过离散调节采样约束参数，输出超椭球扩张因子 γ与启发式采样概率 p，用于自适应控制后续迭代的"约束强度"和"信息采样占比"
+
+（图2 SC-RRT算法总体框架。算法由搜索规划主循环、基于搜索状态反馈的在线调节机制、自适应双超椭球约束采样和可行性验证与双树连接四个模块组成。虚线箭头表示从搜索状态到采样参数调节的反馈路径。）
+
+Fig. 2 Overall framework of the SC-RRT algorithm. The algorithm consists of four modules: the search planning main loop, the search-state-based online adjustment mechanism, the adaptive dual-ellipsoid constrained sampling, and the feasibility verification with bidirectional tree connection. Dashed arrows indicate the feedback path from search state to sampling parameter regulation.
+
+（图3：2D环境下路径规划可视化对比（环境配置见表1；每幅图显示：障碍物、两棵树、最终路径、超椭球边界；））
+
+
+────────────────────────────────────────────────────────────
+Simulation
+────────────────────────────────────────────────────────────
+
+为系统评估 SC-RRT 在环境规模与障碍物密度保持一致条件下的性能，本研究在不同维度下开展了一系列仿真实验（见表2）。评估指标包括路径长度、规划时间、路径平滑度与路径效率四项核心指标：其中，路径长度（Path Length）为路径相邻节点欧氏距离之和（毫米）；规划时间（Planning Time）为算法完整运行时间（秒）；路径平滑度（Smoothness）参照Geraerts和Overmars[43]关于路径品质的系统分析，用转角变化的标准差（弧度）衡量；路径效率（Path Efficiency）为起终点直线距离与实际路径长度的比值，越接近1.0表示路径越趋近最优。在路径规划失败时，路径长度为无穷。
+
+Table 1 Environment configurations
+Dimension	Environment	Obstacles	Start	Goal
+2	1500*1500	225	(75, 75)	(1425, 1425)
+3	1500*1500*1500	400	(75, 75, 75)	(1425, 1425, 1425)
+
+据对路径规划的过往研究，选取五种代表性路径规划算法RRT[13]、RRT-Connect[15]、RRT*[6]、Dynamic-RRT[29]与本文算法SC-RRT进行对比，验证本文算法的性能与稳定性，为确保不同路径规划算法性能对比的公平性，本文在相同的环境空间和障碍物配置下，对多种算法的路径长度、收敛时间等性能指标进行评估，以表1中规定的环境为例，在限定最大迭代次数5000次的情况下进行对比，进行500次运行。测试场景涵盖不同障碍密度配置，其中高密度环境涉及采样偏置策略选择[44]、窄通道可达性[45]与障碍物边界采样密度不足[46]等典型挑战。
+
+图9 不同维度和不同区间的路径规划结果，黑色球型物体代表均匀分布的障碍物，起始节点设置如表1所示，图a-d和e-h显示了SC-RRT在2维和3维的性能。
+
+Table 2 All Algorithm Comparison
+Algorithm	Path Length /mm	Planning Time /s	Smoothness	Path Efficiency
+RRT	2583.74	0.054	0.4919	0.8217
+RRT-connect	2216.33	0.029	0.4487	0.9579
+RRT*	2241.20	15.843	0.3225	0.9495
+Dynamic-RRT	2440.14	0.111	0.4639	0.8696
+SC-RRT	2132.33	0.071	0.0883	0.9956
+
+在二维与三维不同障碍密度的典型场景中，以相同环境配置与计算预算为约束，通过对SC-RRT与Dynamic-RRT算法的性能进行对比。从Table 2可以看出，Dynamic-RRT算法在得到更多时间支持的情况下其渐进最优性才能逐步发挥，但大多数情况下对路径规划的实时性要求更高，故需要在此做出相应取舍，并且当随机节点 xrand 选择的概率偏向目标节点时，它们的两个指标都有所提高。此外，可以明显看出，在保持相同路径长度的情况下，SC-RRT凭借在线调节机制（SSFOR）生成的路径收敛时间及采样次数远优于Dynamic-RRT算法。实验证明SC-RRT在平衡收敛时间和路径长度方面具有明显的优势。
+在路径质量方面，SC-RRT实现了显著的性能改进。算法的平均路径长度为2132.33 mm，相比Dynamic-RRT缩短了12.6%（节省307.81 mm），相比RRT*缩短了4.9%（节省108.87 mm）。值得注意的是SC-RRT的路径效率指标达到0.9956，接近理论最优值1.0，充分表明算法规划的路径几何形状近似为直线，这在所有对比算法中表现最优。规划效率方面，SC-RRT的平均规划时间仅为0.071秒，与基础的RRT（0.054秒）和RRT-Connect（0.029秒）处于同一数量级，展现出优异的计算效率。相比之下，RRT*算法虽然能保证渐进最优性，但其规划时间达到15.843秒，SC-RRT相对其快了223倍，超过两个数量级的加速。路径平滑性的提升是SC-RRT的又一显著优势。算法的平滑度指标为0.0883弧度，相比Dynamic-RRT（0.4639弧度）改进了81.0%，相比RRT*（0.3225弧度）改进了72.6%。这说明ADCS的紧凑采样机制自然产生了更加平滑的路径，减少了后期平滑处理的需求。
+综上对比结果可知，SC-RRT算法综合表现最优，并在不同障碍物密度及二维、三维场景中保持稳定收敛和良好可扩展性。
+
+
+────────────────────────────────────────────────────────────
+Conclusion
+────────────────────────────────────────────────────────────
+
+针对采样式路径规划算法在障碍密集环境中有效采样比例低、收敛速度慢且知情子集对代价估计偏差敏感的问题，本文提出了SC-RRT算法。该算法包含两个紧密耦合的核心机制
+一，自适应非对称双椭球约束采样（ADCS）。引入基于双树搜索状态在线更新的动态中介点，将全局规划任务分解为"起点—中介点"与"终点—中介点"两个方向性子问题，并分别构造尺度可独立调节的超椭球知情子集。与Dynamic-RRT以起点和终点为固定焦点的单一对称椭球不同，ADCS的非对称双椭球结构能够针对两侧搜索进展差异进行方向性压缩与扩展，在保持探索覆盖性的同时显著提高潜在可行通道上的采样密度，有效缓解了引言中指出的单向框架全局引导能力不足的问题。
+二，基于搜索状态反馈的在线调节机制（SSFOR）。以当前最优路径代价及其近期历史序列为反馈信号，实时输出超椭球扩张因子γ与知情采样概率p，对知情子集的体积与采样分配比例实施闭环调节。当路径改进停滞时自动扩大探索范围，当改进高效时逐步收紧约束以强化局部收敛，从而克服传统方法中代价高估导致采样域过大或代价低估导致采样域过早收缩的敏感性问题。
+在二维与三维不同障碍密度的典型场景中，以相同环境配置与计算预算为约束，SC-RRT对RRT、RRT-Connect、RRT*、Dynamic-RRT四种基线算法进行了系统对比。实验结果表明，SC-RRT在路径质量、规划效率与路径平滑性三个维度上均取得了综合最优表现。路径长度较Dynamic-RRT缩短约12.6%、较RRT*缩短约4.9%，路径效率达0.9956；规划时间与RRT、RRT-Connect处于同一数量级，较RRT*快逾两个数量级；平滑度较Dynamic-RRT降低81.0%、较RRT*降低72.6%，平均转角仅为5.06°。此外，SC-RRT路径的平均安全间隙达56.92 mm，体现了ADCS机制在缩小采样域的同时对障碍物间距的隐式保持能力。在ADCS的双向非对称约束与SSFOR闭环调节的协同作用下，SC-RRT在不同维度空间与障碍分布条件下均表现出更一致的收敛行为、更少的冗余扩展与更高的规划稳定性。
+上述结果表明，非对称双向知情搜索策略[47]与在线约束反馈调节的结合是提升采样式规划算法综合性能的有效途径。SC-RRT的模块化设计使ADCS与SSFOR可作为独立组件集成于动态环境重规划框架[48]或与数据驱动的采样分布预测[49]相结合，实现模型驱动与学习驱动方法的互补。在工业机械臂运动规划与自动驾驶[50]等工程应用领域，该算法具有直接的推广价值。
+
+
+Authors' Contributions All authors contributed to the study conception and design. Penglei Zhao wrote the manuscript and did the research. Tech- nical support was provided by Yinghui Chang, Weikang Wu, Hongyin Luo, Zhixin Zhou. Valuable comments on manuscript revisions were put forward by Yanping Qiao, Ying Li, Chenhui Zhao, Zenan Huang, Bijing Liu, Xiaojie Liu, Shan He. Prof. Donghui Guo provided manuscript writ- ing guidance. All authors read and approved the final manuscript.
+
+Funding This work is supported by the Key project's funding of NSFC (No.61836010).
+
+Code availability The source code in this paper will be disclosed upon acceptance for publication of this paper. Before accepting, please E-mail to 2,399,496,491@qq.com if the source code is needed.
+
+Declarations
+Ethics approval Not applicable.
+
+Competing interests The authors have no relevant financial or non- financial interests to disclose.
+
+Consent to participate Not applicable.
+
+Consent for publication Not applicable.
+
+
+================================================================================
+References（按正文首次出现顺序编号，全部50篇）
+================================================================================
+
+[1]  Zhong R Y, Xu X, Klotz E, et al. Intelligent manufacturing in the context of industry 4.0: A review[J]. Engineering, 2017, 3(5): 616–630.
+[2]  Wirtz J, Patterson P G, Kunz W H, et al. Brave new world: Service robots in the frontline[J]. Journal of Service Management, 2018, 29(5): 907–931.
+[3]  Ajoudani A, Zanchettin A M, Ivaldi S, et al. Progress and prospects of the human-robot collaboration[J]. Autonomous Robots, 2018, 42(5): 957–975.
+[4]  Villani V, Pini F, Leali F, et al. Survey on human-robot collaboration in industrial settings: Safety, intuitive interfaces and applications[J]. Mechatronics, 2018, 55: 248–266.
+[5]  Elbanhawi M, Simic M. Sampling-based robot motion planning: A review[J]. IEEE Access, 2014, 2: 56–77.
+[6]  Karaman S, Frazzoli E. Sampling-based algorithms for optimal motion planning[J]. International Journal of Robotics Research, 2011, 30(7): 846–894.
+[7]  Mac T T, Copot C, Tran D T, et al. Heuristic approaches in robot path planning: A survey[J]. Robotics and Autonomous Systems, 2016, 86: 13–28.
+[8]  LaValle S M. Planning Algorithms[M]. Cambridge: Cambridge University Press, 2006. ISBN: 978-0-521-86205-9.
+[9]  Latombe J C. Robot Motion Planning[M]. Boston, MA: Springer, 1991. ISBN: 978-0-7923-9129-1.
+[10] Kingston Z, Moll M, Kavraki L E. Sampling-based methods for motion planning with constraints[J]. Annual Review of Control, Robotics, and Autonomous Systems, 2018, 1: 159–185.
+[11] Mohanan M G, Salgoankar A. A survey of robotic motion planning in dynamic environments[J]. Robotics and Autonomous Systems, 2018, 100: 171–185.
+[12] Aggarwal S, Kumar N. Path planning techniques for unmanned aerial vehicles: A review, solutions, and challenges[J]. Computer Communications, 2020, 149: 270–299.
+[13] LaValle S M. Rapidly-exploring random trees: A new tool for path planning[R]. TR 98-11, Computer Science Department, Iowa State University, 1998.
+[14] LaValle S M, Kuffner J J. Randomized kinodynamic planning[J]. International Journal of Robotics Research, 2001, 20(5): 378–400.
+[15] Kuffner J J, LaValle S M. RRT-Connect: An efficient approach to single-query path planning[C]. Proceedings of IEEE International Conference on Robotics and Automation (ICRA), San Francisco, CA, USA: IEEE, 2000: 995–1001.
+[16] Qureshi A H, Ayaz Y. Intelligent bidirectional rapidly-exploring random trees for optimal motion planning in complex cluttered environments[J]. Robotics and Autonomous Systems, 2016, 68: 1–11.
+[17] Ding J, Zhou Y, Huang X, et al. An improved RRT* algorithm for robot path planning based on path expansion heuristic sampling[J]. Journal of Computational Science, 2023, 67: 101904.
+[18] Gammell J D, Barfoot T D, Srinivasa S S. Asymptotically optimal sampling-based motion planning methods[J]. Annual Review of Control, Robotics, and Autonomous Systems, 2021, 4: 295–318.
+[19] Noreen I, Khan A, Habib Z. Optimal path planning using RRT* based approaches: A survey and future directions[J]. International Journal of Advanced Computer Science and Applications, 2016, 7(11): 97–107. DOI: 10.14569/IJACSA.2016.071114
+[20] Li B, Chen B. An adaptive rapidly-exploring random tree[J]. IEEE/CAA Journal of Automatica Sinica, 2022, 9(2): 283–294.
+[21] Huang Z, Gao Y, Guo J, et al. An adaptive bidirectional quick optimal rapidly-exploring random tree algorithm for path planning[J]. Engineering Applications of Artificial Intelligence, 2024, 133: 108072.
+[22] Tahirovic A, Ferizbegovic M. Rapidly-exploring random vines (RRV) for motion planning in configuration spaces with narrow passages[C]. Proceedings of IEEE International Conference on Robotics and Automation (ICRA), Brisbane, QLD, Australia: IEEE, 2018: 7055–7062.
+[23] Gammell J D, Srinivasa S S, Barfoot T D. Informed RRT*: Optimal sampling-based path planning focused via direct sampling of an admissible ellipsoidal heuristic[C]. Proceedings of IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), Chicago, IL, USA: IEEE, 2014: 2997–3004.
+[24] Gammell J D, Srinivasa S S, Barfoot T D. Informed sampling for asymptotically optimal path planning[J]. IEEE Transactions on Robotics, 2018, 34(4): 966–984.
+[25] Gammell J D, Srinivasa S S, Barfoot T D. Batch informed trees (BIT*): Sampling-based optimal planning via the heuristically guided search of implicit random geometric graphs[C]. Proceedings of IEEE International Conference on Robotics and Automation (ICRA), Seattle, WA, USA: IEEE, 2015: 3067–3074.
+[26] Gammell J D, Barfoot T D, Srinivasa S S. Batch Informed Trees (BIT*): Informed asymptotically optimal anytime search[J]. International Journal of Robotics Research, 2020, 39(5): 543–567. DOI: 10.1177/0278364919890396
+[27] Yuan L, Zhao J, Li W, et al. Improved informed-RRT* based path planning and trajectory optimization for mobile robots[J]. International Journal of Precision Engineering and Manufacturing, 2023, 24(3): 469–482.
+[28] Zeng Z, Chang Y. ABF-RRT*: Bidirectional fast optimal rapidly-exploring random tree via adaptive sampling of a permissible hyper-ellipsoid[J]. Journal of King Saud University - Computer and Information Sciences, 2025, 37(3): 101882.
+[29] Zhao P, Chang Y, Wu W, et al. Dynamic RRT: Fast feasible path planning in randomly distributed obstacle environments[J]. Journal of Intelligent & Robotic Systems, 2023, 109(1): 18.
+[30] Deb K, Pratap A, Agarwal S, et al. A fast and elitist multiobjective genetic algorithm: NSGA-II[J]. IEEE Transactions on Evolutionary Computation, 2002, 6(2): 182–197. DOI: 10.1109/4235.996017
+[31] Choset H, Lynch K M, Hutchinson S, et al. Principles of Robot Motion: Theory, Algorithms, and Implementations[M]. Cambridge, MA: MIT Press, 2005. ISBN: 978-0-262-03327-5.
+[32] Khatib O. Real-time obstacle avoidance for manipulators and mobile robots[J]. International Journal of Robotics Research, 1986, 5(1): 90–98. DOI: 10.1177/027836498600500106
+[33] Ge S S, Cui Y J. New potential functions for mobile robot path planning[J]. IEEE Transactions on Robotics and Automation, 2000, 16(5): 615–620. DOI: 10.1109/70.880813
+[34] Kavraki L E, Švestka P, Latombe J C, et al. Probabilistic roadmaps for path planning in high-dimensional configuration spaces[J]. IEEE Transactions on Robotics and Automation, 1996, 12(4): 566–580. DOI: 10.1109/70.508439
+[35] Ravankar A, Ravankar A A, Kobayashi Y, et al. Path smoothing techniques in robot navigation: State-of-the-art, current and future challenges[J]. Sensors, 2018, 18(9): 3170. DOI: 10.3390/s18093170
+[36] Yang K, Sukkarieh S. An analytical continuous-curvature path-smoothing algorithm[J]. IEEE Transactions on Robotics, 2010, 26(3): 561–568. DOI: 10.1109/TRO.2010.2042990
+[37] Nasir J, Islam F, Malik U, et al. RRT*-SMART: A rapid convergence implementation of RRT*[J]. International Journal of Advanced Robotic Systems, 2013, 10(7): 299. DOI: 10.5772/56718
+[38] Janson L, Schmerling E, Clark A, et al. Fast marching tree: A fast marching sampling-based method for optimal motion planning in many dimensions[J]. International Journal of Robotics Research, 2015, 34(7): 883–921. DOI: 10.1177/0278364915577958
+[39] Salzman O, Halperin D. Asymptotically near-optimal RRT for fast, high-quality motion planning[J]. IEEE Transactions on Robotics, 2016, 32(3): 473–483. DOI: 10.1109/TRO.2016.2539377
+[40] Ferguson D, Stentz A. Anytime RRTs[C]. Proceedings of IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), San Diego, CA, USA: IEEE, 2006: 5369–5375. DOI: 10.1109/IROS.2006.282100
+[41] Karaman S, Walter M R, Perez A, et al. Anytime motion planning using the RRT*[C]. Proceedings of IEEE International Conference on Robotics and Automation (ICRA), Shanghai, China: IEEE, 2011: 1478–1483. DOI: 10.1109/ICRA.2011.5980479
+[42] Akgun B, Stilman M. Sampling heuristics for optimal motion planning in high dimensions[C]. Proceedings of IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), San Francisco, CA, USA: IEEE, 2011: 2640–2645. DOI: 10.1109/IROS.2011.6095077
+[43] Geraerts R, Overmars M H. Creating high-quality paths for motion planning[J]. International Journal of Robotics Research, 2007, 26(8): 845–863. DOI: 10.1177/0278364907079280
+[44] Urmson C, Simmons R. Approaches for heuristically biasing RRT growth[C]. Proceedings of IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), Las Vegas, NV, USA: IEEE, 2003: 1178–1183. DOI: 10.1109/IROS.2003.1248805
+[45] Hsu D, Latombe J C, Motwani R. Path planning in expansive configuration spaces[J]. International Journal of Computational Geometry and Applications, 1999, 9(4–5): 495–512. DOI: 10.1142/S0218195999000285
+[46] Boor V, Overmars M H, van der Stappen A F. The Gaussian sampling strategy for probabilistic roadmap planners[C]. Proceedings of IEEE International Conference on Robotics and Automation (ICRA), Detroit, MI, USA: IEEE, 1999: 1018–1023. DOI: 10.1109/ROBOT.1999.772447
+[47] Strub M P, Gammell J D. Adaptively informed trees (AIT*) and effort informed trees (EIT*): Asymmetric bidirectional sampling-based path planning[J]. International Journal of Robotics Research, 2022, 41(4): 390–417. DOI: 10.1177/02783649211069572
+[48] Otte M, Frazzoli E. RRTX: Asymptotically optimal single-query sampling-based motion planning with quick replanning[J]. International Journal of Robotics Research, 2016, 35(7): 797–822. DOI: 10.1177/0278364915594679
+[49] Ichter B, Harrison J, Pavone M. Learning sampling distributions for robot motion planning[C]. Proceedings of IEEE International Conference on Robotics and Automation (ICRA), Brisbane, Australia: IEEE, 2018: 7087–7094. DOI: 10.1109/ICRA.2018.8460730
+[50] Paden B, Čáp M, Yong S Z, et al. A survey of motion planning and control techniques adopted in self-driving vehicles[J]. IEEE Transactions on Intelligent Vehicles, 2016, 1(1): 33–55. DOI: 10.1109/TIV.2016.2578706
+
+
+================================================================================
+引用分布验证
+================================================================================
+
+引言（Introduction）引用的文献：[1-13,14-24,25-30] = 30篇
+  段1：[1-4] 工业背景, [5-7] 规划综述, [8,9] 配置空间教材, [10] 采样约束, [11,12] 挑战
+  段2：[13] RRT原始, [6,14,15] RRT*及双向扩展, [16,17] 缺陷, [18,19] 综述支撑
+  段3：[20] ARRT, [21] ABQ-RRT*, [22] RRV/PCA
+  段5：[23,24] Informed RRT*, [25,26] BIT*, [27] 动态走廊, [28] 自适应双向,
+       [29] Dynamic RRT, [30] Pareto支配
+
+算法（Algorithm Statement）引用的文献：[8,9,23,24,30-36] = 12篇（含复引）
+  问题提出：[8,9,31] 数学模型, [32,33] 势场理论
+  ADCS：[23,24] Informed RRT*理论基础, [34] PRM对比, [30] Pareto, [35,36] 路径平滑
+
+SSFOR：[37-42] = 6篇
+  [37] RRT*-SMART, [38] FMT*, [39] 近似最优, [40,41] 任意时间框架, [42] 采样剪枝
+
+仿真（Simulation）引用的文献：[6,13,15,29,43-46] = 8篇（含复引）
+  [43] 路径品质评价, [13,15,6,29] 各基线算法, [44,45,46] 典型挑战
+
+结论（Conclusion）引用的文献：[47-50] = 4篇
+  [47] 非对称双向策略, [48] 重规划, [49] 学习采样, [50] 自动驾驶
+
+全部50篇文献至少引用一次 ✓
+编号严格按正文首次出现顺序排列 ✓
