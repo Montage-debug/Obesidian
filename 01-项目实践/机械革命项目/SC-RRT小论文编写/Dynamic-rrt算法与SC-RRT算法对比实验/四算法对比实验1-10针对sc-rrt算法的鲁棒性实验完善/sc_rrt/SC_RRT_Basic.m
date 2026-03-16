@@ -55,8 +55,8 @@ function [path, tree, success, metrics] = SC_RRT_Basic(env, max_iterations, vara
 %% ============================================================
 %% ==================== 关键参数配置区 =======================
 %% ============================================================
-STEP_SIZE_RATIO = 0.010;       % 步长比例系数（加大以加快探索）
-STEP_SIZE_MIN_2D = 12;         % 2D环境最小步长
+STEP_SIZE_RATIO = 0.012;       % 步长比例系数（加大以加快探索）
+STEP_SIZE_MIN_2D = 14;         % 2D环境最小步长
 STEP_SIZE_MAX_2D = 80;         % 2D环境最大步长
 STEP_SIZE_MIN_3D = 18;         % 3D环境最小步长
 STEP_SIZE_MAX_3D = 50;         % 3D环境最大步长
@@ -66,7 +66,7 @@ STEP_SIZE_MAX_3D = 50;         % 3D环境最大步长
 mode = 'adaptive';
 user_step_size = [];
 user_goal_threshold = [];
-update_interval = 80;
+update_interval = 50;
 smoothing_factor = 0.7;
 ellipsoid_buffer = 1.2;
 use_pareto = true;
@@ -155,7 +155,7 @@ else
 end
 
 if isempty(user_goal_threshold)
-    goal_threshold = step_size * 1.5;  % 增大目标阈值，更容易连接
+    goal_threshold = step_size * 2.0;  % 增大目标阈值，更容易连接
 else
     goal_threshold = user_goal_threshold;
 end
@@ -187,6 +187,7 @@ tic;  % 开始计时
 
 % 提前终止参数
 first_solution_iter = inf;
+first_solution_time = inf;  % 实际测量的首次解时间（精确计时）
 
 % 交汇点
 meet_point = (start_point + goal_point) / 2;
@@ -407,6 +408,7 @@ while iterations < max_iterations && ~success
                 path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
                     sizeA, conn_idx_B, dim);
                 first_solution_iter = iterations;
+                first_solution_time = toc;  % 精确记录首次找到路径的时间
                 success = true;
                 break;
             end
@@ -435,6 +437,7 @@ while iterations < max_iterations && ~success
                         path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
                             sizeA, conn_idx_B, dim);
                         first_solution_iter = iterations;
+                        first_solution_time = toc;  % 精确记录首次找到路径的时间
                         success = true;
                     end
                     break;
@@ -570,6 +573,7 @@ while iterations < max_iterations && ~success
                 path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
                     conn_idx_A, sizeB, dim);
                 first_solution_iter = iterations;
+                first_solution_time = toc;  % 精确记录首次找到路径的时间
                 success = true;
                 break;
             end
@@ -597,6 +601,7 @@ while iterations < max_iterations && ~success
                         path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
                             conn_idx_A, sizeB, dim);
                         first_solution_iter = iterations;
+                        first_solution_time = toc;  % 精确记录首次找到路径的时间
                         success = true;
                     end
                     break;
@@ -647,6 +652,7 @@ end
 %% ========== 路径后处理（七阶段高质量平滑与安全保障） ==========
 if success && ~isempty(path)
     path_raw = path;  % 保存原始路径用于回退
+    t_post_start = toc;  % 记录后处理开始时间
     
     % Step 0: 移除近共线冗余节点（预清理，减少后续计算量）
     try
@@ -668,23 +674,26 @@ if success && ~isempty(path)
     catch
     end
     
-    % Step 1: 强力Shortcut优化 - 贪心 + 随机对捷径（增强迭代）
+    % Step 1: 强力Shortcut优化 - 贪心 + 随机对捷径（迭代次数减少以控制时间）
     try
-        path = shortcutPath(path, obstacles, dim, 18);
+        path = shortcutPath(path, obstacles, dim, 12);
     catch
     end
     
-    % Step 2: 弹性带拉直优化 - 将路径节点拉向局部最优位置（增强迭代）
+    % Step 2: 弹性带拉直优化 - 将路径节点拉向局部最优位置（迭代次数减少以控制时间）
     try
-        path = pullPathToOptimal(path, obstacles, dim, 30);
+        path = pullPathToOptimal(path, obstacles, dim, 18);
     catch
     end
     
     % Step 3: 二次Shortcut - 拉直后可能产生新的可跳过段
     try
-        path = shortcutPath(path, obstacles, dim, 10);
+        path = shortcutPath(path, obstacles, dim, 6);
     catch
     end
+    % 时间预算检查：Steps 1-3是计算量最大的阶段，记录已耗时
+    t_heavy_elapsed = toc - t_post_start;
+    skip_smooth = t_heavy_elapsed > 0.8;  % 如果前3步超过0.8秒，跳过大准平滑
     
     % Step 4: 自适应重采样 - 确保点间距均匀，避免PCHIP插值振荡
     try
@@ -720,17 +729,49 @@ if success && ~isempty(path)
     
     % Step 5: 多阶段路径平滑 (渐进加权平均 + 曲率自适应 + 高密度PCHIP + 二次平滑)
     try
-        path = smoothPathSimple(path, obstacles, dim, 15);
+        if ~skip_smooth
+            path = smoothPathSimple(path, obstacles, dim, 12);
+        end
     catch
     end
     
     % Step 6: 圆角平滑 - 对残余的尖锐拐角进行贝塞尔曲线过渡
     try
-        seg_lengths = vecnorm(diff(path), 2, 2);
-        fillet_r = mean(seg_lengths) * 0.4;
-        [path_fillet, fillet_ok] = smoothPathWithFillets(path, obstacles, dim, fillet_r, 25);
-        if fillet_ok && ~isempty(path_fillet) && size(path_fillet, 1) >= 2
-            path = path_fillet;
+        if ~skip_smooth
+            seg_lengths = vecnorm(diff(path), 2, 2);
+            fillet_r = mean(seg_lengths) * 0.55;
+            [path_fillet, fillet_ok] = smoothPathWithFillets(path, obstacles, dim, fillet_r, 20);
+            if fillet_ok && ~isempty(path_fillet) && size(path_fillet, 1) >= 2
+                path = path_fillet;
+            end
+        end
+    catch
+    end
+    
+    % Step 6.5: 圆角后轻量级移动平均 - 消除Bezier曲线与直线段的衔接生硬感
+    try
+        if size(path, 1) > 4
+            path_gentle = path;
+            w_s = 0.12; w_c = 0.76;  % 轻量权重，保持路径形态
+            for gi = 1:2  % 减少2次轻柔迭代（原3次）
+                for gj = 2:size(path_gentle, 1)-1
+                    candidate = w_s * path_gentle(gj-1, :) + w_c * path_gentle(gj, :) + w_s * path_gentle(gj+1, :);
+                    if isCollisionFree(path_gentle(gj-1, :), candidate, obstacles, dim) && ...
+                       isCollisionFree(candidate, path_gentle(gj+1, :), obstacles, dim)
+                        path_gentle(gj, :) = candidate;
+                    end
+                end
+            end
+            % 验证平滑后路径整体安全
+            gentle_ok = true;
+            for gj = 1:size(path_gentle, 1)-1
+                if ~isCollisionFree(path_gentle(gj, :), path_gentle(gj+1, :), obstacles, dim)
+                    gentle_ok = false; break;
+                end
+            end
+            if gentle_ok
+                path = path_gentle;
+            end
         end
     catch
     end
@@ -755,12 +796,23 @@ metrics.tree_nodes = sizeA + sizeB;
 metrics.planning_time = planning_time;
 metrics.success_rate = double(success);
 
-% 计算收敛时间（首次可行解时间）
-if success && first_solution_iter < inf
-    % 近似估算：假设每次迭代时间均匀分布
+% 计算收敛时间（首次可行解时间）—— 使用精确计时（非估算）
+if success && ~isinf(first_solution_time)
+    metrics.convergence_time = first_solution_time;  % 实际测量值
+elseif success && first_solution_iter < inf
+    % 回退：仍使用估算（理论上不应触发）
     metrics.convergence_time = planning_time * (first_solution_iter / max(iterations, 1));
 else
     metrics.convergence_time = inf;
+end
+
+% 后处理时间（包含在time_elapsed中，这里用于诊断）
+if success && exist('t_post_start', 'var')
+    metrics.post_processing_time = toc - t_post_start;
+    metrics.core_planning_time = planning_time;  % 不含后处理的核心搜索时间
+else
+    metrics.post_processing_time = 0;
+    metrics.core_planning_time = planning_time;
 end
 
 % ===== 在线学习统计（OnlineParamTuner） =====
@@ -823,23 +875,24 @@ else
 end
 
 %% ========== 合并树结构用于可视化 ==========
-% 策略：只保留路径相关的节点，避免显示两棵树的分支造成视觉混乱
+% 策略：返回完整双向树用于节点统计，同时标记路径用于可视化
 tree = struct();
 
 if success && ~isempty(path)
-    % 方案：将路径转换为树结构（路径即树）
-    % 这样可视化时只显示最终路径，不显示探索的分支
-    num_path_nodes = size(path, 1);
-    tree.nodes = path;
-    tree.vertices = path;
+    % 返回完整的双向探索树（用于正确的节点数统计）
+    tree.nodes = [treeA(1:sizeA, 1:dim); treeB(1:sizeB, 1:dim)];
+    tree.vertices = tree.nodes;
     
-    % 构建线性父节点关系：path(i)的父节点是path(i-1)
-    tree.parent = zeros(num_path_nodes, 1);
-    for i = 2:num_path_nodes
-        tree.parent(i) = i - 1;
-    end
-    tree.parent(1) = 0;  % 根节点
-    tree.parents = tree.parent;  % 兼容性
+    % 构建parents向量
+    parentsA = treeA(1:sizeA, dim+1);
+    parentsB = treeB(1:sizeB, dim+1);
+    tree.parents = [parentsA; parentsB + sizeA];
+    tree.parents(sizeA + 1) = 0;  % 树B的根节点
+    tree.parent = tree.parents;
+    
+    % 额外存储路径信息用于可视化
+    tree.path = path;
+    tree.final_cost = metrics.path_length;
 else
     % 失败时返回完整的双向树（用于调试）
     tree.nodes = [treeA(1:sizeA, 1:dim); treeB(1:sizeB, 1:dim)];
@@ -854,6 +907,7 @@ else
     % 兼容性
     tree.vertices = tree.nodes;
     tree.parent = tree.parents;
+    tree.final_cost = inf;
 end
 
 end

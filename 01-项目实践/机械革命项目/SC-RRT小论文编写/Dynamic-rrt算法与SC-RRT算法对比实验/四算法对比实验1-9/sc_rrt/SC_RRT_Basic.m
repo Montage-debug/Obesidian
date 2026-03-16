@@ -55,8 +55,8 @@ function [path, tree, success, metrics] = SC_RRT_Basic(env, max_iterations, vara
 %% ============================================================
 %% ==================== 关键参数配置区 =======================
 %% ============================================================
-STEP_SIZE_RATIO = 0.010;       % 步长比例系数（加大以加快探索）
-STEP_SIZE_MIN_2D = 12;         % 2D环境最小步长
+STEP_SIZE_RATIO = 0.012;       % 步长比例系数（加大以加快探索）
+STEP_SIZE_MIN_2D = 14;         % 2D环境最小步长
 STEP_SIZE_MAX_2D = 80;         % 2D环境最大步长
 STEP_SIZE_MIN_3D = 18;         % 3D环境最小步长
 STEP_SIZE_MAX_3D = 50;         % 3D环境最大步长
@@ -66,7 +66,7 @@ STEP_SIZE_MAX_3D = 50;         % 3D环境最大步长
 mode = 'adaptive';
 user_step_size = [];
 user_goal_threshold = [];
-update_interval = 80;
+update_interval = 50;
 smoothing_factor = 0.7;
 ellipsoid_buffer = 1.2;
 use_pareto = true;
@@ -155,7 +155,7 @@ else
 end
 
 if isempty(user_goal_threshold)
-    goal_threshold = step_size * 1.5;  % 增大目标阈值，更容易连接
+    goal_threshold = step_size * 2.0;  % 增大目标阈值，更容易连接
 else
     goal_threshold = user_goal_threshold;
 end
@@ -187,6 +187,17 @@ tic;  % 开始计时
 
 % 提前终止参数
 first_solution_iter = inf;
+first_solution_time = inf;  % 实际测量的首次解时间（精确计时）
+
+% ===== Anytime优化阶段变量 =====
+found_solution = false;           % 是否已找到可行解
+best_path = [];                    % 当前最优路径
+best_cost = inf;                   % 当前最优路径代价
+best_connA = 0;                    % 最优连接点在树A中的索引
+best_connB = 0;                    % 最优连接点在树B中的索引
+optimization_budget = min(2.0, max(0.4, env_size / 1500));  % Anytime优化时间预算(s)
+improvement_count = 0;             % 路径改进次数
+first_solution_cost = inf;         % 首次解的路径代价（用于统计改进幅度）
 
 % 交汇点
 meet_point = (start_point + goal_point) / 2;
@@ -224,8 +235,44 @@ current_cross_tree_ratio = 0.15;     % 当前对树连接采样比例（由Onlin
 bounds_lo = bounds(1:2:end);
 bounds_hi = bounds(2:2:end);
 
-while iterations < max_iterations && ~success
+while iterations < max_iterations
     iterations = iterations + 1;
+    
+    % ===== Anytime优化时间预算检查 =====
+    if found_solution && (toc - first_solution_time) > optimization_budget
+        break;
+    end
+    
+    % ===== Anytime阶段：周期性全局最优连接扫描 =====
+    if found_solution && mod(iterations, 100) == 0 && sizeA > 5 && sizeB > 5
+        % 在两棵树之间寻找总代价最低的连接点对
+        % 使用KD-tree思想：先对树B按成本排序取前K个候选
+        costsB = treeB(1:sizeB, dim+2);
+        [~, sorted_B_idx] = sort(costsB);
+        K_scan = min(sizeB, 30);  % 扫描树B中代价最低的K个节点
+        for bi = 1:K_scan
+            bIdx = sorted_B_idx(bi);
+            bNode = treeB(bIdx, 1:dim);
+            % 在树A中找距离最近的节点
+            diffs_scan = bsxfun(@minus, treeA(1:sizeA, 1:dim), bNode);
+            dists_scan = sqrt(sum(diffs_scan .* diffs_scan, 2));
+            [min_d, aIdx] = min(dists_scan);
+            if min_d < goal_threshold * 1.5
+                if isCollisionFree(treeA(aIdx, 1:dim), bNode, obstacles, dim)
+                    scan_path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), aIdx, bIdx, dim);
+                    scan_cost = sum(vecnorm(diff(scan_path), 2, 2));
+                    if scan_cost < best_cost
+                        best_path = scan_path;
+                        best_cost = scan_cost;
+                        L_best_shared = best_cost;
+                        best_connA = aIdx;
+                        best_connB = bIdx;
+                        improvement_count = improvement_count + 1;
+                    end
+                end
+            end
+        end
+    end
     
     % ===== 1. 交汇点更新（大幅降低频率） =====
     if mod(iterations, update_interval) == 0 && sizeA > 1 && sizeB > 1
@@ -404,16 +451,28 @@ while iterations < max_iterations && ~success
         
         if min_conn_dist < goal_threshold
             if isCollisionFree(treeB(conn_idx_B, 1:dim), new_point_A, obstacles, dim)
-                path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
+                candidate_path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
                     sizeA, conn_idx_B, dim);
-                first_solution_iter = iterations;
-                success = true;
-                break;
+                candidate_cost = sum(vecnorm(diff(candidate_path), 2, 2));
+                if candidate_cost < best_cost
+                    best_path = candidate_path;
+                    best_cost = candidate_cost;
+                    L_best_shared = best_cost;
+                    best_connA = sizeA;
+                    best_connB = conn_idx_B;
+                    improvement_count = improvement_count + 1;
+                    if ~found_solution
+                        found_solution = true;
+                        first_solution_iter = iterations;
+                        first_solution_time = toc;
+                        first_solution_cost = candidate_cost;
+                    end
+                end
             end
         end
         
         % === Connect策略：贪心向树B延伸多步 ===
-        if ~success && min_conn_dist < step_size * 12
+        if min_conn_dist < step_size * 12
             connect_point = new_point_A;
             connect_parent = sizeA;
             target_B = treeB(conn_idx_B, 1:dim);
@@ -432,10 +491,23 @@ while iterations < max_iterations && ~success
                         treeA(sizeA, dim+2) = treeA(connect_parent, dim+2) + dist_c;
                         treeA(sizeA, dim+3) = 0;
                         
-                        path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
+                        candidate_path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
                             sizeA, conn_idx_B, dim);
-                        first_solution_iter = iterations;
-                        success = true;
+                        candidate_cost = sum(vecnorm(diff(candidate_path), 2, 2));
+                        if candidate_cost < best_cost
+                            best_path = candidate_path;
+                            best_cost = candidate_cost;
+                            L_best_shared = best_cost;
+                            best_connA = sizeA;
+                            best_connB = conn_idx_B;
+                            improvement_count = improvement_count + 1;
+                            if ~found_solution
+                                found_solution = true;
+                                first_solution_iter = iterations;
+                                first_solution_time = toc;
+                                first_solution_cost = candidate_cost;
+                            end
+                        end
                     end
                     break;
                 end
@@ -456,7 +528,6 @@ while iterations < max_iterations && ~success
                 connect_point = next_point;
                 connect_parent = sizeA;
             end
-            if success, break; end
         end
     end
     
@@ -567,16 +638,28 @@ while iterations < max_iterations && ~success
         
         if min_conn_dist2 < goal_threshold
             if isCollisionFree(treeA(conn_idx_A, 1:dim), new_point_B, obstacles, dim)
-                path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
+                candidate_path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
                     conn_idx_A, sizeB, dim);
-                first_solution_iter = iterations;
-                success = true;
-                break;
+                candidate_cost = sum(vecnorm(diff(candidate_path), 2, 2));
+                if candidate_cost < best_cost
+                    best_path = candidate_path;
+                    best_cost = candidate_cost;
+                    L_best_shared = best_cost;
+                    best_connA = conn_idx_A;
+                    best_connB = sizeB;
+                    improvement_count = improvement_count + 1;
+                    if ~found_solution
+                        found_solution = true;
+                        first_solution_iter = iterations;
+                        first_solution_time = toc;
+                        first_solution_cost = candidate_cost;
+                    end
+                end
             end
         end
         
         % === Connect策略：贪心向树A延伸 ===
-        if ~success && min_conn_dist2 < step_size * 12
+        if min_conn_dist2 < step_size * 12
             connect_point = new_point_B;
             connect_parent = sizeB;
             target_A = treeA(conn_idx_A, 1:dim);
@@ -594,10 +677,23 @@ while iterations < max_iterations && ~success
                         treeB(sizeB, dim+2) = treeB(connect_parent, dim+2) + dist_c;
                         treeB(sizeB, dim+3) = 0;
                         
-                        path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
+                        candidate_path = extractBidirectionalPath(treeA(1:sizeA, :), treeB(1:sizeB, :), ...
                             conn_idx_A, sizeB, dim);
-                        first_solution_iter = iterations;
-                        success = true;
+                        candidate_cost = sum(vecnorm(diff(candidate_path), 2, 2));
+                        if candidate_cost < best_cost
+                            best_path = candidate_path;
+                            best_cost = candidate_cost;
+                            L_best_shared = best_cost;
+                            best_connA = conn_idx_A;
+                            best_connB = sizeB;
+                            improvement_count = improvement_count + 1;
+                            if ~found_solution
+                                found_solution = true;
+                                first_solution_iter = iterations;
+                                first_solution_time = toc;
+                                first_solution_cost = candidate_cost;
+                            end
+                        end
                     end
                     break;
                 end
@@ -617,15 +713,25 @@ while iterations < max_iterations && ~success
                 connect_point = next_point;
                 connect_parent = sizeB;
             end
-            if success, break; end
         end
     end
 end
 
+% ===== Anytime优化结果归并 =====
+success = found_solution;
+if success
+    path = best_path;
+end
+
 planning_time = toc;
 
-fprintf('SC-RRT完成: %s, iter=%d, A=%d, B=%d, t=%.3fs\n', ...
-    string(success), iterations, sizeA, sizeB, planning_time);
+fprintf('SC-RRT完成: %s, iter=%d, A=%d, B=%d, t=%.3fs, 改进%d次\n', ...
+    string(success), iterations, sizeA, sizeB, planning_time, improvement_count);
+if found_solution
+    improve_pct = max(0, (first_solution_cost - best_cost) / first_solution_cost * 100);
+    fprintf('  首次解: iter=%d, t=%.3fs, cost=%.2f -> 最终cost=%.2f (优化%.1f%%)\n', ...
+        first_solution_iter, first_solution_time, first_solution_cost, best_cost, improve_pct);
+end
 if ssfor_update_count > 0
     fprintf('  SSFOR: %d次更新, gamma=%.2f, p_informed=%.2f\n', ...
         ssfor_update_count, gamma_A, p_informed_A);
@@ -647,6 +753,7 @@ end
 %% ========== 路径后处理（七阶段高质量平滑与安全保障） ==========
 if success && ~isempty(path)
     path_raw = path;  % 保存原始路径用于回退
+    t_post_start = toc;  % 记录后处理开始时间
     
     % Step 0: 移除近共线冗余节点（预清理，减少后续计算量）
     try
@@ -668,23 +775,26 @@ if success && ~isempty(path)
     catch
     end
     
-    % Step 1: 强力Shortcut优化 - 贪心 + 随机对捷径（增强迭代）
+    % Step 1: 强力Shortcut优化 - 贪心 + 随机对捷径（迭代次数减少以控制时间）
     try
-        path = shortcutPath(path, obstacles, dim, 18);
+        path = shortcutPath(path, obstacles, dim, 12);
     catch
     end
     
-    % Step 2: 弹性带拉直优化 - 将路径节点拉向局部最优位置（增强迭代）
+    % Step 2: 弹性带拉直优化 - 将路径节点拉向局部最优位置（迭代次数减少以控制时间）
     try
-        path = pullPathToOptimal(path, obstacles, dim, 30);
+        path = pullPathToOptimal(path, obstacles, dim, 18);
     catch
     end
     
     % Step 3: 二次Shortcut - 拉直后可能产生新的可跳过段
     try
-        path = shortcutPath(path, obstacles, dim, 10);
+        path = shortcutPath(path, obstacles, dim, 6);
     catch
     end
+    % 时间预算检查：Steps 1-3是计算量最大的阶段，记录已耗时
+    t_heavy_elapsed = toc - t_post_start;
+    skip_smooth = t_heavy_elapsed > 0.8;  % 如果前3步超过0.8秒，跳过大准平滑
     
     % Step 4: 自适应重采样 - 确保点间距均匀，避免PCHIP插值振荡
     try
@@ -720,22 +830,94 @@ if success && ~isempty(path)
     
     % Step 5: 多阶段路径平滑 (渐进加权平均 + 曲率自适应 + 高密度PCHIP + 二次平滑)
     try
-        path = smoothPathSimple(path, obstacles, dim, 15);
+        if ~skip_smooth
+            path = smoothPathSimple(path, obstacles, dim, 12);
+        end
     catch
     end
     
     % Step 6: 圆角平滑 - 对残余的尖锐拐角进行贝塞尔曲线过渡
     try
-        seg_lengths = vecnorm(diff(path), 2, 2);
-        fillet_r = mean(seg_lengths) * 0.4;
-        [path_fillet, fillet_ok] = smoothPathWithFillets(path, obstacles, dim, fillet_r, 25);
-        if fillet_ok && ~isempty(path_fillet) && size(path_fillet, 1) >= 2
-            path = path_fillet;
+        if ~skip_smooth
+            seg_lengths = vecnorm(diff(path), 2, 2);
+            fillet_r = mean(seg_lengths) * 0.55;
+            [path_fillet, fillet_ok] = smoothPathWithFillets(path, obstacles, dim, fillet_r, 20);
+            if fillet_ok && ~isempty(path_fillet) && size(path_fillet, 1) >= 2
+                path = path_fillet;
+            end
         end
     catch
     end
     
-    % Step 7: 最终安全验证（解析碰撞检测已保证精确性）
+    % Step 6.5: 圆角后轻量级移动平均 - 消除Bezier曲线与直线段的衔接生硬感
+    try
+        if size(path, 1) > 4
+            path_gentle = path;
+            w_s = 0.12; w_c = 0.76;  % 轻量权重，保持路径形态
+            for gi = 1:2  % 减少2次轻柔迭代（原3次）
+                for gj = 2:size(path_gentle, 1)-1
+                    candidate = w_s * path_gentle(gj-1, :) + w_c * path_gentle(gj, :) + w_s * path_gentle(gj+1, :);
+                    if isCollisionFree(path_gentle(gj-1, :), candidate, obstacles, dim) && ...
+                       isCollisionFree(candidate, path_gentle(gj+1, :), obstacles, dim)
+                        path_gentle(gj, :) = candidate;
+                    end
+                end
+            end
+            % 验证平滑后路径整体安全
+            gentle_ok = true;
+            for gj = 1:size(path_gentle, 1)-1
+                if ~isCollisionFree(path_gentle(gj, :), path_gentle(gj+1, :), obstacles, dim)
+                    gentle_ok = false; break;
+                end
+            end
+            if gentle_ok
+                path = path_gentle;
+            end
+        end
+    catch
+    end
+    
+    % Step 7: 安全间隙增强 - 将过于贴近障碍物的路径点向远离障碍物方向推移
+    try
+        if ~isempty(obstacles) && size(path, 1) > 2
+            min_safe_clearance = step_size * 0.15;  % 最小安全间隙
+            for ci = 2:size(path, 1)-1
+                pt = path(ci, :);
+                if dim == 2
+                    dists_obs = vecnorm(obstacles(:, 1:2) - pt, 2, 2);
+                    radii_obs = obstacles(:, 3);
+                else
+                    dists_obs = vecnorm(obstacles(:, 1:3) - pt, 2, 2);
+                    radii_obs = obstacles(:, 4);
+                end
+                clearances = dists_obs - radii_obs;
+                [min_clr, min_obs_idx] = min(clearances);
+                
+                if min_clr < min_safe_clearance && min_clr > -1e-6
+                    % 计算远离最近障碍物的方向
+                    if dim == 2
+                        repulsion_dir = pt - obstacles(min_obs_idx, 1:2);
+                    else
+                        repulsion_dir = pt - obstacles(min_obs_idx, 1:3);
+                    end
+                    repulsion_len = norm(repulsion_dir);
+                    if repulsion_len > 1e-8
+                        repulsion_dir = repulsion_dir / repulsion_len;
+                        push_dist = (min_safe_clearance - min_clr) * 1.2;
+                        new_pt = pt + repulsion_dir * push_dist;
+                        % 验证推移后的路径段安全
+                        if isCollisionFree(path(ci-1, :), new_pt, obstacles, dim) && ...
+                           isCollisionFree(new_pt, path(ci+1, :), obstacles, dim)
+                            path(ci, :) = new_pt;
+                        end
+                    end
+                end
+            end
+        end
+    catch
+    end
+    
+    % Step 8: 最终安全验证（解析碰撞检测已保证精确性）
     final_safe = true;
     for i = 1:size(path, 1)-1
         if ~isCollisionFree(path(i, :), path(i+1, :), obstacles, dim)
@@ -755,12 +937,33 @@ metrics.tree_nodes = sizeA + sizeB;
 metrics.planning_time = planning_time;
 metrics.success_rate = double(success);
 
-% 计算收敛时间（首次可行解时间）
-if success && first_solution_iter < inf
-    % 近似估算：假设每次迭代时间均匀分布
+% 计算收敛时间（首次可行解时间）—— 使用精确计时（非估算）
+if success && ~isinf(first_solution_time)
+    metrics.convergence_time = first_solution_time;  % 实际测量值
+elseif success && first_solution_iter < inf
+    % 回退：仍使用估算（理论上不应触发）
     metrics.convergence_time = planning_time * (first_solution_iter / max(iterations, 1));
 else
     metrics.convergence_time = inf;
+end
+
+% 后处理时间（包含在time_elapsed中，这里用于诊断）
+if success && exist('t_post_start', 'var')
+    metrics.post_processing_time = toc - t_post_start;
+    metrics.core_planning_time = planning_time;  % 不含后处理的核心搜索时间
+else
+    metrics.post_processing_time = 0;
+    metrics.core_planning_time = planning_time;
+end
+
+% Anytime优化统计
+metrics.improvement_count = improvement_count;
+if ~isinf(first_solution_cost)
+    metrics.first_solution_cost = first_solution_cost;
+    metrics.anytime_improvement = (first_solution_cost - best_cost) / first_solution_cost;
+else
+    metrics.first_solution_cost = inf;
+    metrics.anytime_improvement = 0;
 end
 
 % ===== 在线学习统计（OnlineParamTuner） =====
@@ -823,23 +1026,24 @@ else
 end
 
 %% ========== 合并树结构用于可视化 ==========
-% 策略：只保留路径相关的节点，避免显示两棵树的分支造成视觉混乱
+% 策略：返回完整双向树用于节点统计，同时标记路径用于可视化
 tree = struct();
 
 if success && ~isempty(path)
-    % 方案：将路径转换为树结构（路径即树）
-    % 这样可视化时只显示最终路径，不显示探索的分支
-    num_path_nodes = size(path, 1);
-    tree.nodes = path;
-    tree.vertices = path;
+    % 返回完整的双向探索树（用于正确的节点数统计）
+    tree.nodes = [treeA(1:sizeA, 1:dim); treeB(1:sizeB, 1:dim)];
+    tree.vertices = tree.nodes;
     
-    % 构建线性父节点关系：path(i)的父节点是path(i-1)
-    tree.parent = zeros(num_path_nodes, 1);
-    for i = 2:num_path_nodes
-        tree.parent(i) = i - 1;
-    end
-    tree.parent(1) = 0;  % 根节点
-    tree.parents = tree.parent;  % 兼容性
+    % 构建parents向量
+    parentsA = treeA(1:sizeA, dim+1);
+    parentsB = treeB(1:sizeB, dim+1);
+    tree.parents = [parentsA; parentsB + sizeA];
+    tree.parents(sizeA + 1) = 0;  % 树B的根节点
+    tree.parent = tree.parents;
+    
+    % 额外存储路径信息用于可视化
+    tree.path = path;
+    tree.final_cost = metrics.path_length;
 else
     % 失败时返回完整的双向树（用于调试）
     tree.nodes = [treeA(1:sizeA, 1:dim); treeB(1:sizeB, 1:dim)];
@@ -854,6 +1058,7 @@ else
     % 兼容性
     tree.vertices = tree.nodes;
     tree.parent = tree.parents;
+    tree.final_cost = inf;
 end
 
 end
