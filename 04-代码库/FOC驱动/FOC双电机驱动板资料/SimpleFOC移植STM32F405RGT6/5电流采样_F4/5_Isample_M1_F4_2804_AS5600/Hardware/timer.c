@@ -1,0 +1,83 @@
+
+#include "timer.h"
+
+
+/*****************************************************************************/
+void TIM8_PWM_Init(void)
+{
+	GPIO_InitTypeDef          GPIO_InitStructure;
+	TIM_TimeBaseInitTypeDef   TIM_TimeBaseInitStructure;
+	TIM_OCInitTypeDef         TIM_OCInitStructure;
+	TIM_BDTRInitTypeDef       TIM_BDTRInitStructure;
+	
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA|RCC_AHB1Periph_GPIOB|RCC_AHB1Periph_GPIOC, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, ENABLE);
+	
+	GPIO_PinAFConfig(GPIOC,GPIO_PinSource6,GPIO_AF_TIM8);
+	GPIO_PinAFConfig(GPIOC,GPIO_PinSource7,GPIO_AF_TIM8);
+	GPIO_PinAFConfig(GPIOC,GPIO_PinSource8,GPIO_AF_TIM8);
+	GPIO_PinAFConfig(GPIOA,GPIO_PinSource7,GPIO_AF_TIM8);
+	GPIO_PinAFConfig(GPIOB,GPIO_PinSource0,GPIO_AF_TIM8);
+	GPIO_PinAFConfig(GPIOB,GPIO_PinSource1,GPIO_AF_TIM8);
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	
+	TIM_DeInit(TIM8);
+	TIM_TimeBaseInitStructure.TIM_Prescaler = 0;
+	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_CenterAligned3;
+	TIM_TimeBaseInitStructure.TIM_Period = 3500;     //168M/7000=24KHz
+	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+	TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 2;      //重复计数器，每(2+1)次产生一个溢出中断，所以中断频率是8KHz
+	TIM_TimeBaseInit(TIM8, &TIM_TimeBaseInitStructure);
+	
+	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2;
+	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;    //使能输出
+	TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;  //使能互补输出
+	TIM_OCInitStructure.TIM_Pulse = 0;
+	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;         //输出极性为高
+	TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_High;       //输出互补极性为高
+	TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Reset;   //空闲状态为低
+	TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCNIdleState_Reset; //空闲状态为低
+	TIM_OC1Init(TIM8, &TIM_OCInitStructure);
+	TIM_OC2Init(TIM8, &TIM_OCInitStructure);
+	TIM_OC3Init(TIM8, &TIM_OCInitStructure);
+	
+	TIM_OC1PreloadConfig(TIM8, TIM_OCPreload_Enable);
+	TIM_OC2PreloadConfig(TIM8, TIM_OCPreload_Enable);
+	TIM_OC3PreloadConfig(TIM8, TIM_OCPreload_Enable);
+	
+	TIM_BDTRInitStructure.TIM_OSSRState = TIM_OSSRState_Enable;
+	TIM_BDTRInitStructure.TIM_OSSIState = TIM_OSSIState_Enable;
+	TIM_BDTRInitStructure.TIM_LOCKLevel = TIM_LOCKLevel_OFF;
+	TIM_BDTRInitStructure.TIM_DeadTime = 100;    // 100/168M=595ns
+	TIM_BDTRInitStructure.TIM_Break = TIM_Break_Disable;
+	TIM_BDTRInitStructure.TIM_BreakPolarity = TIM_BreakPolarity_High;
+	TIM_BDTRInitStructure.TIM_AutomaticOutput = TIM_AutomaticOutput_Disable;
+	TIM_BDTRConfig(TIM8, &TIM_BDTRInitStructure);
+	
+	TIM_SelectOutputTrigger(TIM8, TIM_TRGOSource_Update);	  //更新作为触发输出
+	TIM_ARRPreloadConfig(TIM8, ENABLE);
+	TIM_CtrlPWMOutputs(TIM8, ENABLE);
+	//TIM_Cmd(TIM8, ENABLE);      //先不使能，在LowsideCurrentSense_Init()中使能
+}
+/*****************************************************************************/
+
+
+

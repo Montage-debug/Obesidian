@@ -1,0 +1,20 @@
+
+#ifndef __STM32_ADC_H
+#define __STM32_ADC_H
+
+
+
+/******************************************************************************/
+extern  unsigned short adc1_value[32];
+/******************************************************************************/
+void ADC_Common_Init(void);
+void ADC1_DMA_Init(void);
+void ADC2_TRGO_Init(void);
+void ADC3_TRGO_Init(void);
+float get_vbus_voltage(void);
+/******************************************************************************/
+
+
+#endif
+
+
