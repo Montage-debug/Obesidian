@@ -55,16 +55,13 @@ WantedBy=multi-user.target
     # 检查服务状态，看到"active (running)"即表示成功
     sudo systemctl status x11vnc.service
     ```
-<<<<<<< HEAD
     之后，你可以随时用 `sudo systemctl restart/stop x11vnc.service` 来管理服务。
 
 ### 后续操作与验证
 无论采用哪种方案，服务启动后，都建议使用 `ss -tlnp | grep 5901` 命令来验证端口`5901`是否已在监听。确认无误后，就可以回到Windows的MobaXterm，使用 **`Linux_IP:5901`** 进行连接了。
 
 如果你选择**方案二**，请务必确认好你的Linux用户名。如果需要帮助或有任何步骤不清楚，可以随时告诉我你的发行版（如Ubuntu、CentOS），我可以提供更精确的指导。
-=======
     之后，可以随时用 `sudo systemctl restart/stop x11vnc.service` 来管理服务。
 
 ### 后续操作与验证
 无论采用哪种方案，服务启动后，都建议使用 `ss -tlnp | grep 5901` 命令来验证端口`5901`是否已在监听。确认无误后，就可以回到Windows的MobaXterm，使用 **`Linux_IP:5901`** 进行连接了。
->>>>>>> 9c3ef4918cc48948d2565af55340a8781b5329c0

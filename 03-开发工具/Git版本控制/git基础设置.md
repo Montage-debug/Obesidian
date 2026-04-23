@@ -109,13 +109,10 @@ git push -u origin main
 cd /path/to/project
 
 # 修改用户名和邮箱
-<<<<<<< HEAD
 git config user.name "Guo"
 git config user.email "guo@example.com"
-=======
 git config user.name "Montage"
 git config user.email "gxyhaoxianghenlihai@gmail.com"
->>>>>>> 9c3ef4918cc48948d2565af55340a8781b5329c0
 
 # 初始化仓库
 git init

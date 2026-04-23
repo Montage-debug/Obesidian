@@ -41,3 +41,38 @@ temp/
 # *.mov
 # *.avi
 # *.mp3
+
+# =============== 大型二进制文件（>50MB，超 GitHub 限制） ===============
+# 系统镜像 / 压缩包
+*.7z
+*.img
+*.tar.bz2
+*.tar.gz
+*.iso
+
+# AI / 深度学习模型
+*.pt
+*.pth
+*.onnx
+*.enc
+
+# 语音模型特定文件
+*.far
+
+# 安装包
+*.deb
+*.rpm
+
+# 编译产物 / 共享库
+*.so
+*.so.*
+*.a
+
+# IDE 数据库
+browse.vc.db
+
+# Python 虚拟环境（绝对不应入库）
+.venv/
+venv/
+env/
+__pycache__/
