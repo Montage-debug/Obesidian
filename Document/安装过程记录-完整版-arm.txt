@@ -1,0 +1,91 @@
+1、安装必要工具
+
+# 能让你的 x86 电脑模拟运行 ARM 架构的程序
+sudo apt update && sudo apt install qemu-user-static binfmt-support
+
+2、# 调整镜像分区总体积大小
+#终端中执行以下命令，确保镜像没有被挂载
+sudo umount /dev/loop* 2>/dev/null
+sudo losetup -D
+
+# 使用命令行强制修复文件系统
+sudo fdisk -l Orangepi5plus_1.2.0_ubuntu_jammy_desktop_xfce_linux6.1.43.img
+
+# 建立 Loop 设备映射
+# 假设 Start 扇区是 2048，Sector size 是 512
+# 偏移量 = 2048 * 512 = 1048576
+# 请根据你实际的 fdisk 输出计算这个值！
+sudo losetup -f --show -o 1048576 Orangepi5plus_1.2.0_ubuntu_jammy_desktop_xfce_linux6.1.43.img
+#执行后终端会输出一个设备路径，例如 /dev/loop0，请记住它。
+
+# 强制修复文件系统
+sudo e2fsck -f -y /dev/loop0
+
+# 手动调整大小
+sudo resize2fs /dev/loop0   # 这个命令会自动计算最大可用空间并进行调整。
+
+# 使用命令行工具修复分区表（确保真实更新分区大小）
+sudo parted Orangepi5plus_1.2.0_ubuntu_jammy_desktop_xfce_linux6.1.43.img
+
+```
+在 parted 交互界面中输入以下命令：
+输入 print 查看当前分区，记下 rootfs 的编号（通常是 2）。
+输入 resizepart。
+它会问你要调整哪个分区，输入 2（假设 rootfs 是 2 号）。
+它会问你要调整到的结束位置（End），输入 100%。
+输入 quit 退出。
+```
+# 查看分区大小
+sudo gparted Orangepi5plus_1.2.0_ubuntu_jammy_desktop_xfce_linux6.1.43.img
+
+
+2、挂载镜像并配置 ARM 模拟环境
+sudo fdisk -l 你的镜像名.img
+mkdir temp_root   
+sudo mount -o loop,offset=1105199104 Orangepi5plus_1.2.0_ubuntu_jammy_desktop_xfce_linux6.1.43.img temp_root
+sudo cp /usr/bin/qemu-aarch64-static temp_root/usr/bin/
+
+```
+# 挂载系统必要目录（为了能在镜像里运行 apt）
+sudo mount --bind /dev temp_root/dev
+sudo mount --bind /proc temp_root/proc
+sudo mount --bind /sys temp_root/sys
+sudo mount --bind /run temp_root/run
+sudo cp /etc/resolv.conf temp_root/etc/resolv.conf  # 确保镜像内能上网
+3、进入镜像配置
+sudo chroot temp_root
+```
+4、设置语言环境
+apt install -y locales
+locale-gen en_US en_US.UTF-8
+update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+
+5、添加 ROS2 软件源
+apt install -y software-properties-common curl
+add-apt-repository universe
+curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+6、更新并安装 ROS2（推荐安装桌面版，如果镜像空间紧张可换成 ros-humble-ros-base）
+apt update
+dpkg --configure -a
+apt install -y ros-humble-desktop
+```
+# 若 apt install ros 的时候报错，可尝试执行 dpkg --configure -a 修复dpkg 中断错误
+```
+# 设置开机自动加载 ROS2 环境变量
+echo "source /opt/ros/humble/setup.bash" >> /etc/bash.bashrc
+
+
+==============================================================
+退出并清理
+```
+# 退出并清理
+1 输入 exit 退出 chroot 环境
+2 卸载挂载点
+sudo umount temp_root/dev
+sudo umount temp_root/proc
+sudo umount temp_root/sys
+sudo umount temp_root/run
+sudo umount temp_root
+```
