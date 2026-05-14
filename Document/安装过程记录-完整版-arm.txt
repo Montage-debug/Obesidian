@@ -77,6 +77,58 @@ apt install -y ros-humble-desktop
 echo "source /opt/ros/humble/setup.bash" >> /etc/bash.bashrc
 
 
+7、下载并安装 nomachine 
+# 下载 nomachine 
+wget https://web9001.nomachine.com/packages/9.5-PRODUCTION/Arm/nomachine-enterprise-desktop_9.5.7_2_arm64.deb  
+
+# 2. 安装企业版  NoMachine (注意文件在根目录 / 下)
+dpkg -i /nomachine-enterprise-desktop_9.5.7_2_arm64.deb
+
+apt --fix-broken install -y
+
+
+8、配置install-pulseaudio-voice.sh
+
+
+
+9、安装依赖
+# 更新软件包列表
+apt-get update
+# 系统级依赖
+# 安装核心系统依赖
+apt-get install -y --no-upgrade \
+ffmpeg \
+python3-pip \
+python3.10-venv \
+python3-venv \
+libboost-filesystem1.74.0 \
+libopencv-core4.5d \
+libopencv-imgcodecs4.5d \
+libopencv-imgproc4.5d \
+libopencv-dev \
+libasound2-dev \
+libsqlcipher-dev \
+libsqlcipher0 \
+sqlcipher \
+ros-humble-web-video-server \
+ros-humble-asio-cmake-module \
+ros-humble-serial-driver \
+ros-humble-io-context \
+ros-humble-cv-bridge \
+ros-humble-pcl-conversions \
+ros-humble-pcl-msgs \
+ros-humble-pcl-ros \
+ros-humble-smacc2 \
+nlohmann-json3-dev \
+libusb-1.0-0-dev \
+libportaudio2 \
+libportaudiocpp0 \
+portaudio19-dev \
+brltty \
+libpulse-dev \
+python3-dev
+
+
 ==============================================================
 退出并清理
 ```
@@ -89,3 +141,21 @@ sudo umount temp_root/sys
 sudo umount temp_root/run
 sudo umount temp_root
 ```
+3、 镜像瘦身（压缩空余空间）
+# 重新挂载镜像
+sudo mount -o loop,offset=1105199104 Orangepi5plus_1.2.0_ubuntu_jammy_desktop_xfce_linux6.1.43.img temp_root
+
+# 进入 chroot
+sudo chroot temp_root
+
+# 在 chroot 里执行填零（这会创建一个大文件把空闲空间填满，然后删掉）
+dd if=/dev/zero of=/zero.file bs=1M || rm -f /zero.file
+
+# 退出 chroot
+exit
+
+# 卸载
+sudo umount temp_root
+
+# 压缩镜像（生成 .img.gz 文件）
+gzip -9 < Orangepi5plus_1.2.0_ubuntu_jammy_desktop_xfce_linux6.1.43.img > Orangepi5plus_massage_robot.img.gz
