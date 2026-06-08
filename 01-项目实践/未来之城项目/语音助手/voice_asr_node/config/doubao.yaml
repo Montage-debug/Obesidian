@@ -1,0 +1,340 @@
+# ================================================================
+# Doubao Realtime 配置（结构化版本）
+#
+# 说明：
+# 1) 本配置采用破坏式升级，不再兼容旧层级。
+# 2) 参数动态策略为“重启生效”，运行中不会热更新。
+# 3) API 鉴权内置在 voice_asr_node/config/doubao_auth.py（可用 DOUBAO_API_KEY 覆盖）
+# ================================================================
+
+model:
+  # 1.2.1.1 = O2.0, 2.2.0.0 = SC2.0
+  version: "1.2.1.1"
+
+# 音乐确认语（tts_music_independent=true 时强制 model+门控，忽略本项）
+# injected=Chat 见 [CMD] 后 ChatTTSText；model=豆包 TTS+字节门控不读 [CMD:...]
+confirm_tts_mode: model
+# 点歌/恢复等：标签前已有自然口语时优先模型 TTS（仅 injected 模式有效）
+confirm_tts_prefer_model_when_natural: true
+
+dialog:
+  bot_name: "小未"
+
+
+  
+  system_role: |
+    你是一台名叫小未的按摩理疗机器人助手，正在为使用按摩机器人的用户提供服务。
+    你熟悉常见的颈肩腰背理疗流程，回答简洁、礼貌、专业。
+
+    【意图与执行 - 核心】
+    设备动作只认你回复里的 [CMD:xxx] 标签，本地不会根据用户原话做关键词匹配。
+    你必须先理解用户真实意图，再在需要执行动作时于最后一句句号后紧接且仅追加一个标签。
+    纯闲聊、问答、安慰时不要输出 CMD。禁止把「不想听/关掉音乐」判成点歌。
+
+    【标签书写】
+    标签勿朗读；设备侧用字节门控丢弃 [CMD:...] 对应 TTS，你仍须在句末写标签。禁止读出方括号、CMD、冒号、英文 tag 名。紧挨句号、勿加空格。
+    示例：「好的，音乐已关。[CMD:music_stop]」
+
+    【绝对禁止唱歌词】
+    无论 enable_music 是否开启，凡用户说「下一首」「换一首」「上一首」「切歌」「重播」，
+    你只能输出最多 5 字确认语加标签，例如「好的[CMD:music_next]」，
+    严禁输出任何歌词内容——输出歌词会触发设备错误并导致音频混乱。
+
+    【音乐】实际播放在本地 MP3（music_player 线程）；豆包 TTS 仅用于短确认语（doubao-playback 线程）。
+    未打 [CMD:...] 标签则不会播放/停止/切歌。禁止用整段歌词、哼唱代替本地播放。
+    - 「唱一首歌/唱歌/来首歌/再唱一首」与「放音乐/想听歌」相同 → [CMD:music_play]（本地 MP3），禁止只唱不标
+    - 用户说「下一首/换一首/切歌」时只简短确认并打 [CMD:music_next]，绝不用歌词代替切歌。
+    session.enable_music 仅表示云端能力；本设备点歌必须以 [CMD:music_*] 触发本地文件，禁止长篇唱词。
+    即使用户说英文，也禁止回答 “I can't play music”；必须简短确认并打标签，由设备播放。
+    - 想听歌/我想听歌/放音乐/来首歌/play music（未指定歌名）→ [CMD:music_play]（勿误用 music_resume）
+    - 仅用户明确「继续听/接着播/恢复音乐」且之前已在播 → [CMD:music_resume]
+    - 指定歌名或歌手+歌名（如周杰伦的晴天）→ [CMD:music_play_song:歌名]（标签只写歌名如 晴天）
+    - 不想听/别放了/关掉音乐/停止背景音乐 → 必须输出 [CMD:music_stop]（仅口头说「已停止」无效；勿用 music_play_song）
+    - 下一首/换一首/切歌 → [CMD:music_next]
+    - 上一首 → [CMD:music_previous]
+    【暂停 - 必须澄清】
+    用户只说「暂停」且未说明按摩或音乐时：只追问「您是要暂停按摩，还是暂停背景音乐？」；禁止打任何 CMD，禁止声称已暂停。
+    - 暂停音乐/暂停背景音乐/音乐暂停 → [CMD:music_pause]
+    - 暂停按摩 → [CMD:massage_pause]
+    - 继续放音乐 → [CMD:music_resume]
+    - 重播当前曲 → [CMD:music_replay]
+
+    【按摩】理疗流程控制（与背景音乐无关）；「停止/结束/不按了/按够了」= 取消本次按摩，不是暂停。
+    与音乐相同：须先简短口语确认，句末紧接 [CMD:xxx]；禁止只口头说「已暂停/已恢复」而不打标签。
+    - 暂停按摩/按摩暂停/先别按了/停一下按摩/暂停理疗 → 例：「好的，按摩已暂停。[CMD:massage_pause]」
+    - 继续按摩/恢复按摩/开始按摩/接着按/继续理疗 → 例：「好的，继续按摩。[CMD:massage_resume]」
+    - 结束按摩/取消按摩/停止按摩/不按了/终止按摩/别按了/按够了/退出按摩 → 例：「好的，按摩已结束。[CMD:massage_cancel]」
+    - 「重新按摩」若用户意在从头再来 → [CMD:massage_cancel] 后由业务流程处理；若仅暂停后继续 → [CMD:massage_resume]
+
+    【位置调整】调整按摩头相对用户身体的位置偏移（与暂停/取消无关）。
+    须先简短确认，句末紧接标签；方向用英文小写。
+    - 往左/向左/左一点/往左边 → [CMD:massage_position:left]
+    - 往右/向右/右一点 → [CMD:massage_position:right]
+    - 往上/向上/往头/往上面 → [CMD:massage_position:upward]
+    - 往下/向下/往脚/往下面 → [CMD:massage_position:downward]
+    - 清除偏移/复位位置/回到原位 → [CMD:massage_position:clear]
+
+    【时长调整】调整本次按摩总时长（分钟）。
+    - 延长/多按一会儿/再加5分钟 → [CMD:massage_duration:longer] 或 [CMD:massage_duration:longer:5]
+    - 缩短/少按一会儿/减5分钟 → [CMD:massage_duration:shorter] 或 [CMD:massage_duration:shorter:5]
+    - 设为30分钟/调到30分钟 → [CMD:massage_duration:set:30]（数字用阿拉伯数字）
+
+    【力度调整】调整按摩力度（牛顿），与媒体音量无关。
+    用户说「重一点/力度大一点/加力」→ [CMD:massage_force:increase]；「轻一点/力度小一点」→ [CMD:massage_force:decrease]
+    用户说「加大10牛/力度加10」→ [CMD:massage_force:increase:10]；「设为30牛」→ [CMD:massage_force:set:30]
+    含「温度/冷/热/烫」时走按摩头温度，勿与力度或音量混淆。
+
+    【按摩进度】用户问还有多久/进度/剩多少时：
+    只简短确认并打 [CMD:massage_progress]；禁止口述具体剩余分钟数（设备会查真实数据后播报）。
+
+    【按摩头参数】通过 head_param 标签控制负压/微电/射频/冲击波/温度（feature:action[:N]）。
+    - 开启负压/开拔罐 → [CMD:head_param:neg_pressure:on]；关闭 → [CMD:head_param:neg_pressure:off]
+    - 负压加大/加档 → [CMD:head_param:neg_pressure:inc] 或 [CMD:head_param:neg_pressure:inc:2]；减小 → dec；调到5档 → set:5
+    - 开启微电/电流开 → [CMD:head_param:micro_electric:on]；关闭 → off；档位同 inc/dec/set
+    - 开启射频 → [CMD:head_param:rf:on]；关闭 → off；档位 inc/dec/set（set 范围10-99）
+    - 开启冲击波 → [CMD:head_param:shock_wave:on]；关闭 → off；档位 inc/dec/set（1-5）
+    - 温度高一点/太冷 → [CMD:head_param:temperature:inc]；太烫/低一点 → dec；调到40度 → [CMD:head_param:temperature:set:40]
+    含「声音/音量」走 volume_*，含「力度/重/轻」走 massage_force，含「温度/冷/热」走 head_param:temperature。
+
+    【媒体音量】调节系统播放音量（TTS 与背景音乐共用），勿与 music_stop 混淆。
+    用户只说「大一点」且未说明力度或音量时：只追问「您是要力度大一点，还是声音大一点？」；禁止打任何 CMD，禁止声称已调大。
+    - 大声一点/音量大一点/调高音量/音量加 → [CMD:volume_up]
+    - 小声一点/音量小一点/调低音量/音量减 → [CMD:volume_down]
+    - 用户说「音量/声音调到 N」「音量 N」时：必须在句末写阿拉伯数字标签 [CMD:volume_set:N]（N 为 0–100 整数，如 80），禁止只写中文数字不写标签；禁止省略标签。
+    - 禁止写无参数的 [CMD:volume_set]；静音/关掉声音用 [CMD:volume_set:0] 或 [CMD:music_stop]，勿留空标签。
+    - 示例：用户「声音调到 80」→「好的。[CMD:volume_set:80]」
+    - 「关掉音乐」仍用 [CMD:music_stop]，不是音量命令。
+  speaking_style: "你说话温柔耐心，回答不超过两句话；点歌/唱歌请求只简短确认并打 CMD，不哼唱、不念歌词。"
+  dialog_id: ""
+  # SC2.0 推荐配置。O2.0 可留空。
+  character_manifest: ""
+
+ # O2.0 精品音色枚举:
+  #   vv: zh_female_vv_jupiter_bigtts       (活泼女声)
+  #   xiaohe: zh_female_xiaohe_jupiter_bigtts (台湾口音女声)
+  #   yunzhou: zh_male_yunzhou_jupiter_bigtts (沉稳男声)
+  #   xiaotian: zh_male_xiaotian_jupiter_bigtts(磁性男声)
+  #   en_tim: en_male_tim_uranus_bigtts     (美式英语男)
+  #   en_dacey: en_female_dacey_uranus_bigtts(美式英语女)
+  #   en_female_stokie_uranus_bigtts (美式英语女年轻活力)
+  # SC2.0 克隆音色: saturn_xxxxx 或 S_xxxxx
+tts:
+  speaker: "zh_female_xiaohe_jupiter_bigtts"
+  clone_speaker_id: ""
+  audio_config:
+    format: "pcm_s16le"
+    sample_rate: 24000
+    channel: 1
+    speech_rate: 0
+    loudness_rate: 0
+  extra:
+    explicit_dialect: ""
+    enable_loudness_norm: false
+
+asr:
+  audio_info:
+    format: "pcm"
+    sample_rate: 16000
+    channel: 1
+  extra:
+    end_smooth_window_ms: 1200
+    enable_custom_vad: false
+    enable_asr_twopass: true
+    boosting_table_id: ""
+    boosting_table_name: ""
+    regex_correct_table_id: ""
+    regex_correct_table_name: ""
+    auto_inject_hotwords_from_voice_commands: true
+    context:
+      hotwords:
+        - "按摩"
+        - "理疗"
+        - "按"
+        - "推拿"
+        - "小未"
+        - "音量"
+        - "大声"
+        - "小声"
+        - "调大"
+        - "调小"
+        - "偏移"
+        - "往左"
+        - "往右"
+        - "进度"
+        - "时长"
+        - "力度"
+        - "负压"
+        - "微电"
+        - "射频"
+        - "冲击波"
+        - "温度"
+        - "下一首"
+        - "换一首"
+        - "切歌"
+        - "上一首"
+        - "播放音乐"
+      correct_words: {}
+
+session:
+  # 业务播报（massage_biz_event → /voice_asr/tts_speak）播完后自动 finish_session，避免占用唤醒会话
+  biz_tts_auto_finish: true
+  extra:
+    strict_audit: true
+    audit_response: "抱歉，这个话题我们换一个聊吧。"
+    input_mod: "keep_alive"
+    # 云端合规曲库哼唱/演唱（O2.0 1.2.1.1）；不替代本地 MP3。本地文件仍靠 [CMD:music_play_song] + music_player_node。
+    # 火山未公开可点播歌单，曲库外歌曲须自备 MP3 放到 resource/music。
+    enable_music: false
+    enable_conversation_truncate: false
+    enable_user_query_exit: true
+
+websearch:
+  enable: false
+  type: "web"
+  api_key: ""
+  bot_id: ""
+  result_count: 5
+  no_result_message: "我暂时查不到这个信息哦。"
+  location:
+    country: "中国"
+    country_code: "CN"
+    province: ""
+    city: ""
+    district: ""
+    town: ""
+    address: ""
+    longitude: 0.0
+    latitude: 0.0
+
+context:
+  # 用户开口打断时，按本地实际播报进度截断上下文（配合 ASRInfo → ConversationTruncate）
+  enable_conversation_truncate: true
+  dialog_context: []
+
+aigc_metadata:
+  enable: false
+  content_producer: ""
+  produce_id: ""
+  content_propagator: ""
+  propagate_id: ""
+
+audio:
+  mic_device: ""
+  # 豆包 TTS 专用输出（sounddevice 线程 doubao-playback）；留空=系统默认
+  playback_device: ""
+  # true：豆包 TTS 与本地 MP3（music_player paplay 线程）互不 pause/duck/等待，仅门控屏蔽 [CMD:...]
+  tts_music_independent: true
+  # 仅 tts_music_independent=false 时：TTS 期间 SIGSTOP 背景音乐
+  music_duck_on_tts: false
+  send_frame_ms: 20
+  # 为 true 时打印 [barge-in] 打断链路详细日志，便于验证「插话/闭嘴」是否生效
+  debug_interrupt: true
+  reconnect_min: 1.0
+  reconnect_max: 30.0
+
+# 媒体输出（PulseAudio sink 音量，影响 TTS + 背景音乐）
+audio_output:
+  backend: pulseaudio
+  pulse_sink: ""
+  initial_volume_percent: 50
+  music_default_volume: 50
+  volume_step_percent: 10
+  min_volume_percent: 0
+  max_volume_percent: 100
+  ack_volume_percent: 80
+
+audio_input:
+  device: default
+  gain_db: 0
+  enable_noise_suppress: false
+
+command:
+  enabled: true
+  registry_path: "command.yaml"
+
+# 本地退出词由 DoubaoSessionManager 在 ASR-final 处理；dialog_stop_speech 见 command.yaml
+# 云端 TTSEnded status_code=20000002 为补充路径
+exit_intent:
+  enable_user_query_exit: true
+  exit_farewell_timeout_s: 12.0
+  local_exit_keywords:
+    - "再见"
+    - "拜拜"
+    - "退出"
+    - "结束对话"
+    - "不聊了"
+
+logging:
+  level: info
+  console_output: true
+
+wakeword:
+  enabled: true
+  # 本地唤醒仅使用 KeywordSpotter（纯 KWS），对话 ASR 由豆包云端完成
+  engine: sherpa_onnx_kws
+  kws_threshold: 0.25
+  # 单路中英：sherpa-onnx-kws-zipformer-zh-en-3M（models/kws/zh_en_kws）
+  active_languages:
+    - zh_en
+  kws_input_gain_db: 6.0
+  idle_timeout_sec: 30.0
+  models:
+    zh_en:
+      model_dir: kws/zh_en_kws
+      encoder: encoder-epoch-13-avg-2-chunk-16-left-64.int8.onnx
+      decoder: decoder-epoch-13-avg-2-chunk-16-left-64.onnx
+      joiner: joiner-epoch-13-avg-2-chunk-16-left-64.int8.onnx
+      tokens: tokens.txt
+      lexicon: en.phone
+      keywords_file: keywords.txt
+      num_threads: 2
+      keywords:
+        - "你好，小未"
+        - "小未，小未"
+        - "小未，你好"
+        - "未来，未来"
+        - "xiao wei"
+        - "hey_robot"
+        - "hey_guys"
+        - "hey_girls"
+        - "hey_share_way"
+        - "share_way"
+        - "L_S"
+        
+# 唤醒应答（三选一，优先级：direct_tts > use_model > SayHello 短句）
+  # true=SayHello：按上方 tts.speaker 音色直读 say_hello_text（不经过模型）
+  say_hello_direct_tts: true
+  # true=ChatTextQuery：模型生成问候（易变长，与「只说我在」冲突时请保持 false）
+  say_hello_use_model: false
+  say_hello_model_query: "你好，小未"
+  # 默认短应答；未在 say_hello_by_speaker 命中当前 speaker 时使用
+  say_hello_text: "我在"
+  pre_generate_greeting: false
+  # 按 tts.speaker / clone_speaker_id 覆盖文案（仍走同一音色合成）
+  say_hello_by_speaker:
+    zh_female_vv_jupiter_bigtts: "我在"
+    zh_female_xiaohe_jupiter_bigtts: "我在"
+    zh_male_yunzhou_jupiter_bigtts: "我在"
+    zh_male_xiaotian_jupiter_bigtts: "我在"
+  # 非空则覆盖 say_hello_model_query（须为短句，勿写长指令）
+  say_hello_prompt: ""
+  ack_phrases: []
+  ack_audio_dir: ""
+
+# ----- 声纹识别（Sherpa-ONNX 说话人 embedding，与豆包克隆音色 S_xxx 无关）-----
+# 模型：3dspeaker CAM++ 中文 16k（见 src/voice_asr_node/models/speaker/README.md）
+speaker_id:
+  enabled: true
+  model_path: "models/speaker/3dspeaker_speech_campplus_sv_zh-cn_16k-common.onnx"
+  profiles_dir: "data/speaker_profiles"
+  similarity_threshold: 0.75
+  reject_unknown: false
+  inject_username_to_prompt: true
+  min_audio_ms: 1500
+  register_min_audio_ms: 2000
+
+# ----- 静默超时 -----
+silence:
+  wakeup_timeout_s: 8
+  dialog_timeout_s: 15
+  timeout_prompt: "好的，如需帮助请再次呼叫我。"

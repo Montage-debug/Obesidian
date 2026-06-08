@@ -1,0 +1,660 @@
+# ================================================================
+# VoiceBot 命令注册表（重构版）
+# 读取路径固定：/home/wlzckj/WorkSpace/wlzc_massage_robot_ws/config/command.yaml
+# ================================================================
+
+settings:
+  # llm_tag（默认）：仅豆包 Chat 回复中的 [CMD:xxx] 触发动作，由大模型判意图
+  # asr：ASR-final 走本地 keyword/regex（旧行为，易误触）
+  # hybrid：与 llm_tag 相同，仅 asr_fallback_ids 在 ASR 上本地匹配
+  match_mode: llm_tag
+  asr_fallback_ids:
+    - dialog_stop_speech
+    # 关音乐需极低延迟；模型未打 [CMD:music_stop] 时 ASR 兜底
+    - music_stop
+    # 播音乐：模型未打标签时 ASR 仅 pending，等 Chat 标签或超时 ChatTTSText 后再 defer 播歌
+    - music_play
+    - music_next
+    - music_previous
+    - music_pause
+    - music_resume
+    - massage_pause
+    - massage_cancel
+    - massage_resume
+    - massage_position
+    - massage_duration
+    - massage_force
+    - massage_progress
+    - head_param
+    - volume_up
+    - volume_down
+    - volume_set
+  fuzzy_threshold: 88
+  fuzzy_enabled: true
+  log_matches: true
+
+commands:
+  # 打断当前播报，由云端生成简短告别后正常 TTS 播放（不播本地 tts_confirm）
+  - id: dialog_stop_speech
+    name: 停止说话
+    priority: 120
+    patterns:
+      - type: keyword
+        words:
+          - 闭嘴
+          - 别说了
+          - 不要说了
+          - 安静
+          - 别讲了
+          - 停止说话
+          - 不要说话
+          - 别说话了
+          - 退下
+          - 退下吧
+          - 你退下
+          - 下去吧
+          - 再见
+          - 拜拜
+          - 退出
+          - 结束对话
+          - 不聊了
+          - bye
+          - byebye
+          - goodbye
+          - good bye
+    action: stop_tts
+    tts_confirm: ""
+
+  - id: massage_pause
+    name: 暂停按摩
+    priority: 100
+    patterns:
+      - type: intent_tag
+        tag_name: massage_pause
+      - type: keyword
+        words:
+          - 暂停按摩
+          - 按摩暂停
+          - 先停一下
+          - 暂时停止
+          - 先别按了
+          - 停一下按摩
+          - 停一会儿按摩
+          - 暂停理疗
+          - 理疗暂停
+          - 停掉按摩
+          - 停掉理疗
+    action: ros2_service
+    ros2_service: /massage_pause
+    tts_confirm: 好的，按摩已暂停
+
+  - id: massage_resume
+    name: 继续按摩
+    priority: 90
+    patterns:
+      - type: intent_tag
+        tag_name: massage_resume
+      - type: keyword
+        words:
+          - 继续按摩
+          - 按摩恢复
+          - 恢复按摩
+          - 按摩继续
+          - 继续进行
+          - 继续理疗
+          - 恢复理疗
+          - 理疗继续
+          - 继续按
+          - 接着按
+          - 接着按摩
+          - 继续当前理疗
+          - 继续当前按摩
+    action: ros2_service
+    ros2_service: /massage_resume
+    tts_confirm: 好的，继续按摩
+
+  - id: massage_cancel
+    name: 结束按摩
+    priority: 91
+    patterns:
+      - type: intent_tag
+        tag_name: massage_cancel
+      - type: keyword
+        words:
+          - 取消按摩
+          - 结束按摩
+          - 停止按摩
+          - 不按了
+          - 按摩结束
+          - 终止按摩
+          - 中止按摩
+          - 取消理疗
+          - 结束理疗
+          - 理疗结束
+          - 终止理疗
+          - 关掉按摩
+          - 关闭按摩
+          - 关掉理疗
+          - 关闭理疗
+          - 按够了
+          - 别按了
+          - 退出按摩
+          - 退出理疗
+          - 结束当前理疗
+          - 结束当前按摩
+    action: ros2_service
+    ros2_service: /massage_cancel
+    tts_confirm: 好的，按摩已取消
+
+  # 导航栈未接入 voice_asr_node（无 robot_interfaces 定义）；仅保留 LLM 标签占位
+  - id: navigate_to
+    name: 导航目标点
+    priority: 80
+    patterns:
+      - type: intent_tag
+        tag_name: navigate_to
+    action: unsupported_ros2
+    ros2_service: /navigation/move_to
+    tts_confirm: 收到，正在前往 {arg}
+
+  # ── 音乐控制（仅大模型 [CMD:xxx] 标签触发，见 config/doubao.yaml system_role）──
+  - id: music_play_song
+    name: 点播指定歌曲（LLM 标签 + 本地曲库）
+    priority: 76
+    patterns:
+      - type: intent_tag
+        tag_name: music_play_song
+    action: play_song_defer
+    tts_confirm: ""
+
+  - id: music_play
+    name: 播放音乐
+    priority: 70
+    patterns:
+      - type: intent_tag
+        tag_name: music_play
+      - type: keyword
+        words:
+          - 播放音乐
+          - 放音乐
+          - 放个音乐
+          - 来个音乐
+          - 来首音乐
+          - 播放歌曲
+          - 来点音乐
+          - 放点音乐
+          - 开始播放
+          - 播音乐
+          - 播首歌
+          - 放歌
+          - 打开音乐
+          - 听音乐
+          - 我要听歌
+          - 想听音乐
+          - 想听歌
+          - 我想听歌
+          - 唱一首歌
+          - 唱首歌
+          - 来首歌
+          - 给我唱一首
+          - 来唱一首
+          - 再唱一首
+          - 再唱一首歌
+          - play music
+          - play some music
+          - play the music
+          - start the music
+          - turn on music
+          - i want music
+    action: ros2_service
+    ros2_service: /music/control_action
+    music_action: play
+    wait_response: true
+    tts_confirm: 好的，正在为您播放音乐。
+
+  - id: music_pause
+    name: 暂停音乐
+    priority: 71
+    patterns:
+      - type: intent_tag
+        tag_name: music_pause
+      - type: keyword
+        words:
+          - 暂停音乐
+          - 暂停背景音乐
+          - 音乐暂停
+          - 先把音乐暂停
+          - 音乐先停一下
+          - 背景音乐暂停
+      - type: regex
+        expr: "^暂停(一下)?(背景)?音乐[。！？，]?$"
+    action: ros2_service
+    ros2_service: /music/control_action
+    music_action: user_pause
+    tts_confirm: 好的，音乐已暂停
+
+  - id: music_resume
+    name: 恢复音乐
+    priority: 72
+    patterns:
+      - type: intent_tag
+        tag_name: music_resume
+      - type: keyword
+        words:
+          - 恢复音乐
+          - 继续播放音乐
+          - 音乐继续
+          - 继续放音乐
+          - 恢复播放
+          - 接着播放
+          - 接着放音乐
+          - 继续放歌
+          - 继续歌曲
+          - 恢复这首歌
+          - 继续这首歌
+          - 继续当前播放
+          - 恢复当前播放
+          - 继续刚才的音乐
+          - 恢复刚才的播放
+          - 接着放刚才那首歌
+    action: ros2_service
+    ros2_service: /music/control_action
+    music_action: user_resume
+    tts_confirm: 好的，音乐已恢复
+
+  - id: music_replay
+    name: 重新播放当前曲
+    priority: 73
+    patterns:
+      - type: intent_tag
+        tag_name: music_replay
+    action: ros2_service
+    ros2_service: /music/control_action
+    music_action: replay
+    tts_confirm: 好的，重新播放{current_file}
+
+  - id: music_stop
+    name: 停止音乐
+    priority: 78
+    patterns:
+      - type: intent_tag
+        tag_name: music_stop
+      - type: keyword
+        words:
+          - 不想听了
+          - 不想听歌
+          - 不想听歌了
+          - 关闭音乐
+          - 关掉音乐
+          - 停止音乐
+          - 音乐停止
+          - 停止播放音乐
+          - 关音乐
+          - 停止播放
+          - 把音乐关掉
+          - 把歌关掉
+          - 别放歌了
+          - 别放了
+          - 不放了
+          - 不听歌了
+      - type: regex
+        expr: "^(不想听|别听|不要听|不听)(歌|音乐)?(了|吧)?[。！，]?$"
+      - type: regex
+        expr: "^(结束|关闭|关掉|停止)(音乐|播放|歌曲)?[。！，]?$"
+    action: ros2_service
+    ros2_service: /music/control_action
+    music_action: stop
+    tts_confirm: 好的，音乐已停止
+
+  - id: music_next
+    name: 下一首
+    priority: 70
+    patterns:
+      - type: intent_tag
+        tag_name: music_next
+      - type: keyword
+        words:
+          - 下一首
+          - 下一首歌
+          - 下一首哦
+          - 下一曲
+          - 换一首
+          - 换首歌
+          - 换下一首
+          - 来下一首
+          - 切歌
+          - 换个音乐
+          - 下个音乐
+          - 下一个
+          - 换一个
+          - 下首歌
+          - 跳过这首
+          - 跳过当前歌曲
+          - 不听这首
+          - 换掉这首
+          - 跳过这首歌
+          - next song
+    action: ros2_service
+    ros2_service: /music/control_action
+    music_action: next
+    wait_response: true
+    tts_confirm: 好的，切换到{current_file}
+
+  - id: music_previous
+    name: 上一首
+    priority: 70
+    patterns:
+      - type: intent_tag
+        tag_name: music_previous
+      - type: keyword
+        words:
+          - 上一首
+          - 上一曲
+          - 前一首
+          - 前一曲
+          - 上一个
+    action: ros2_service
+    ros2_service: /music/control_action
+    music_action: previous
+    wait_response: true
+    tts_confirm: 好的，切换到{current_file}
+
+  # ── 媒体音量（系统 Pulse sink，见 config/doubao.yaml system_role）──
+  - id: volume_up
+    name: 调高音量
+    priority: 75
+    patterns:
+      - type: intent_tag
+        tag_name: volume_up
+      - type: keyword
+        words:
+          - 大声一点
+          - 音量大一点
+          - 调高音量
+          - 音量加
+          - 声音大点
+          - 大声点
+    action: music_volume
+    volume_delta: 10
+    tts_confirm: 好的，已为您调高音量。
+
+  - id: volume_down
+    name: 调低音量
+    priority: 75
+    patterns:
+      - type: intent_tag
+        tag_name: volume_down
+      - type: keyword
+        words:
+          - 小声一点
+          - 音量小一点
+          - 调低音量
+          - 音量减
+          - 声音小点
+          - 小声点
+    action: music_volume
+    volume_delta: -10
+    tts_confirm: 好的，已为您调低音量。
+
+  - id: volume_set
+    name: 设置音量
+    priority: 76
+    patterns:
+      - type: intent_tag
+        tag_name: volume_set
+      - type: regex
+        expr: "(?:声音|音量).{0,8}?(?:调到|调至|设为|设置为|调整到?|调为|已调到|已到)\\s*(\\d{1,3})\\s*[%％]?"
+        capture_group: 1
+      - type: regex
+        expr: "(?:声音|音量).{0,8}?(?:调到|调至|设为|设置为|调整到?|调为|已调到)\\s*(最大|最小|满|最高|最低)"
+        capture_group: 1
+      - type: regex
+        expr: "^音量\\s*(\\d{1,3})\\s*[%％]?$"
+        capture_group: 1
+      - type: regex
+        expr: "^声音\\s*(\\d{1,3})\\s*[%％]?$"
+        capture_group: 1
+      - type: keyword
+        words:
+          - 静音
+          - 声音静音
+          - 音量静音
+    action: music_volume
+    volume_mode: absolute
+    volume_level: 0
+    tts_confirm: ""
+
+  # ── 按摩参数控制（LLM [CMD:xxx] + ASR 关键词/正则兜底，见 doubao.yaml system_role）──
+  - id: massage_position
+    name: 按摩位置调整
+    priority: 85
+    patterns:
+      - type: intent_tag
+        tag_name: massage_position
+      - type: keyword
+        words:
+          - 往左
+          - 向左
+          - 左一点
+          - 往左边
+          - 往左一点
+        arg: left
+      - type: keyword
+        words:
+          - 往右
+          - 向右
+          - 右一点
+          - 往右边
+          - 往右一点
+        arg: right
+      - type: keyword
+        words:
+          - 往上
+          - 向上
+          - 往头
+          - 往上面
+          - 往上一点
+        arg: upward
+      - type: keyword
+        words:
+          - 往下
+          - 向下
+          - 往脚
+          - 往下面
+          - 往下一点
+        arg: downward
+      - type: keyword
+        words:
+          - 清除偏移
+          - 复位位置
+          - 回到原位
+          - 位置复位
+        arg: clear
+    action: massage_position
+    ros2_service: /massage_position_control
+    tts_confirm: ""
+
+  - id: massage_duration
+    name: 按摩时长调整
+    priority: 84
+    patterns:
+      - type: intent_tag
+        tag_name: massage_duration
+      - type: keyword
+        words:
+          - 延长
+          - 多按一会儿
+          - 再加几分钟
+          - 时间延长
+        arg: longer
+      - type: keyword
+        words:
+          - 缩短
+          - 少按一会儿
+          - 时间缩短
+        arg: shorter
+      - type: regex
+        expr: "(?:再加|延长|多按).{0,6}?(\\d+)\\s*分钟[。！？]?"
+        capture_group: 1
+        arg_prefix: "longer:"
+      - type: regex
+        expr: "(?:减|缩短|少按).{0,6}?(\\d+)\\s*分钟[。！？]?"
+        capture_group: 1
+        arg_prefix: "shorter:"
+      - type: regex
+        expr: "(?:设为|调到|设置|设定)\\s*(\\d+)\\s*分钟[。！？]?"
+        capture_group: 1
+        arg_prefix: "set:"
+    action: massage_duration
+    ros2_service: /massage_duration_control
+    tts_confirm: ""
+
+  - id: massage_force
+    name: 按摩力度调整
+    priority: 83
+    patterns:
+      - type: intent_tag
+        tag_name: massage_force
+      - type: keyword
+        words:
+          - 重一点
+          - 力度大一点
+          - 加力
+          - 用力一点
+          - 力度加大
+        arg: increase
+      - type: keyword
+        words:
+          - 轻一点
+          - 力度小一点
+          - 减小力度
+          - 力度减小
+        arg: decrease
+      - type: regex
+        expr: "(?:加大|加|力度加)\\s*(\\d+)\\s*牛?"
+        capture_group: 1
+        arg_prefix: "increase:"
+      - type: regex
+        expr: "(?:设为|调到|设置)\\s*(\\d+)\\s*牛"
+        capture_group: 1
+        arg_prefix: "set:"
+    action: massage_force
+    ros2_service: /massage_force_control
+    tts_confirm: ""
+
+  - id: massage_progress
+    name: 按摩进度查询
+    priority: 82
+    patterns:
+      - type: intent_tag
+        tag_name: massage_progress
+      - type: keyword
+        words:
+          - 还有多久
+          - 还剩多久
+          - 按摩进度
+          - 剩多少
+          - 还要多久
+          - 还有多长时间
+          - 还剩多少
+          - 按了多久
+    action: massage_query
+    ros2_service: /massage_process_info_get
+    tts_confirm: ""
+
+  - id: head_param
+    name: 按摩头参数控制
+    priority: 81
+    patterns:
+      - type: intent_tag
+        tag_name: head_param
+      - type: keyword
+        words:
+          - 开启负压
+          - 开拔罐
+          - 打开负压
+        arg: neg_pressure:on
+      - type: keyword
+        words:
+          - 关闭负压
+          - 关拔罐
+        arg: neg_pressure:off
+      - type: keyword
+        words:
+          - 负压加大
+          - 负压加档
+        arg: neg_pressure:inc
+      - type: keyword
+        words:
+          - 负压减小
+          - 负压减档
+        arg: neg_pressure:dec
+      - type: keyword
+        words:
+          - 开启微电
+          - 电流开
+          - 打开微电
+        arg: micro_electric:on
+      - type: keyword
+        words:
+          - 关闭微电
+          - 电流关
+        arg: micro_electric:off
+      - type: keyword
+        words:
+          - 开启射频
+          - 打开射频
+        arg: rf:on
+      - type: keyword
+        words:
+          - 关闭射频
+        arg: rf:off
+      - type: keyword
+        words:
+          - 开启冲击波
+          - 打开冲击波
+        arg: shock_wave:on
+      - type: keyword
+        words:
+          - 关闭冲击波
+        arg: shock_wave:off
+      - type: keyword
+        words:
+          - 温度高一点
+          - 热一点
+          - 太冷
+          - 加温
+        arg: temperature:inc
+      - type: keyword
+        words:
+          - 温度低一点
+          - 太烫
+          - 降温
+        arg: temperature:dec
+      - type: regex
+        expr: "负压.{0,4}?(?:调到|调至|设为|设置)\\s*(\\d+)\\s*档?"
+        capture_group: 1
+        arg_prefix: "neg_pressure:set:"
+      - type: regex
+        expr: "微电.{0,4}?(?:调到|调至|设为|设置)\\s*(\\d+)\\s*档?"
+        capture_group: 1
+        arg_prefix: "micro_electric:set:"
+      - type: regex
+        expr: "射频.{0,4}?(?:调到|调至|设为|设置)\\s*(\\d+)\\s*档?"
+        capture_group: 1
+        arg_prefix: "rf:set:"
+      - type: regex
+        expr: "冲击波.{0,4}?(?:调到|调至|设为|设置)\\s*(\\d+)\\s*档?"
+        capture_group: 1
+        arg_prefix: "shock_wave:set:"
+      - type: regex
+        expr: "(?:温度|热度).{0,4}?(?:调到|调至|设为|设置)\\s*(\\d+)\\s*度?"
+        capture_group: 1
+        arg_prefix: "temperature:set:"
+      - type: regex
+        expr: "(?:调到|调至|设为|设置)\\s*(\\d+)\\s*度"
+        capture_group: 1
+        arg_prefix: "temperature:set:"
+    action: head_param
+    ros2_service: /massage_head_param_control
+    tts_confirm: ""

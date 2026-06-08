@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd"
+            schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>voice_asr_node</name>
+  <version>0.2.0</version>
+  <description>
+    按摩机器人语音 ROS2 功能包（豆包实时对话 + 业务播报）。
+
+    节点：voice_asr_node（业务事件→TTS 话题）、doubao_dialog_node（KWS+豆包 WS）、music_player_node。
+  </description>
+
+  <maintainer email="todo@example.com">orangepi</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- 构建工具 -->
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <!-- 业务消息/服务包（与工作空间内 robot_interfaces 同级编译） -->
+  <depend>robot_interfaces</depend>
+
+  <!-- Python 运行时依赖 -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>python3-pyyaml</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-websockets</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+    <ament_python_executable>/usr/bin/env python3</ament_python_executable> 
+  </export>
+</package>
