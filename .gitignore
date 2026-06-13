@@ -76,3 +76,6 @@ browse.vc.db
 venv/
 env/
 __pycache__/
+
+# Ignore OpenVINO binary model files
+**/openvino_models/**/*.bin
