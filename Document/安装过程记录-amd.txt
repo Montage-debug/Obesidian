@@ -308,6 +308,21 @@ dpkg -l | grep -E "alsa-base|alsa-utils|libasound2"
 # ii  alsa-base    版本号    amd64    ALSA driver configuration files
 # ii  alsa-utils   版本号    amd64    Utilities for configuring and using ALSA
 # ii  libasound2   版本号    amd64    Shared library for ALSA applications
+#===============================关闭apt自动更新=========================================
+
+sudo sed -i 's/"1"/"0"/g' /etc/apt/apt.conf.d/20auto-upgrades
+cat /etc/apt/apt.conf.d/20auto-upgrades
+# 应输出
+# APT::Periodic::Update-Package-Lists "0";  # 禁止自动检查软件更新
+# APT::Periodic::Unattended-Upgrade "0";    # 禁止自动安装安全更新
+
+systemctl stop apt-daily.timer apt-daily-upgrade.timer
+systemctl disable apt-daily.timer apt-daily-upgrade.timer
+systemctl mask apt-daily.service apt-daily-upgrade.service
+
+systemctl stop unattended-upgrades
+systemctl disable unattended-upgrades
+
 #=============埃利特SDK=================
 sudo add-apt-repository ppa:elite-robots/cs-robot-series-sdk
 sudo apt update
