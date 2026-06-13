@@ -1,0 +1,100 @@
+{
+  "acupoints": [
+    {
+      "acupointCode": "BL36_R",
+      "name_zh": "承扶_R",
+      "start_point": "right_hip",
+      "end_point": "right_knee",
+      "offset_cun": -5.0,
+      "description": "在大腿后面，臀下横纹的中点"
+    },
+    {
+      "acupointCode": "BL36_L",
+      "name_zh": "承扶_L",
+      "start_point": "left_hip",
+      "end_point": "left_knee",
+      "offset_cun": -5.0,
+      "description": "在大腿后面，臀下横纹的中点"
+    },
+    {
+      "acupointCode": "BL37_R",
+      "name_zh": "殷门_R",
+      "start_point": "right_hip",
+      "end_point": "right_knee",
+      "offset_cun": -11.0,
+      "description": "在大腿后面，当承扶与委中的连线上，承扶下6寸"
+    },
+    {
+      "acupointCode": "BL37_L",
+      "name_zh": "殷门_L",
+      "start_point": "left_hip",
+      "end_point": "left_knee",
+      "offset_cun": -11.0,
+      "description": "在大腿后面，当承扶与委中的连线上，承扶下6寸"
+    },
+    {
+      "acupointCode": "BL40_R",
+      "name_zh": "委中_R",
+      "start_point": "right_hip",
+      "end_point": "right_knee",
+      "offset_cun": -19.0,
+      "description": "在腘横纹中点，当股二头肌腱与半腱肌肌腱的中间"
+    },
+    {
+      "acupointCode": "BL40_L",
+      "name_zh": "委中_L",
+      "start_point": "left_hip",
+      "end_point": "left_knee",
+      "offset_cun": -19.0,
+      "description": "在腘横纹中点，当股二头肌腱与半腱肌肌腱的中间"
+    },
+    {
+      "acupointCode": "BL56_R",
+      "name_zh": "承筋_R",
+      "start_point": "right_knee",
+      "end_point": "right_ankle",
+      "offset_cun": -5.0,
+      "description": "在小腿后面，当委中与承山的连线上，腓肠肌肌腹中央，委中下5寸"
+    },
+    {
+      "acupointCode": "BL56_L",
+      "name_zh": "承筋_L",
+      "start_point": "left_knee",
+      "end_point": "left_ankle",
+      "offset_cun": -5.0,
+      "description": "在小腿后面，当委中与承山的连线上，腓肠肌肌腹中央，委中下5寸"
+    },
+    {
+      "acupointCode": "BL57_R",
+      "name_zh": "承山_R",
+      "start_point": "right_knee",
+      "end_point": "right_ankle",
+      "offset_cun": -8.5,
+      "description": "在小腿后面，当委中与昆仑的连线上，腓肠肌两肌腹之间凹陷的顶端处"
+    },
+    {
+      "acupointCode": "BL57_L",
+      "name_zh": "承山_L",
+      "start_point": "left_knee",
+      "end_point": "left_ankle",
+      "offset_cun": -8.5,
+      "description": "在小腿后面，当委中与昆仑的连线上，腓肠肌两肌腹之间凹陷的顶端处"
+    },
+    {
+      "acupointCode": "XN32_R",
+      "name_zh": "承外_R",
+      "start_point": "right_knee",
+      "end_point": "right_ankle",
+      "offset_cun": -10.5,
+      "description": "在小腿后面，当承山与昆仑的连线上，腓肠肌两肌腹之间凹陷的顶端下3.5寸"
+    },
+    {
+      "acupointCode": "XN32_L",
+      "name_zh": "承外_L",
+      "start_point": "left_knee",
+      "end_point": "left_ankle",
+      "offset_cun": -10.5,
+      "description": "在小腿后面，当承山与昆仑的连线上，腓肠肌两肌腹之间凹陷的顶端下3.5寸"
+    }
+  ]
+}

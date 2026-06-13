@@ -1,0 +1,301 @@
+{
+  "acupoints": [
+    {
+      "acupointCode": "CV8",
+      "name_zh": "神阙",
+      "start_point": "navel",
+      "end_point": "navel_up",
+      "cun": "cun1",
+      "offset_cun": 0.0,
+      "description": "在脐中部，脐中央"
+    },
+    {
+      "acupointCode": "CV9",
+      "name_zh": "水分",
+      "start_point": "navel",
+      "end_point": "navel_up",
+      "cun": "cun1",
+      "offset_cun": -1.0,
+      "descripition": "在上腹部，前正中线上，脐上1寸"
+    },
+    {
+      "acupointCode": "CV10",
+      "name_zh": "下脘",
+      "start_point": "navel",
+      "end_point": "navel_up",
+      "cun": "cun1",
+      "offset_cun": -2.0,
+      "description": "在上腹部，前正中线上，脐上2寸"
+    },
+    {
+      "acupointCode": "CV11",
+      "name_zh": "建里",
+      "start_point": "navel",
+      "end_point": "navel_up",
+      "cun": "cun1",
+      "offset_cun": -3.0,
+      "descripition": "在上腹部，前正中线上，脐上3寸"
+    },
+    {
+      "acupointCode": "CV7",
+      "name_zh": "阴交",
+      "start_point": "navel",
+      "end_point": "navel_up",
+      "cun": "cun2",
+      "offset_cun": 1.0,
+      "description": "在下腹部，前正中线上，脐下1寸"
+    },
+    {
+      "acupointCode": "CV6",
+      "name_zh": "气海",
+      "start_point": "navel",
+      "end_point": "navel_up",
+      "cun": "cun2",
+      "offset_cun": 1.5,
+      "description": "在下腹部，前正中线上，脐下1.5寸"
+    },
+    {
+      "acupointCode": "CV5",
+      "name_zh": "石门",
+      "start_point": "navel",
+      "end_point": "navel_up",
+      "cun": "cun2",
+      "offset_cun": 2.0,
+      "description": "在下腹部，前正中线上，脐下2寸"
+    },
+    {
+      "acupointCode": "CV4",
+      "name_zh": "关元",
+      "start_point": "navel",
+      "end_point": "navel_up",
+      "cun": "cun2",
+      "offset_cun": 3.0,
+      "description": "在下腹部，前正中线上，脐下3寸"
+    },
+    {
+      "acupointCode": "CV3",
+      "name_zh": "中极",
+      "start_point": "navel",
+      "end_point": "navel_up",
+      "cun": "cun2",
+      "offset_cun": 4.0,
+      "description": "在下腹部，前正中线上，脐下4寸"
+    },
+    {
+      "acupointCode": "CV2",
+      "name_zh": "曲骨",
+      "start_point": "navel",
+      "end_point": "navel_up",
+      "cun": "cun2",
+      "offset_cun": 5.0,
+      "description": "在下腹部，前正中线上，耻骨联合上缘的中点"
+    },
+    {
+      "acupointCode": "KI18_R",
+      "name_zh": "石关_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "cun": "cun1",
+      "offset_cun": -3.0,
+      "descripition": "在上腹部，当脐中上3寸，前正中线旁开0.5寸"
+    },
+    {
+      "acupointCode": "KI17_R",
+      "name_zh": "商曲_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "cun": "cun1",
+      "offset_cun": -2.0,
+      "description": "在上腹部，当脐中上2寸，前正中线旁开0.5寸"
+    },
+    {
+      "acupointCode": "KI16_R",
+      "name_zh": "肓俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "cun": "cun1",
+      "offset_cun": 0.0,
+      "descripition": "在腹中部，当脐中旁开0.5寸"
+    },
+    {
+      "acupointCode": "KI15_R",
+      "name_zh": "中注_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "cun": "cun2",
+      "offset_cun": 1.0,
+      "description": "在下腹部，当脐中下1寸，前正中线旁开0.5寸"
+    },
+    {
+      "acupointCode": "KI14_R",
+      "name_zh": "四满_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "cun": "cun2",
+      "offset_cun": 2.0,
+      "description": "在下腹部，当脐中下2寸，前正中线旁开0.5寸"
+    },
+    {
+      "acupointCode": "KI13_R",
+      "name_zh": "气穴_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "cun": "cun2",
+      "offset_cun": 3.0,
+      "description": "在下腹部，当脐中下3寸，前正中线旁开0.5寸"
+    },
+    {
+      "acupointCode": "KI12_R",
+      "name_zh": "大赫_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "cun": "cun2",
+      "offset_cun": 4.0,
+      "description": "在下腹部，当脐中下4寸，前正中线旁开0.5寸"
+    },
+    {
+      "acupointCode": "KI11_R",
+      "name_zh": "横骨_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "cun": "cun2",
+      "offset_cun": 5.0,
+      "description": "在下腹部，当脐中下5寸，前正中线旁开0.5寸"
+    },
+    {
+      "acupointCode": "ST22_R",
+      "name_zh": "关门_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "cun": "cun1",
+      "offset_cun": -3.0,
+      "description": "在上腹部，当脐中上3寸，前正中线旁开2.0寸"
+    },
+    {
+      "acupointCode": "ST23_R",
+      "name_zh": "太乙_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "cun": "cun1",
+      "offset_cun": -2.0,
+      "description": "在上腹部，当脐中上2寸，前正中线旁开2.0寸"
+    },
+    {
+      "acupointCode": "ST24_R",
+      "name_zh": "滑肉门_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "cun": "cun1",
+      "offset_cun": -1.0,
+      "description": "在上腹部，当脐中上1寸，前正中线旁开2.0寸"
+    },
+    {
+      "acupointCode": "ST25_R",
+      "name_zh": "天枢_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "cun": "cun1",
+      "offset_cun": 0.0,
+      "description": "在腹中部，平脐中，距脐中2寸"
+    },
+    {
+      "acupointCode": "ST26_R",
+      "name_zh": "外陵_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "cun": "cun2",
+      "offset_cun": 1.0,
+      "description": "在下腹部，当脐中下1寸，前正中线旁开2.0寸"
+    },
+    {
+      "acupointCode": "ST27_R",
+      "name_zh": "大巨_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "cun": "cun2",
+      "offset_cun": 2.0,
+      "description": "在下腹部，当脐中下2寸，前正中线旁开2.0寸"
+    },
+    {
+      "acupointCode": "ST28_R",
+      "name_zh": "水道_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "cun": "cun2",
+      "offset_cun": 3.0,
+      "description": "在下腹部，当脐中下3寸，前正中线旁开2.0寸"
+    },
+    {
+      "acupointCode": "ST29_R",
+      "name_zh": "归来_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "cun": "cun2",
+      "offset_cun": 4.0,
+      "description": "在下腹部，当脐中下4寸，前正中线旁开2.0寸"
+    },
+    {
+      "acupointCode": "ST30_R",
+      "name_zh": "气冲_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "cun": "cun2",
+      "offset_cun": 5.0,
+      "description": "在腹股沟区，当脐中下5寸，距前正中线2寸"
+    },
+    {
+      "acupointCode": "SP16_R",
+      "name_zh": "腹哀_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "cun": "cun1",
+      "offset_cun": -3.0,
+      "description": "在上腹部，当脐中上3寸，前正中线旁开4.0寸"
+    },
+    {
+      "acupointCode": "SP15_R",
+      "name_zh": "大横_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "cun": "cun1",
+      "offset_cun": 0.0,
+      "description": "在腹中部，距脐中4寸"
+    },
+    {
+      "acupointCode": "SP14_R",
+      "name_zh": "腹结_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "cun": "cun2",
+      "offset_cun": 1.3,
+      "description": "在下腹部，当脐中下1.3寸，前正中线旁开4.0寸"
+    },
+    {
+      "acupointCode": "SP13_R",
+      "name_zh": "府舍_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "cun": "cun2",
+      "offset_cun": 4.0,
+      "description": "在下腹部，当脐中下4寸，冲门上方0.7寸，距前正中线4寸"
+    },
+    {
+      "acupointCode": "SP12_R",
+      "name_zh": "冲门_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "cun": "cun2",
+      "offset_cun": 4.75,
+      "description": "在腹股沟区，腹股沟韧带中点外侧，当腹股沟动脉搏动处的内侧0.5寸"
+    },
+    {
+      "acupointCode": "LR13_R",
+      "name_zh": "章门_R",
+      "start_point": "right_start5",
+      "end_point": "right_end5",
+      "cun": "cun1",
+      "offset_cun": -2.0,
+      "description": "在侧腹部，第11肋游离端下际"
+    }
+  ]
+}

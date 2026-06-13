@@ -1,0 +1,910 @@
+{
+  "acupoints": [
+    {
+      "acupointCode": "GV14",
+      "name_en": "Dazhui",
+      "name_zh": "大椎",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": 3.0,
+      "description": "第7颈椎棘突下凹陷中",
+      "index": 0
+    },
+    {
+      "acupointCode": "GV13",
+      "name_en": "Taodao",
+      "name_zh": "陶道",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": 2.0,
+      "description": "第1胸椎棘突下凹陷中",
+      "index": 1
+    },
+    {
+      "acupointCode": "GV12",
+      "name_en": "Shenzhu",
+      "name_zh": "身柱",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": 0.0,
+      "description": "第3胸椎棘突下凹陷中",
+      "index": 2
+    },
+    {
+      "acupointCode": "GV11",
+      "name_en": "Shendao",
+      "name_zh": "神道",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -2.0,
+      "description": "第5胸椎棘突下凹陷中",
+      "index": 3
+    },
+    {
+      "acupointCode": "GV10",
+      "name_en": "Lingtai",
+      "name_zh": "灵台",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -3.0,
+      "description": "第6胸椎棘突下凹陷中",
+      "index": 4
+    },
+    {
+      "acupointCode": "GV9",
+      "name_en": "Zhiyang",
+      "name_zh": "至阳",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -4.0,
+      "description": "第7胸椎棘突下凹陷中",
+      "index": 5
+    },
+    {
+      "acupointCode": "GV8",
+      "name_en": "Jinsuo",
+      "name_zh": "筋缩",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -6.0,
+      "description": "第9胸椎棘突下凹陷中",
+      "index": 6
+    },
+    {
+      "acupointCode": "GV7",
+      "name_en": "Zhongshu",
+      "neme_zh": "中枢",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -7.0,
+      "description": "第 10 胸椎棘突下凹陷中",
+      "index": 7
+    },
+    {
+      "acupointCode": "GV6",
+      "name_en": "Jizhong",
+      "neme_zh": "脊中",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -8.0,
+      "description": "第 11 胸椎棘突下凹陷中",
+      "index": 8
+    },
+    {
+      "acupointCode": "GV5",
+      "name_en": "XuanShu",
+      "neme_zh": "悬枢",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -10.0,
+      "description": "第 1 腰椎棘突下凹陷中（第 13 椎下）",
+      "index": 9
+    },
+    {
+      "acupointCode": "GV4",
+      "name_en": "Mingmen",
+      "neme_zh": "命门",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -11.0,
+      "description": "后正中线，第 2 腰椎棘突下凹陷中，约平脐水平线",
+      "index": 10
+    },
+    {
+      "acupointCode": "GV3",
+      "name_en": "Yaoyangguan",
+      "neme_zh": "腰阳关",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -13.0,
+      "description": "后正中线，第 4 腰椎棘突下凹陷中（平髂嵴最高点连线）",
+      "index": 11
+    },
+    {
+      "acupointCode": "GV2",
+      "name_en": "Yaoyu",
+      "neme_zh": "腰俞",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -18.0,
+      "description": "后正中线，骶管裂孔处（对应骶椎末端，无棘突，是骶骨下端凹陷）",
+      "index": 12
+    },
+    {
+      "acupointCode": "GV1",
+      "name_en": "Changqiang",
+      "neme_zh": "长强",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -19.5,
+      "description": "后正中线，尾骨端下，当尾骨端与肛门连线的中点处",
+      "index": 13
+    },
+    {
+      "acupointCode": "BL13_R",
+      "name_en": "Feiyu_right",
+      "neme_zh": "肺俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": 0.0,
+      "description": "在同水平（第 3 胸椎棘突下）的右侧旁开 1.5 寸",
+      "index": 14
+    },
+    {
+      "acupointCode": "BL12_R",
+      "name_en": "Fengmen_right",
+      "neme_zh": "风门_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": 1.0,
+      "description": "第 2 胸椎棘突下，旁开督脉 1.5 寸",
+      "index": 15
+    },
+    {
+      "acupointCode": "BL11_R",
+      "name_en": "Dazhu_right",
+      "neme_zh": "大杼_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": 2.0,
+      "description": "第 1 胸椎棘突下（督脉陶道穴同水平），旁开督脉 1.5 寸",
+      "index": 16
+    },
+    {
+      "acupointCode": "BL14_R",
+      "name_en": "Jueyinyu_right",
+      "neme_zh": "厥阴俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -1.0,
+      "description": "第 4 胸椎棘突下（身柱穴正下方 1 寸），旁开督脉 1.5 寸",
+      "index": 17
+    },
+    {
+      "acupointCode": "BL15_R",
+      "name_en": "Xinyu_right",
+      "neme_zh": "心俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -2.0,
+      "description": "第 5 胸椎棘突下（督脉神道穴同水平），旁开督脉 1.5 寸",
+      "index": 18
+    },
+    {
+      "acupointCode": "BL16_R",
+      "name_en": "Duyu_right",
+      "neme_zh": "督俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -3.0,
+      "description": "第 6 胸椎棘突下（督脉灵台穴同水平），旁开督脉 1.5 寸",
+      "index": 19
+    },
+    {
+      "acupointCode": "BL17_R",
+      "name_en": "Geyu_right",
+      "nema_zh": "膈俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -4.0,
+      "descripition": "第7胸椎棘突下(督脉至阳穴同水平),旁开督脉1.5寸",
+      "index": 20
+    },
+    {
+      "acupointCode": "BL18_R",
+      "name_en": "Ganyu_right",
+      "name_zh": "肝俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -6.0,
+      "descripition": "第9胸椎棘突下(督脉筋缩穴同水平), 旁开督脉1.5寸",
+      "index": 21
+    },
+    {
+      "acupointCode": "BL19_R",
+      "name_en": "Danyu_right",
+      "name_zh": "胆俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -7.0,
+      "descripition": "第 10 胸椎棘突下（督脉中枢穴同水平），旁开督脉 1.5 寸",
+      "index": 22
+    },
+    {
+      "acupointCode": "BL20_R",
+      "name_en": "Piyu_right",
+      "name_zh": "脾俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -8.0,
+      "descripition": "第 11 胸椎棘突下（督脉脊中穴同水平），旁开督脉 1.5 寸",
+      "index": 23
+    },
+    {
+      "acupointCode": "BL21_R",
+      "name_en": "Weiyu_right",
+      "name_zh": "胃俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -9.0,
+      "descripition": "第 12 胸椎(T12)棘突下,督脉脊中穴正下方 1 寸水平，旁开 1.5 寸",
+      "index": 24
+    },
+    {
+      "acupointCode": "BL22_R",
+      "name_en": "Sanjiaoyu_right",
+      "name_zh": "三焦俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -10.0,
+      "descripition": "第 1 腰椎(L1)棘突下,督脉悬枢穴同水平，旁开督脉 1.5 寸",
+      "index": 25
+    },
+    {
+      "acupointCode": "BL23_R",
+      "name_en": "Shenyu_right",
+      "name_zh": "肾俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -11.0,
+      "descripition": "第 2 腰椎(L2)棘突下,旁开督脉 1.5 寸（对应督脉命门穴)",
+      "index": 26
+    },
+    {
+      "acupointCode": "BL24_R",
+      "name_en": "Qihaiyu_right",
+      "name_zh": "气海俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -12.0,
+      "descripition": "第 3 腰椎(L3)棘突下,旁开督脉 1.5 寸",
+      "index": 27
+    },
+    {
+      "acupointCode": "BL25_R",
+      "name_en": "Dachangyu_right",
+      "name_zh": "大肠俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -13.0,
+      "decsripition": "第 4 腰椎(L4)棘突下,旁开督脉 1.5 寸",
+      "index": 28
+    },
+    {
+      "acupointCode": "BL26_R",
+      "name_en": "Guanyuanyu_right",
+      "name_zh": "关元俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -14.0,
+      "descripition": "第 5 腰椎(L5)棘突下,旁开督脉 1.5 寸",
+      "index": 29
+    },
+    {
+      "acupointCode": "BL27_R",
+      "name_en": "Xiaochangyu_right",
+      "name_zh": "小肠俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -14.75,
+      "descripition": "第 1 骶椎(S1)棘突下,旁开骶正中嵴 1.5 寸（腰骶衔接，棘突仍清晰）",
+      "index": 30
+    },
+    {
+      "acupointCode": "BL28_R",
+      "name_en": "Pangguangyu_right",
+      "name_zh": "膀胱俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -15.5,
+      "descripition": "平 S2 骶后孔，旁开骶正中嵴 1.5 寸",
+      "index": 31
+    },
+    {
+      "acupointCode": "BL29_R",
+      "name_en": "Zhonglvyu_right",
+      "name_zh": "中膂俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -16.25,
+      "descripition": "平 S3 骶后孔，旁开骶正中嵴 1.5 寸",
+      "index": 32
+    },
+    {
+      "acupointCode": "BL30_R",
+      "name_en": "Baihuanyu_right",
+      "name_zh": "白环俞_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": -17.0,
+      "descripition": "平 S4 骶后孔，旁开骶正中嵴 1.5 寸",
+      "index": 33
+    },
+    {
+      "acupointCode": "BL31_R",
+      "name_en": "Shangliao_right",
+      "name_zh": "上髎_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "offset_cun": -14.75,
+      "descripition": "骶正中嵴旁开 0.75 寸(BL31,在 S1 骶后孔、小肠俞与后正中线中点）",
+      "index": 34
+    },
+    {
+      "acupointCode": "BL32_R",
+      "name_en": "Ciliao_right",
+      "name_zh": "次髎_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "offset_cun": -15.5,
+      "decsripition": "平 S2 骶后孔，旁开骶正中嵴 0.75 寸",
+      "index": 35
+    },
+    {
+      "acupointCode": "BL33_R",
+      "name_en": "Zhongliao_right",
+      "name_zh": "中髎_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "offset_cun": -16.25,
+      "decsripition": "平 S3 骶后孔，旁开骶正中嵴 0.75 寸",
+      "index": 36
+    },
+    {
+      "acupointCode": "BL34_R",
+      "name_en": "Xialiao_right",
+      "name_zh": "下髎_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "offset_cun": -17.0,
+      "decsripition": "平 S4 骶后孔，旁开骶正中嵴 0.75 寸",
+      "index": 37
+    },
+    {
+      "acupointCode": "BL35_R",
+      "name_en": "Huiyang_right",
+      "name_zh": "会阳_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "offset_cun": -18.75,
+      "decsripition": "平尾骨端，旁开骶正中嵴 0.75 寸",
+      "index": 38
+    },
+    {
+      "acupointCode": "BL42_R",
+      "name_en": "Pohu_right",
+      "name_zh": "魄户_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": 0.0,
+      "decsripition": "膀胱经第二侧线，第 3 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 39
+    },
+    {
+      "acupointCode": "BL41_R",
+      "name_en": "Fufen_right",
+      "name_zh": "附分_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": 1.0,
+      "decsripition": "膀胱经第二侧线，第 2 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 40
+    },
+    {
+      "acupointCode": "BL43_R",
+      "name_en": "Gaomang_right",
+      "name_zh": "膏盲_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -1.0,
+      "decsripition": "膀胱经第二侧线，第 4 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 41
+    },
+    {
+      "acupointCode": "BL44_R",
+      "name_en": "Shentang_right",
+      "name_zh": "神堂_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -2.0,
+      "decsripition": "膀胱经第二侧线，第 5 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 42
+    },
+    {
+      "acupointCode": "BL45_R",
+      "name_en": "Yixi_right",
+      "name_zh": "譩譆_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -3.0,
+      "decsripition": "膀胱经第二侧线，第 6 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 43
+    },
+    {
+      "acupointCode": "BL46_R",
+      "name_en": "Geguan_right",
+      "name_zh": "膈关_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -4.0,
+      "decsripition": "膀胱经第二侧线，第 7 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 44
+    },
+    {
+      "acupointCode": "BL47_R",
+      "name_en": "Hunmen_right",
+      "name_zh": "魂门_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -6.0,
+      "decsripition": "膀胱经第二侧线，第 9 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 45
+    },
+    {
+      "acupointCode": "BL48_R",
+      "name_en": "Yanggnag_right",
+      "name_zh": "阳纲_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -7.0,
+      "decsripition": "膀胱经第二侧线，第 10 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 46
+    },
+    {
+      "acupointCode": "BL49_R",
+      "name_en": "Yishe_right",
+      "name_zh": "意舍_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -8.0,
+      "decsripition": "膀胱经第二侧线，第 11 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 47
+    },
+    {
+      "acupointCode": "BL50_R",
+      "name_en": "Weicang_right",
+      "name_zh": "胃仓_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -9.0,
+      "descripition": "膀胱经第二侧线，第 12 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 48
+    },
+    {
+      "acupointCode": "BL51_R",
+      "name_en": "Mangmen_right",
+      "name_zh": "盲门_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -10.0,
+      "decsripition": "膀胱经第二侧线，第 1 腰椎棘突下，后正中线旁开 3 寸",
+      "index": 49
+    },
+    {
+      "acupointCode": "BL52_R",
+      "name_en": "Zhishi_right",
+      "name_zh": "志室_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -11.0,
+      "decsripition": "膀胱经第二侧线，第 2 腰椎棘突下，后正中线旁开 3 寸",
+      "index": 50
+    },
+    {
+      "acupointCode": "EX-ZSBL_R1",
+      "name_en": "ZhishiBaomang_right1",
+      "name_zh": "志室胞盲1_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -12.0,
+      "decsripition": "膀胱经第二侧线，第 3 腰椎棘突下，后正中线旁开 3 寸",
+      "index": 51
+    },
+    {
+      "acupointCode": "EX-ZSBL_R2",
+      "name_en": "ZhishiBaomang_right2",
+      "name_zh": "志室胞盲2_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -13.0,
+      "decsripition": "膀胱经第二侧线，第 4 腰椎棘突下，后正中线旁开 3 寸",
+      "index": 52
+    },
+    {
+      "acupointCode": "EX-ZSBL_R3",
+      "name_en": "ZhishiBaomang_right3",
+      "name_zh": "志室胞盲3_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -14.0,
+      "decsripition": "膀胱经第二侧线，第 5 腰椎棘突下，后正中线旁开 3 寸",
+      "index": 53
+    },
+    {
+      "acupointCode": "BL53_R",
+      "name_en": "Baomang_right",
+      "name_zh": "胞盲_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -15.5,
+      "descripition": "第 2 骶椎S2横平第 2 骶后孔，旁开 3 寸",
+      "index": 54
+    },
+    {
+      "acupointCode": "BL54_R",
+      "name_en": "Zhibian_right",
+      "name_zh": "秩边_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -17.0,
+      "descripition": "平第 4 骶后孔S4,旁开, 3 寸",
+      "index": 55
+    }
+  ],
+  "acupoints_special": [
+    {
+      "acupointCode": "SI9_R",
+      "name_en": "Jianzhen_right",
+      "name_zh": "肩贞_R",
+      "start_point": "Jueyinyu_right",
+      "end_point": "Gaomang_right",
+      "offset_cun": -8.0,
+      "descripition": "肩关节后下方，腋后纹头直上 1 寸，当肩胛骨下角水平与腋后线交点处",
+      "index": 56
+    },
+    {
+      "acupointCode": "SI11_R",
+      "name_en": "Tianzong_right",
+      "name_zh": "天宗_R",
+      "start_point": "Tianzong_start",
+      "end_point": "Tianzong_end",
+      "offset_cun": -0.75,
+      "descripition": "肩胛冈中点与肩胛骨下角连线的上 1/3 与下 2/3 交点凹陷中，同平 T4 棘突下（骨性水平对齐）",
+      "index": 57
+    },
+    {
+      "acupointCode": "SI12_R",
+      "name_en": "Bingfeng_right",
+      "name_zh": "秉风_R",
+      "start_point": "Tianzong_start",
+      "end_point": "Tianzong_end",
+      "offset_cun": 1.5,
+      "descripition": "肩胛冈上窝中央，天宗直上，举臂有凹陷处(平 T4) )",
+      "index": 58
+    },
+    {
+      "acupointCode": "SI15_R",
+      "name_en": "Jianzhongyu_right",
+      "name_zh": "肩中俞_R",
+      "start_point": "Jianzhongyu_start",
+      "end_point": "Jianzhongyu_end",
+      "offset_cun": 3.0,
+      "descripition": "第 7 颈椎棘突下，后正中线旁开 2 寸",
+      "index": 59
+    },
+    {
+      "acupointCode": "SI10_R",
+      "name_en": "Naoyu_right",
+      "name_zh": "臑俞_R",
+      "start_point": "Naoyu_start",
+      "end_point": "Naoyu_end",
+      "offset_cun": 1.3,
+      "descripition": "位于肩胛区，腋后纹头直上，肩胛冈下缘凹陷中",
+      "index": 60
+    },
+    {
+      "acupointCode": "SI14_R",
+      "name_en": "Jianwaiyu_right",
+      "name_zh": "肩外俞_R",
+      "start_point": "Taodao",
+      "end_point": "Dazhu_right",
+      "offset_cun": -3.3,
+      "descripition": "脊柱区，第 1 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 61
+    },
+    {
+      "acupointCode": "SI13_R",
+      "name_en": "Quyuan_right",
+      "name_zh": "曲垣_R",
+      "start_point": "Quyuan_start",
+      "end_point": "Quyuan_end",
+      "offset_cun": 1.2,
+      "descripition": "右曲垣穴位于肩胛区，肩胛冈内侧端上缘的凹陷中,臑俞穴与第 2 胸椎棘突连线的中点处就是曲垣穴",
+      "index": 62
+    },
+    {
+      "acupointCode": "TE15_R",
+      "name_en": "Tianliao_right",
+      "name_zh": "天髎_R",
+      "start_point": "Tianliao_start",
+      "end_point": "Tianliao_end",
+      "offset_cun": 2.5,
+      "descripition": "右天髎穴位于人体的肩胛区，具体位置在肩胛骨上角骨际凹陷中。",
+      "index": 63
+    }
+  ],
+  "acupoints_XN": [
+    {
+      "acupointCode": "XN16_R",
+      "name_en": "Gehun_right",
+      "name_zh": "膈魂_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -5.0,
+      "description": "膀胱经第二侧线，第 8 胸椎棘突下，后正中线旁开 3 寸",
+      "index": 64
+    },
+    {
+      "acupointCode": "XN8_R",
+      "name_en": "Powai_right",
+      "name_zh": "魄外_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "offset_cun": 0.0,
+      "descripition": "右魂外穴，虚拟穴位",
+      "index": 65
+    },
+    {
+      "acupointCode": "XN11_R",
+      "name_en": "Shenwai_right",
+      "name_zh": "神外_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "offset_cun": -2.0,
+      "descripition": "右神外穴，虚拟穴位",
+      "index": 66
+    },
+    {
+      "acupointCode": "XN14_R",
+      "name_en": "Gewai_right",
+      "name_zh": "膈外_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "offset_cun": -4.0,
+      "descripition": "右膈外穴，虚拟穴位",
+      "index": 67
+    },
+    {
+      "acupointCode": "XN18_R",
+      "name_en": "Hunwai",
+      "name_zh": "魂外_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "offset_cun": -6.0,
+      "descripition": "右魂外穴，虚拟穴位",
+      "index": 68
+    },
+    {
+      "acupointCode": "XN20_R",
+      "name_en": "Yiwai_right",
+      "name_zh": "意外_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "offset_cun": -8.0,
+      "descripition": "右意外穴，虚拟穴位",
+      "index": 69
+    },
+    {
+      "acupointCode": "XN22_R",
+      "name_en": "Huangwai_right",
+      "name_zh": "肓外_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "offset_cun": -10.0,
+      "descripition": "右黄外穴，虚拟穴位",
+      "index": 70
+    },
+    {
+      "acupointCode": "XN24_R",
+      "name_en": "Qiwai_right",
+      "name_zh": "气外_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "offset_cun": -12.0,
+      "descripition": "右气外穴，虚拟穴位",
+      "index": 71
+    },
+    {
+      "acupointCode": "XN26_R",
+      "name_en": "Guanwai_right",
+      "name_zh": "关外_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "offset_cun": -14.0,
+      "descripition": "右关外穴，虚拟穴位",
+      "index": 72
+    },
+    {
+      "acupointCode": "XN28_R",
+      "name_en": "Baowai_right",
+      "name_zh": "胞外_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "offset_cun": -15.5,
+      "descripition": "右胞外穴，虚拟穴位",
+      "index": 73
+    },
+    {
+      "acupointCode": "XN30_R",
+      "name_en": "Zhiwai_right",
+      "name_zh": "秩外_R",
+      "start_point": "right_start4",
+      "end_point": "right_end4",
+      "offset_cun": -17.0,
+      "descripition": "右秩外穴，虚拟穴位",
+      "index": 74
+    },
+    {
+      "acupointCode": "XN7_R",
+      "name_en": "Tianwai_right",
+      "name_zh": "天外_R",
+      "start_point": "right_start5",
+      "end_point": "right_end5",
+      "offset_cun": 1.5,
+      "descripition": "右天外穴，虚拟穴位",
+      "index": 75
+    },
+    {
+      "acupointCode": "XN9_R",
+      "name_en": "Potian_right",
+      "name_zh": "魄天_R",
+      "start_point": "right_start5",
+      "end_point": "right_end5",
+      "offset_cun": 0.0,
+      "descripition": "右魄天穴，虚拟穴位",
+      "index": 76
+    },
+    {
+      "acupointCode": "XN12_R",
+      "name_en": "Shentian_right",
+      "name_zh": "神天_R",
+      "start_point": "right_start5",
+      "end_point": "right_end5",
+      "offset_cun": -2.0,
+      "descripition": "右神天穴，虚拟穴位",
+      "index": 77
+    },
+    {
+      "acupointCode": "XN13_R",
+      "name_en": "Yitian_right",
+      "name_zh": "譩天_R",
+      "start_point": "right_start5",
+      "end_point": "right_end5",
+      "offset_cun": -3.0,
+      "descripition": "右譩天穴，虚拟穴位",
+      "index": 78
+    },
+    {
+      "acupointCode": "XN15_R",
+      "name_en": "Getian_right",
+      "name_zh": "膈天_R",
+      "start_point": "right_start5",
+      "end_point": "right_end5",
+      "offset_cun": -4.0,
+      "descripition": "右膈天穴，虚拟穴位",
+      "index": 79
+    },
+    {
+      "acupointCode": "XN17_R",
+      "name_en": "Gehuntian_right",
+      "name_zh": "膈魂天_R",
+      "start_point": "right_start6",
+      "end_point": "right_end6",
+      "offset_cun": -5.0,
+      "descripition": "右膈魂天穴，虚拟穴位",
+      "index": 80
+    },
+    {
+      "acupointCode": "XN19_R",
+      "name_en": "Huntian_right",
+      "name_zh": "魂天_R",
+      "start_point": "right_start6",
+      "end_point": "right_end6",
+      "offset_cun": -6.0,
+      "descripition": "右魂天穴，虚拟穴位",
+      "index": 81
+    },
+    {
+      "acupointCode": "XN21_R",
+      "name_en": "Yitian_right",
+      "name_zh": "意天_R",
+      "start_point": "right_start6",
+      "end_point": "right_end6",
+      "offset_cun": -8.0,
+      "descripition": "右意天穴，虚拟穴位",
+      "index": 82
+    },
+    {
+      "acupointCode": "XN23_R",
+      "name_en": "Huangtian_right",
+      "name_zh": "肓天_R",
+      "start_point": "right_start6",
+      "end_point": "right_end6",
+      "offset_cun": -10.0,
+      "descripition": "右肓天穴，虚拟穴位",
+      "index": 83
+    },
+    {
+      "acupointCode": "XN25_R",
+      "name_en": "Qitian_right",
+      "name_zh": "气天_R",
+      "start_point": "right_start6",
+      "end_point": "right_end6",
+      "offset_cun": -12.0,
+      "descripition": "右气天穴，虚拟穴位",
+      "index": 84
+    },
+    {
+      "acupointCode": "XN27_R",
+      "name_en": "Guantian_right",
+      "name_zh": "关天_R",
+      "start_point": "right_start6",
+      "end_point": "right_end6",
+      "offset_cun": -14.0,
+      "descripition": "右关天穴，虚拟穴位",
+      "index": 85
+    },
+    {
+      "acupointCode": "XN29_R",
+      "name_en": "Baotian_right",
+      "name_zh": "胞天_R",
+      "start_point": "right_start6",
+      "end_point": "right_end6",
+      "offset_cun": -15.5,
+      "descripition": "右胞天穴，虚拟穴位",
+      "index": 86
+    },
+    {
+      "acupointCode": "XN31_R",
+      "name_en": "Zhitian_right",
+      "name_zh": "秩天_R",
+      "start_point": "right_start6",
+      "end_point": "right_end6",
+      "offset_cun": -17.0,
+      "descripition": "右秩天穴，虚拟穴位",
+      "index": 87
+    },
+    {
+      "acupointCode": "XN2",
+      "name_en": "Zhijin",
+      "name_zh": "至筋",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": -5.0,
+      "descripition": "至筋穴，虚拟穴位",
+      "index": 88
+    }
+  ],
+  "acupoints_XN_special": [
+    {
+      "acupointCode": "XN10_R",
+      "name_en": "Naojian_right",
+      "name_zh": "臑肩_R",
+      "start_point": "Naoyu_right",
+      "end_point": "Jianzhen_right",
+      "offset_cun": -1.0,
+      "description": "虚拟点位臑肩",
+      "index": 89
+    }
+  ]
+}
