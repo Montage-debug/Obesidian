@@ -1,0 +1,21 @@
+{
+	"nodes":[
+		{"id":"449acaaec138e500","type":"text","text":"点云三维处理","x":1783,"y":1176,"width":250,"height":100},
+		{"id":"72cf7f7ee4c94449","type":"text","text":"```mermaid\nflowchart TD\n    S1[拍照时保存快照] --> Snap[深度图 + 带法向点云]\n    Snap --> Wait[等操作员确认穴位像素]\n\n    Wait --> P2P[逐个穴位查询]\n    P2P --> V1{快照存在?}\n    V1 -->|否| Err[报错: 先拍照]\n    V1 -->|是| V2[读该像素深度]\n\n    V2 --> V3{深度有效?}\n    V3 -->|否| Fail[该穴失败]\n    V3 -->|是| Proj[反投影得三维坐标]\n\n    Proj --> Neigh[取邻域点云]\n    Neigh --> Normal[拟合表面法向]\n    Normal --> Pose[输出: xyz + 姿态角]\n    Pose --> TF[变换到床架/机械臂坐标]\n    TF --> Done[六自由度穴位位姿]\n\n```","x":1685,"y":1273,"width":910,"height":1195},
+		{"id":"3203579d06a6fd51","type":"text","text":"伪代码","x":482,"y":1213,"width":250,"height":60},
+		{"id":"f4d44cc202c41293","type":"text","text":"```mermaid\n// ===== 阶段1: 拍照存快照 =====\n函数 保存快照():\n  彩色图, 深度图 = 相机采集()\n  点云 = 深度图转点云(深度图, 相机内参)\n  点云.法向 = 每个点估算法向()\n  快照 = {彩色图, 深度图, 点云, 拍照时刻}\n  保存(快照)\n\n// ===== 阶段2: 像素 → 三维 =====\n函数 像素转三维(穴位像素列表):\n  快照 = 读取最近快照()\n  if 快照无效: 报错\n\n  结果 = []\n  for (px, py) in 穴位像素列表:\n      深度 = 快照.深度图[py, px]\n      if 深度不在有效范围: 跳过\n\n      (x, y, z) = 反投影(px, py, 深度, 相机内参)\n      邻域点 = 在点云中找(px, py)附近若干点\n      法向 = 拟合平面(邻域点)\n      姿态 = 法向转欧拉角(法向)\n\n      结果.append(x, y, z, roll, pitch, yaw)\n\n  结果 = 变换到机械臂坐标(结果)\n  return 结果\n```","x":482,"y":1358,"width":1203,"height":895},
+		{"id":"5da5b75bcf310624","type":"text","text":"函数 穴位识别(彩色图, 部位):\n    配置 = 加载穴位规则(部位)          // 背/腹/腿各一份\n\n    锚点 = 检测锚点(彩色图, 部位)\n    // 背: 肩、髋、颈\n    // 腹: 肩、髋、脐\n    // 腿: 髋、膝、踝\n\n    if 姿态不合格(锚点, 部位):\n        锚点 = 默认模板锚点\n        标记 = \"来自模板\"\n    else:\n        标记 = \"算法成功\"\n\n    纵向寸 = 颈到髋距离 / 22\n    横向寸 = min(肩到中线/8.5, 髋到中线/6)\n\n    if 纵向寸/肩横向寸 <= 1.28:\n        纵向寸 = 肩横向寸 × 1.28    // 裤腰遮挡补偿\n\n    基线网 = 建基线(锚点, 纵向寸, 横向寸)\n    穴位列表 = []\n\n    for 每条规则 in 配置:\n        (x, y) = 沿基线偏移(规则.起点, 规则.终点, 规则.偏移寸)\n        穴位列表.append(规则.穴名, x, y)\n\n    if 部位 == 背:\n        穴位列表 = 右侧镜像到左侧(穴位列表)\n\n    return 穴位列表, 标记","x":-1544,"y":1374,"width":1013,"height":692},
+		{"id":"69f396756edcbf9c","type":"text","text":"伪代码","x":-1287,"y":1196,"width":250,"height":60},
+		{"id":"b85634b70e0a6339","type":"text","text":"穴位二维识别","x":-2239,"y":1254,"width":250,"height":60},
+		{"id":"9ad9d22dba88d716","type":"text","text":"```mermaid\nflowchart TD\n    Start[输入: 彩色图 + 部位码] --> Route{部位}\n    Route -->|背| Back[全身pose + 颈点模型]\n    Route -->|腹| Abd[全身pose + 脐点模型]\n    Route -->|腿| Leg[全身pose]\n\n    Back --> QC[检查姿态是否合格]\n    Abd --> QC\n    Leg --> QC\n\n    QC -->|不合格| Tpl[使用默认肩髋颈坐标]\n    QC -->|合格| Kpt[使用检测到的锚点]\n\n    Tpl --> Cun[计算寸: 颈到髋22寸 肩髋横向寸]\n    Kpt --> Cun\n    Cun --> Comp{裤腰遮挡?}\n    Comp -->|是| Fix[纵向寸×1.28修正]\n    Comp -->|否| Base[建基线网]\n    Fix --> Base\n    Base --> Calc[按配置表逐穴偏移]\n    Calc --> Mirror[右侧穴镜像到左侧]\n    Mirror --> Out[输出: 穴位名 + 像素xy]\n\n```","x":-2239,"y":1374,"width":695,"height":1480},
+		{"id":"bb85d63a802e9741","type":"text","text":"```mermaid\nflowchart TB\n    A[拍照] --> B[保存RGB+深度快照]\n    B --> C[穴位二维识别]\n    C --> D{姿态是否合格}\n    D -->|否| A[拍照]\n    D -->|是| F[用模型检测锚点]\n    F --> G[骨度法算穴位像素]\n    G --> I[像素转三维+法向]\n    I --> J[变换到机械臂坐标]\n    J --> K[生成轨迹并执行]\n```","x":-240,"y":-400,"width":340,"height":1160},
+		{"id":"ff91f442beb46be2","type":"text","text":"总流程","x":-195,"y":-520,"width":250,"height":60}
+	],
+	"edges":[
+		{"id":"05876528dd637c5d","fromNode":"3203579d06a6fd51","fromSide":"bottom","toNode":"f4d44cc202c41293","toSide":"top"},
+		{"id":"444025005a03bc11","fromNode":"b85634b70e0a6339","fromSide":"bottom","toNode":"9ad9d22dba88d716","toSide":"top"},
+		{"id":"282784a45752eca2","fromNode":"ff91f442beb46be2","fromSide":"bottom","toNode":"bb85d63a802e9741","toSide":"top"},
+		{"id":"8c2ca257048885ad","fromNode":"69f396756edcbf9c","fromSide":"bottom","toNode":"5da5b75bcf310624","toSide":"top"},
+		{"id":"ec13b58410184ea8","fromNode":"449acaaec138e500","fromSide":"bottom","toNode":"72cf7f7ee4c94449","toSide":"top"}
+	]
+}
