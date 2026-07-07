@@ -1,0 +1,66 @@
+{
+  "_comment": "acupoints_config_ext.json — 扩展版穴位规则库（供消融实验四使用）",
+  "_note": "在原 acupoints_config.json 基础上，仅通过新增 JSON 条目实现 5 个新穴位定位，无需重新训练任何模型。验证规则库的零样本扩展能力（Scalability）。",
+  "_new_acupoints": [
+    "GV15 哑门 — 督脉，第2颈椎棘突上凹陷，较GV14再向头侧0.5寸",
+    "GV16 风府 — 督脉，枕外隆凸直下，GV14上方约1寸",
+    "BL10_R 天柱（右） — 足太阳膀胱经，枕骨下，斜方肌外缘，GV16同水平旁1.5寸",
+    "EX-B1_R 定喘（右） — 经外奇穴，GV14旁0.75寸，主治哮喘",
+    "EX-B4_R 腰眼（右） — 经外奇穴，第4腰椎棘突下，旁开3寸，腰部保健要穴"
+  ],
+  "acupoints": [
+    {
+      "acupointCode": "GV15",
+      "name_en": "Yamen",
+      "name_zh": "哑门",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": 2.75,
+      "description": "第2颈椎棘突上凹陷中，GV14（大椎）上方0.5寸",
+      "index": 56
+    },
+    {
+      "acupointCode": "GV16",
+      "name_en": "Fengfu",
+      "name_zh": "风府",
+      "start_point": "back_start_point",
+      "end_point": "hip_mid",
+      "offset_cun": 3.25,
+      "description": "枕外隆凸直下，两侧斜方肌之间凹陷中，GV14上方约1寸",
+      "index": 57
+    },
+    {
+      "acupointCode": "BL10_R",
+      "name_en": "Tianzhu_right",
+      "name_zh": "天柱_R",
+      "start_point": "right_start1",
+      "end_point": "right_end1",
+      "offset_cun": 3.25,
+      "description": "枕骨之下，斜方肌外缘凹陷中，GV16同水平向右旁1.5寸",
+      "index": 58
+    },
+    {
+      "acupointCode": "EX-B1_R",
+      "name_en": "Dingchuan_right",
+      "name_zh": "定喘_R",
+      "start_point": "right_start2",
+      "end_point": "right_end2",
+      "offset_cun": 2.25,
+      "description": "GV14（大椎）旁0.75寸，经外奇穴，主治哮喘颈椎病",
+      "index": 59
+    },
+    {
+      "acupointCode": "EX-B4_R",
+      "name_en": "Yaoyan_right",
+      "name_zh": "腰眼_R",
+      "start_point": "right_start3",
+      "end_point": "right_end3",
+      "offset_cun": -10.5,
+      "description": "第4腰椎棘突下，旁开3寸凹陷中，经外奇穴，腰部保健要穴",
+      "index": 60
+    }
+  ],
+  "acupoints_special": [],
+  "acupoints_XN": [],
+  "acupoints_XN_special": []
+}

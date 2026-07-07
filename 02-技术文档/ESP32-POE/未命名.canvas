@@ -1,0 +1,26 @@
+{
+	"nodes":[
+		{"id":"a9d29f5f45a536cc","type":"text","text":"ESP32-P4-WIFI6-POE-ETH","x":-302,"y":-260,"width":242,"height":50},
+		{"id":"2beae1b2c6c43242","type":"text","text":"天虹ITX","x":-540,"y":-295,"width":120,"height":60},
+		{"id":"5b69f2a588693c98","x":-532,"y":-137,"width":105,"height":60,"type":"text","text":"RX/TX"},
+		{"id":"0f3257c087900dff","type":"text","text":"自复位金属按钮","x":-350,"y":-390,"width":165,"height":50},
+		{"id":"1ed973e2a6430b1e","x":-181,"y":-390,"width":148,"height":50,"type":"text","text":"急停开关按钮"},
+		{"id":"f6fdbd7e278551d1","x":152,"y":-460,"width":168,"height":50,"type":"text","text":"MQTT云服务端"},
+		{"id":"9a65f9c9f41dfff8","x":-420,"y":-59,"width":117,"height":65,"type":"text","text":"LED灯带"},
+		{"id":"bad2f6e56fbe0832","x":-303,"y":-59,"width":135,"height":65,"type":"text","text":"继电器开关"},
+		{"id":"c022e6dff0c845f0","x":127,"y":-77,"width":50,"height":182,"type":"text","text":"机械臂工控机"}
+	],
+	"edges":[
+		{"id":"be11703687b5f49c","fromNode":"0f3257c087900dff","fromSide":"left","toNode":"2beae1b2c6c43242","toSide":"top"},
+		{"id":"3c6185bf4866273c","fromNode":"0f3257c087900dff","fromSide":"bottom","toNode":"a9d29f5f45a536cc","toSide":"top"},
+		{"id":"b372c9b80044a999","fromNode":"a9d29f5f45a536cc","fromSide":"bottom","toNode":"bad2f6e56fbe0832","toSide":"top"},
+		{"id":"9c00f252406bb94a","fromNode":"5b69f2a588693c98","fromSide":"top","toNode":"2beae1b2c6c43242","toSide":"bottom"},
+		{"id":"18ce5fe591f4a617","fromNode":"a9d29f5f45a536cc","fromSide":"bottom","toNode":"c022e6dff0c845f0","toSide":"left","label":"开关机/急停"},
+		{"id":"c94887ec5779640d","fromNode":"1ed973e2a6430b1e","fromSide":"bottom","toNode":"a9d29f5f45a536cc","toSide":"top"},
+		{"id":"4e51d6beb615f412","fromNode":"a9d29f5f45a536cc","fromSide":"bottom","toNode":"9a65f9c9f41dfff8","toSide":"top"},
+		{"id":"56742374427a0c0e","fromNode":"a9d29f5f45a536cc","fromSide":"left","toNode":"5b69f2a588693c98","toSide":"right"},
+		{"id":"778280f9a684582f","fromNode":"c022e6dff0c845f0","fromSide":"top","toNode":"a9d29f5f45a536cc","toSide":"right","label":"TYPE-C供电"},
+		{"id":"77f3f2c15c2000e9","fromNode":"f6fdbd7e278551d1","fromSide":"bottom","toNode":"a9d29f5f45a536cc","toSide":"right","label":"发布"},
+		{"id":"b99b56c135bad7d5","fromNode":"a9d29f5f45a536cc","fromSide":"right","toNode":"f6fdbd7e278551d1","toSide":"left","label":"订阅"}
+	]
+}
