@@ -1,0 +1,178 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "robot-loki"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "robot-loki"
+          },
+          "editorMode": "code",
+          "expr": "sum by (service_name, severity) (count_over_time({environment=~\"$environment\", service_name=~\"$service\", severity=~\"$severity\"} | device_id=~\"$device_id\" | service_version=~\"$system_version\" [$__interval]))",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "日志数量",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "robot-loki"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "robot-loki"
+          },
+          "editorMode": "code",
+          "expr": "{environment=~\"$environment\", service_name=~\"$service\", severity=~\"$severity\"} | device_id=~\"$device_id\" | service_version=~\"$system_version\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "设备日志",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 41,
+  "tags": [
+    "robot",
+    "device-logs"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "prod",
+          "value": "prod"
+        },
+        "datasource": {
+          "type": "loki",
+          "uid": "robot-loki"
+        },
+        "definition": "label_values(environment)",
+        "includeAll": true,
+        "label": "环境",
+        "name": "environment",
+        "query": "label_values(environment)",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "loki",
+          "uid": "robot-loki"
+        },
+        "definition": "label_values(service_name)",
+        "includeAll": true,
+        "label": "服务",
+        "name": "service",
+        "query": "label_values(service_name)",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "loki",
+          "uid": "robot-loki"
+        },
+        "definition": "label_values(severity)",
+        "includeAll": true,
+        "label": "级别",
+        "name": "severity",
+        "query": "label_values(severity)",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": ".*",
+          "value": ".*"
+        },
+        "label": "设备 ID（正则）",
+        "name": "device_id",
+        "query": ".*",
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": ".*",
+          "value": ".*"
+        },
+        "label": "系统版本（正则）",
+        "name": "system_version",
+        "query": ".*",
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "机器人设备日志",
+  "uid": "robot-device-logs",
+  "version": 1
+}

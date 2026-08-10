@@ -1,0 +1,22 @@
+flowchart LR
+    subgraph device [机器人设备]
+        RobotSvc["massage-robot.service\nROS2 / C++ / Python"]
+        IotSvc["massage-iot.service\nRust tracing"]
+        OtaSvc["massage-ota.service\nRust tracing"]
+        Journal["systemd journal"]
+        Gateway["wlzc-device-log-gateway"]
+    end
+
+    subgraph cloud [K8s observability 命名空间]
+        LokiGW["loki-gateway"]
+        Loki["Loki 存储"]
+        Grafana["grafana.ware.wlzcrobot.com"]
+    end
+
+    RobotSvc --> Journal
+    IotSvc --> Journal
+    OtaSvc --> Journal
+    Journal --> Gateway
+    Gateway -->|"HTTP push / OTLP"| LokiGW
+    LokiGW --> Loki
+    Grafana --> LokiGW

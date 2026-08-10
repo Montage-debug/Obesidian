@@ -1,0 +1,18 @@
+# Grafana 数据源配置示例（供自建 Grafana 或 GitOps 参考）
+# 线上实例通过 provisioning 托管，uid 固定为 robot-loki
+#
+# 参考：https://grafana.com/docs/grafana/latest/administration/provisioning/#data-sources
+
+apiVersion: 1
+
+datasources:
+  - name: Robot Loki
+    uid: robot-loki
+    type: loki
+    access: proxy
+    # 线上 K8s 内网地址；自建环境替换为实际 Loki Gateway URL
+    url: http://loki-gateway.observability.svc.cluster.local
+    isDefault: true
+    editable: false
+    jsonData:
+      maxLines: 1000
