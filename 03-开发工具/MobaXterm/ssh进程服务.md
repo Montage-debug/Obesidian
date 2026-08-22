@@ -78,7 +78,12 @@ scp -r /path/local/dir user@remote_ip:/remote/path/
 **下载文件**
 
 ```bash
+# 参考
+scp wlzckj@192.168.10.111:/var/massage_work/trajectory/MassageScheme_euler_20260818_*.txt ./
+#上面完整复制
+
 scp user@remote_ip:/remote/path/file.txt /path/local/
+
 ```
 
 **下载目录**
