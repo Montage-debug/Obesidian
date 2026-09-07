@@ -1,0 +1,5 @@
+| Algorithm | Success (n/N) | Path length at 5000 (mm) | Total time to 5000 (s) | Total tree nodes | Path efficiency | Counted edge checks |
+| --- | --- | --- | --- | --- | --- | --- |
+| SC-RRT | 500/500 | 2570.91 ± 69.13 | 0.8705 ± 0.0568 | 3519.1 ± 94.8 | 0.9102 ± 0.0239 | 9551.5 ± 355.0 |
+| SC-RRT w/o informed-sampling/feedback bundle | 500/500 | 2586.30 ± 71.60 | 0.9360 ± 0.0495 | 3891.5 ± 71.1 | 0.9048 ± 0.0244 | 10786.7 ± 293.2 |
+| SC-RRT fixed (early activation; legacy) | 500/500 | 2596.89 ± 73.26 | 0.8377 ± 0.0427 | 3628.3 ± 87.0 | 0.9011 ± 0.0248 | 9006.3 ± 198.2 |

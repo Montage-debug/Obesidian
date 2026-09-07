@@ -1,0 +1,88 @@
+experiment:
+  num_cases: 1
+  num_runs: 30
+  max_iterations: 10000
+  safety_margin: 0.006
+  step_size: 0.02
+  goal_threshold: 0.04
+  wall_clock_timeout_s: 45
+  wall_clock_policy: outer_harness_includes_postprocess_and_metrics
+  random_seed: 42
+  margin_profiles:
+    main: 0.006
+    off_margin: 0.0
+  common_postprocess:
+    enabled: true
+    clearance_margin: 0.008
+    target_clearance: 0.016
+    resample_step: 0.035
+    simplify_epsilon: 0.018
+  sc_rrt_adaptive:
+    gamma_initial: 3.0
+    p_initial: 0.28
+    gamma_nominal: 2.4
+    p_nominal: 0.55
+    gamma_min: 1.0
+    gamma_max: 4.5
+    p_min: 0.2
+    p_max: 0.95
+    feedback_interval: 15
+    cost_window: 5
+    improvement_threshold: 0.01
+    meet_smoothing_factor: 0.6
+    post_success_extra_iters: 0
+    enable_eer_ssfor: true
+    enable_connect_prune: true
+  arm_collision_in_planning:
+    enabled: true
+    min_arm_clearance_m: 0.006
+    segment_samples: 3
+suites:
+  migration_v1:
+    cases_file: data/processed/app_4scenes_v1.json
+    obstacles_config: config/obstacles_app_v1.yaml
+    num_runs: 30
+    algorithms:
+    - SC-RRT
+    description: 论文 §3.2 迁移验证 4×30×SC-RRT
+    arm_collision_in_planning: false
+  calibrate_migration_v1:
+    cases_file: data/processed/app_4scenes_v1.json
+    obstacles_config: config/obstacles_app_v1.yaml
+    num_runs: 5
+    algorithms:
+    - SC-RRT
+    description: migration_v1 短跑校准（SC-only）
+  single_wlzc_v1:
+    cases_file: data/processed/app_single_wlzc_v1.json
+    obstacles_config: config/obstacles_app_v1.yaml
+    num_runs: 1
+    algorithms:
+    - SC-RRT
+    description: 单场景 wlzc 穴位 multivia（无障碍 scene_none，50+ 途经点）
+    arm_collision_in_planning: false
+    wall_clock_timeout_s: 30
+    common_postprocess:
+      enabled: true
+      resample_step: 0.008
+      simplify_epsilon: 0.006
+      clearance_margin: 0.004
+      target_clearance: 0.008
+algorithms:
+- SC-RRT
+metrics:
+  planning:
+  - success_rate
+  - raw_path_length
+  - deployed_path_length
+  - planning_time
+  - clearance
+  - path_efficiency
+  - smoothness
+  - tree_nodes
+output:
+  csv_dir: results/csv
+  figures_dir: results/figures
+  paths_dir: data/paths
+  logs_dir: results/logs
+  manifests_dir: results/manifests

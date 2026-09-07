@@ -1,0 +1,9 @@
+{
+  "unit_tests": 10,
+  "test_failures": 0,
+  "representative_paths_replayed": 12,
+  "scientific_figures_visually_reviewed": 5,
+  "workbook_sheets_visually_reviewed": 9,
+  "workbook_formula_error_scan_matches": 0,
+  "original_main_and_legacy_run_records_preserved": true
+}

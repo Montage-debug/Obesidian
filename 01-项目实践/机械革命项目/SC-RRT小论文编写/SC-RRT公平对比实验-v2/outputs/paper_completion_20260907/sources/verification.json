@@ -1,0 +1,42 @@
+[
+  {
+    "dataset": "main",
+    "rows": 6000,
+    "invalid_successful_paths": 0,
+    "duplicate_keys": 0,
+    "budget": 5000,
+    "maps_per_dimension": 10,
+    "seeds_per_map": 50
+  },
+  {
+    "dataset": "legacy_ablation",
+    "rows": 3000,
+    "invalid_successful_paths": 0,
+    "duplicate_keys": 0,
+    "budget": 5000,
+    "maps_per_dimension": 10,
+    "seeds_per_map": 50
+  },
+  {
+    "dataset": "main",
+    "trace_rows": 48000,
+    "checkpoint_count_per_run": 8
+  },
+  {
+    "dataset": "legacy_ablation",
+    "trace_rows": 24000,
+    "checkpoint_count_per_run": 8
+  },
+  {
+    "dataset": "matched_ssfor",
+    "rows": 2000,
+    "invalid_successful_paths": 0,
+    "duplicate_keys": 0,
+    "budget": 5000,
+    "maps_per_dimension": 10,
+    "seeds_per_map": 50
+  },
+  {
+    "matched_pairs_with_identical_preactivation_state": 1000
+  }
+]

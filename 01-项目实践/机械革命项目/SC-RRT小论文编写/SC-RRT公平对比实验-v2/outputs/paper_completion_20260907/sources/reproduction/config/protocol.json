@@ -1,0 +1,77 @@
+{
+  "protocol_version": "2.0.0",
+  "budget_definition": "atomic_extension_attempt",
+  "max_extension_attempts": 5000,
+  "checkpoints": [100, 250, 500, 1000, 2000, 3000, 4000, 5000],
+  "step_size_mm": 30.0,
+  "goal_threshold_mm": 45.0,
+  "goal_bias": 0.05,
+  "collision_margin_mm": 0.0,
+  "evaluation_maps_per_dimension": 10,
+  "planner_seeds_per_map": 50,
+  "calibration_maps_per_dimension": 4,
+  "calibration_seeds_per_map": 5,
+  "dimensions": {
+    "2": {
+      "bounds_mm": [[0.0, 1500.0], [0.0, 1500.0]],
+      "start_mm": [75.0, 75.0],
+      "goal_mm": [1425.0, 1425.0],
+      "obstacle_count": 225,
+      "radius_range_mm": [15.0, 35.0],
+      "feasibility_grid_mm": 30.0
+    },
+    "3": {
+      "bounds_mm": [[0.0, 1500.0], [0.0, 1500.0], [0.0, 1500.0]],
+      "start_mm": [75.0, 75.0, 75.0],
+      "goal_mm": [1425.0, 1425.0, 1425.0],
+      "obstacle_count": 400,
+      "radius_range_mm": [30.0, 75.0],
+      "feasibility_grid_mm": 60.0
+    }
+  },
+  "dynamic_rrt": {
+    "pareto_interval": 8,
+    "non_pareto_probability": 0.1,
+    "goal_bias": 0.15,
+    "ellipsoid_inflation": 1.2
+  },
+  "sc_rrt": {
+    "meet_update_interval": 50,
+    "feedback_interval": 50,
+    "target_improvement_rate": 0.02,
+    "gamma_initial": 4.0,
+    "gamma_min": 1.0,
+    "gamma_max": 4.0,
+    "p_before_first_solution": 0.0,
+    "p_min": 0.2,
+    "p_max": 0.95,
+    "pareto_bias_probability": 0.15,
+    "pid_window_updates": 50,
+    "pid_kp": 2.0,
+    "pid_ki": 0.2,
+    "pid_kd": 0.8,
+    "pid_rho_y": 0.9,
+    "pid_rho_d": 0.8,
+    "pid_integral_min": -3.0,
+    "pid_integral_max": 3.0,
+    "pid_gamma_0": 1.5,
+    "pid_alpha_gamma": 0.5,
+    "pid_p_0": 0.8,
+    "pid_alpha_p": 0.5,
+    "connect_trigger_steps": 12.0,
+    "connect_max_steps": 8,
+    "rewire_radius_steps": 2.5
+  },
+  "main_algorithms": [
+    "RRT",
+    "RRT-Connect",
+    "RRT*",
+    "Informed-RRT*",
+    "Dynamic-RRT",
+    "SC-RRT"
+  ],
+  "ablation_algorithms": [
+    "SC-RRT-no-ADCS",
+    "SC-RRT-no-SSFOR"
+  ]
+}

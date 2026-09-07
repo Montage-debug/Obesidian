@@ -1,0 +1,13 @@
+environment_id,family,dimension,seed,algorithm,success,budget_limit,expansion_attempts,added_nodes,total_nodes,collision_checks,collision_rejections,rewire_attempts,rewire_successes,first_solution_attempt,first_solution_time_s,first_solution_nodes,first_solution_cost_mm,first_solution_efficiency,fixed_budget_time_s,fixed_budget_cost_mm,fixed_budget_efficiency,path_valid,map_index,seed_index,pareto_start_index,gamma_a_final,gamma_b_final,p_a_final,p_b_final,feedback_updates
+calibration-2d-00,uniform_clutter,2,20000000,RRT,0,500,500,323,324,500,177,0,0,nan,nan,nan,nan,nan,0.025264766009058803,inf,nan,0,0,0,,,,,,
+calibration-2d-00,uniform_clutter,2,20000000,RRT-Connect,1,500,500,335,337,500,165,0,0,225.0,0.010411663039121777,113.0,2175.4781320368547,0.8775948059823269,0.031987534021027386,2175.4781320368547,0.8775948059823269,1,0,0,,,,,,
+calibration-2d-00,uniform_clutter,2,20000000,RRT*,0,500,500,323,324,1420,177,920,88,nan,nan,nan,nan,nan,0.07403496198821813,inf,nan,0,0,0,,,,,,
+calibration-2d-00,uniform_clutter,2,20000000,Informed-RRT*,0,500,500,323,324,1420,177,920,88,nan,nan,nan,nan,nan,0.07698049396276474,inf,nan,0,0,0,,,,,,
+calibration-2d-00,uniform_clutter,2,20000000,Dynamic-RRT,0,500,500,299,300,500,201,0,0,nan,nan,nan,nan,nan,0.12321896699722856,inf,nan,0,0,0,84,,,,,
+calibration-2d-00,uniform_clutter,2,20000000,SC-RRT,1,500,500,324,326,500,176,0,0,173.0,0.009919007017742842,97.0,2178.179473065634,0.8765064278732875,0.0435261310194619,2167.2922822180926,0.8809094762473567,1,0,0,,4.0,4.0,0.2,0.2,6
+calibration-3d-00,uniform_clutter,3,30000000,RRT,0,500,500,449,450,500,51,0,0,nan,nan,nan,nan,nan,0.04517221701098606,inf,nan,0,0,0,,,,,,
+calibration-3d-00,uniform_clutter,3,30000000,RRT-Connect,1,500,500,463,465,500,37,0,0,98.0,0.019652693008538336,88.0,2465.620376946256,0.9483489883848215,0.08859898097580299,2465.620376946256,0.9483489883848215,1,0,0,,,,,,
+calibration-3d-00,uniform_clutter,3,30000000,RRT*,0,500,500,449,450,1226,51,726,42,nan,nan,nan,nan,nan,0.12949211901286617,inf,nan,0,0,0,,,,,,
+calibration-3d-00,uniform_clutter,3,30000000,Informed-RRT*,0,500,500,449,450,1226,51,726,42,nan,nan,nan,nan,nan,0.0937858660472557,inf,nan,0,0,0,,,,,,
+calibration-3d-00,uniform_clutter,3,30000000,Dynamic-RRT,1,500,500,419,420,472,50,0,0,268.0,0.09702629101229832,249.0,2700.1542359491,0.8659759354065515,0.19670948199927807,2700.1542359491,0.8659759354065515,1,0,0,71,,,,,
+calibration-3d-00,uniform_clutter,3,30000000,SC-RRT,1,500,500,420,422,500,80,0,0,120.0,0.013994499982800335,89.0,2563.294625526073,0.9122121846364398,0.08133597602136433,2556.2538596473796,0.9147247177322736,1,0,0,,4.0,4.0,0.2,0.2,7

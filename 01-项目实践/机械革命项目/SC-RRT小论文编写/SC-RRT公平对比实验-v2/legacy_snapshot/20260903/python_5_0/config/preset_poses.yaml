@@ -1,0 +1,81 @@
+# 预设关节角度配置文件
+# 关节角度按 厂商（MR_ROBOT_TYPE）→ 型号（MR_ROBOT_MODEL）→ 安装角度（MR_ARM_MOUNT_ANGLE）三级索引
+# 单位：度
+# 示例：export MR_ROBOT_TYPE=aubo  export MR_ROBOT_MODEL=i5  export MR_ARM_MOUNT_ANGLE=Z90_30
+
+# ===================== AUBO 机械臂 =====================
+aubo:
+  i5:
+    Z0_30:
+      ros__parameters:
+        # Home位置 - 机械臂回零位置
+        home_joint_angles: [0.0, 70.0, 130.0, 0.0, 90.0, 0.0]
+
+        # Camera位置 - 相机拍照位置
+        camera_joint_angles: [0.0, 20.0, 60.0, -20.0, 90.0, 0.0]
+
+        # Ready位置
+        ready_joint_angles: [0.0, 0.0, 60.0, 0.0, 90.0, 0.0]
+
+        # Package位置 - 打包位置
+        package_joint_angles: [0.0, 120.0, 158.0, -23.0, 0.0, 0.0]
+
+    Z90_30:
+      ros__parameters:
+        # Home位置 - 机械臂回零位置
+        home_joint_angles: [90.0, 70.0, 130.0, 0.0, 90.0, 0.0]
+
+        # Camera位置 - 相机拍照位置
+        camera_joint_angles: [90.0, 20.0, 60.0, -20.0, 90.0, 0.0]
+
+        # Ready位置
+        ready_joint_angles: [90.0, 0.0, 60.0, 0.0, 90.0, 0.0]
+
+        # Package位置 - 打包位置
+        package_joint_angles: [90.0, 120.0, 158.0, -23.0, 0.0, 0.0]
+
+    Z0_0:
+      ros__parameters:
+        # Home位置 - 机械臂回零位置
+        home_joint_angles: [0.0, 40.0, 130.0, 0.0, 90.0, 0.0]
+
+        # Camera位置 - 相机拍照位置
+        camera_joint_angles: [0.0, -10.0, 60.0, -20.0, 90.0, 0.0]
+
+        # Ready位置
+        ready_joint_angles: [0.0, -30.0, 60.0, 0.0, 90.0, 0.0]
+
+        # Package位置 - 打包位置
+        package_joint_angles: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+# ===================== Elite 机械臂 =====================
+elite:
+  ls65:
+    Z0_30:
+      ros__parameters:
+        # Home位置 - 机械臂回零位置
+        home_joint_angles: [0.0, -20.0, -40.0, 0.0, -45.0, 0.0]
+
+        # Camera位置 - 相机拍照位置
+        camera_joint_angles: [0.0, -60.0, 30.0, 0.0, -30.0, 0.0]
+
+        # Ready位置
+        ready_joint_angles: [0.0, -35.0, -25.0, 0.0, -45.0, 0.0]
+
+        # Package位置 - 打包位置
+        package_joint_angles: [0.0, -90.0, 90.0, 0.0, 0.0, 0.0]
+
+  es66:
+    Z0_30:
+      ros__parameters:
+        # Home位置 - 机械臂回零位置
+        home_joint_angles: [0.0, -20.0, -130.0, -90.0, 90.0, 0.0]
+
+        # Camera位置 - 相机拍照位置
+        camera_joint_angles: [0.0, -70.0, -60.0, -110.0, -90.0, 0.0]
+
+        # Ready位置
+        ready_joint_angles: [0.0, -90.0, -60.0, -90.0, 90.0, 0.0]
+
+        # Package位置 - 打包位置
+        package_joint_angles: [0.0, -90.0, 0.0, -90.0, 90.0, 0.0]

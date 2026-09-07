@@ -1,0 +1,4 @@
+| Algorithm | Success (n/N) | Path length at 5000 (mm) | Total time to 5000 (s) | Total tree nodes | Path efficiency | Counted edge checks |
+| --- | --- | --- | --- | --- | --- | --- |
+| SC-RRT | 500/500 | 2570.91 ± 69.13 | 0.9027 ± 0.0645 | 3519.1 ± 94.8 | 0.9102 ± 0.0239 | 9551.5 ± 355.0 |
+| SC-RRT fixed (matched activation) | 500/500 | 2580.22 ± 70.44 | 0.9104 ± 0.0559 | 3638.7 ± 81.7 | 0.9069 ± 0.0241 | 9751.7 ± 291.6 |

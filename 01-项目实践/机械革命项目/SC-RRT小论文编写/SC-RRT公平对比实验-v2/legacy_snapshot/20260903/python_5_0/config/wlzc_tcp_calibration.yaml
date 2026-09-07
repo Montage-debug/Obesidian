@@ -1,0 +1,25 @@
+frame: base_link
+obstacle_set: scene_none
+scene_id: S0_NoObstacle
+
+mesh_region:
+  center: [0.62, 0.0]
+  size: [0.58, 0.48]
+surface_z_m: 0.20
+approach_z_m: 0.40
+
+body_cm:
+  scale: 0.01
+  origin_at_mesh_center: true
+  z_from_surface_offset_m: 0.02
+
+use_first_code_as_start: false
+# 悬停在全背走圈起点（右肩肺俞）上方
+start_override:
+  pos: [0.48, 0.12, 0.40]
+  rpy: [0.0, 0.0, 0.0]
+
+acupoint_layout: back_perimeter
+
+# 沿穴位折线插值得到的途经点数量（不含 goal）
+min_via_points: 20

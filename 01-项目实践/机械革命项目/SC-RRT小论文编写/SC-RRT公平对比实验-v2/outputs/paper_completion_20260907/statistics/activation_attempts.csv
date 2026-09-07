@@ -1,0 +1,5 @@
+dimension,algorithm,min,median,max
+2,SC-RRT,2552,2561.0,2578
+2,SC-RRT-fixed-matched,2552,2561.0,2578
+3,SC-RRT,2559,2570.0,2590
+3,SC-RRT-fixed-matched,2559,2570.0,2590

@@ -1,0 +1,126 @@
+# =============================================================================
+# 背部按摩 RViz 场景 — 全量运行时配置（唯一调参入口）
+# =============================================================================
+# 引用关系: scene/back_capture_v1/scene_manifest.yaml → runtime_config 指向本文件
+# 生效方式: 修改后重启 ./start_back_scene.sh preview 或 animate
+#
+# 调试顺序建议:
+#   1. validate          穴位是否贴在点云上
+#   2. preview           绿球(TCP目标)是否与红球(穴位)重合
+#   3. 调 robot / tcp_tool / ik  直到终端出现「对齐自检 PASS: 14/14」
+#   4. sync-case + 规划  生成 SC-RRT 路径
+#   5. animate 0         回放规划轨迹
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# robot — 机械臂型号、Home 姿态、case_link ↔ base_link 外参
+# ---------------------------------------------------------------------------
+robot:
+  # 厂商标识，对应 config/preset_poses.yaml 一级键
+  type: aubo
+  # 型号，对应 preset_poses.yaml 二级键
+  model: i5
+  # 安装角度（柜机侧向），对应 preset_poses.yaml 三级键；常见 Z0_30 / Z90_30
+  mount_angle: Z90_30
+
+  # J1(shoulder) 在 preset home 基础上的额外偏置（度）
+  # 0 = 背部正上方；若 preview 时肩在侧面，可试 ±90
+  home_shoulder_offset_deg: 0.0
+
+  # 完全覆盖 preset home 的 6 关节角（度）；null 则读 preset_poses.yaml
+  # 例: [0.0, 70.0, 130.0, 0.0, 90.0, 0.0]
+  home_joint_angles_deg: null
+
+  # case_link → base_link 平移 [x,y,z]（米）；与实机 TF / 规划器一致
+  case_to_base_xyz: [0.0, 0.0, 0.0]
+
+  # case_link → base_link 旋转 [roll,pitch,yaw]（弧度，xyz 欧拉角）
+  # 默认 ≈ [0°, -30°, 90°]；改此值需同步 URDF case_joint（取逆旋转）
+  case_to_base_rpy: [0.0, -0.5235987755982989, 1.5707963267948966]
+
+  # world → case_link 平移（米）；预留，当前 launch 未读取，点云位姿由 URDF case_joint 决定
+  world_to_case_xyz: [0.0, 0.0, 1.0]
+
+# ---------------------------------------------------------------------------
+# tcp_tool — 法兰 wrist3_Link → 按摩头 TCP 的工具偏移（IK / RViz 共用）
+# ---------------------------------------------------------------------------
+tcp_tool:
+  # false 则关闭 tool_tcp TF 与轴 Marker
+  enabled: true
+  # 工具 TCP 帧名；RViz TF 树中显示为 base_link → … → tool_tcp
+  frame_name: tool_tcp
+  # 静态偏移的父连杆（Aubo i5 末轴）
+  parent_frame: wrist3_Link
+
+  # 法兰→TCP 平移 [x,y,z]（米）；按摩头向前/下延伸时改 z 或 x
+  # 调试: 增大 |z| 后绿球应仍与红球重合（IK 会自动补偿）
+  offset_xyz_m: [0.0, 0.0, 0.10]
+  # 法兰→TCP 旋转 [roll,pitch,yaw]（弧度）
+  offset_rpy_rad: [0.0, 0.0, 0.0]
+
+  # RViz 中绘制 TCP 坐标轴（红/绿/蓝 = X/Y/Z）
+  show_axis_in_rviz: true
+  axis_length_m: 0.06
+  # 绘制法兰到 TCP 的圆柱体（长度 = |offset_xyz|）
+  show_cylinder: true
+
+# ---------------------------------------------------------------------------
+# preview — IK 预览与关节回放（massage_chain_executor）
+# ---------------------------------------------------------------------------
+preview:
+  # 相邻穴位段的目标时长（秒）；越大动作越慢
+  segment_sec: 2.0
+  # 穴位到达后停留时间（秒）；预留，当前 executor 未使用
+  dwell_sec: 0.8
+
+  # 轨迹重采样时间步（秒）；越小越平滑、计算量略增
+  sample_dt: 0.05
+  # /viz_joint_states 发布频率（Hz）
+  publish_hz: 40.0
+  # true = 播完后循环；false = 停在终点
+  loop: true
+
+  # 启动时校验 TCP(FK) 与 case_link 穴位距离；终端应见「对齐自检 PASS」
+  align_check: true
+
+  # true = 终端打印各穴位关节角与 TCP；排查 IK 时打开
+  print_trajectory: false
+  # true = 写入 results/logs/massage_tcp_motion_latest.txt 等
+  write_trajectory_file: false
+
+  # IK 结果缓存；改 tcp_tool / home / 路点后应删缓存或设 false 强制重算
+  ik_cache_enabled: true
+  ik_cache_path: results/cache/massage_ik_cache.json
+
+# ---------------------------------------------------------------------------
+# visualization — RViz 显示（部分项为文档约定，需配合 back_scene.rviz）
+# ---------------------------------------------------------------------------
+visualization:
+  # 轨迹线颜色 RGB 0–255；executor 已读取，tcp_path_viz 仍用内置桔黄（待接入）
+  path_color_rgb: [255, 140, 0]
+  # 轨迹线宽（米）；预留
+  path_line_width: 0.03
+
+  # 穴位法向坐标轴长度（米）；/acupoint_frame_markers
+  acupoint_axis_length_m: 0.045
+  # 是否发布穴位法向 RGB 坐标轴（/acupoint_frame_markers）；与文字标签独立
+  show_acupoint_tf: true
+  # 穴位文字标签（false 隐藏全部文字；控制 TF 帧名 acupoint_XXX 与 Marker 文字 BL_XX）
+  show_acupoint_labels: false
+
+  # RViz Fixed Frame 建议值；实际以 rviz/back_scene.rviz 为准（默认 case_link）
+  # case_link = 与点云/穴位同系；base_link = 与机械臂/规划路径同系
+  fixed_frame: case_link
+
+# ---------------------------------------------------------------------------
+# ik — 逆解约束（AuboIKSolver）；IK 失败或姿态畸形时优先调这里
+# ---------------------------------------------------------------------------
+ik:
+  # TCP 在 base_link 下最低 z（米）；背部按摩允许低于台面，默认 -0.40
+  # 若报 IK 失败过多，可略放宽（如 -0.50）
+  min_tcp_z_m: -0.40
+  # 肘部参考点最低 z（米）；防止肘穿入床面；畸形解时可调高（如 -0.10）
+  min_elbow_z_m: -0.20
+  # 相邻路点关节跳变上限（弧度）；超过则尝试其他 seed；≈114°
+  # 配置项已定义；animate 模式 trajectory_animator 可读 launch 参数覆盖
+  max_joint_jump_rad: 2.0

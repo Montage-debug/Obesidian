@@ -1,0 +1,11 @@
+{
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.35",
+  "numpy": "2.3.5",
+  "pandas": "2.2.3",
+  "bootstrap_replicates": 10000,
+  "bootstrap_seed_rule": "first 8 hexadecimal digits of SHA256(dataset+dimension+reference+metric)",
+  "analysis_script_sha256": "198daa0dbcf953f36241d94cf08754154b4bf8ed6f91a7bae7d54595e279b101",
+  "partial": false,
+  "analysis_is_retrospective_supplement": true
+}
