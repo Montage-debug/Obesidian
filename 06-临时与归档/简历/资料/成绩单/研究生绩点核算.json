@@ -1,0 +1,199 @@
+{
+  "source": "研究生-上海应用技术大学-课程成绩.jpg",
+  "status": "简历使用用户指定值3.5；下列参考折算留作过程记录，不冒充校方核定值",
+  "semester_range": "2024-2025学年秋季、春季；仅截图所列课程",
+  "course_count": 17,
+  "total_credits": 29,
+  "numeric_course_credits": 28,
+  "numeric_course_weighted_marks": "2379.8",
+  "assumptions": [
+    "采用参考5分制：及格课程绩点=成绩/10-5；这并非已经确认适用于该届研究生的官方算法。",
+    "文献检索与科研写作的中暂按C级70分计算；需要学院确认该系统的中与C是否等同。",
+    "全部17门均纳入，不排除低分英语课；小数成绩保留原精度。"
+  ],
+  "weighted_grade_points": "99.98",
+  "weighted_marks": "2449.8",
+  "reference_gpa_5": "3.447586206896551724137931034",
+  "reference_gpa_5_rounded": "3.45",
+  "sensitivity_if_middle_is_75": "3.46",
+  "official_gpa": null,
+  "courses": [
+    {
+      "code": "DG0202001",
+      "course": "弹性力学及有限元",
+      "type": "专业必修课",
+      "original_grade": "86",
+      "credits": 2,
+      "assumed_numeric_grade": "86",
+      "reference_grade_point_5": "3.6",
+      "weighted_grade_point": "7.2"
+    },
+    {
+      "code": "DG1102004",
+      "course": "通用学术英语I",
+      "type": "公共必修课",
+      "original_grade": "60",
+      "credits": 2,
+      "assumed_numeric_grade": "60",
+      "reference_grade_point_5": "1",
+      "weighted_grade_point": "2"
+    },
+    {
+      "code": "DG1502001",
+      "course": "车辆传感器与检测技术",
+      "type": "专业选修课",
+      "original_grade": "90",
+      "credits": 2,
+      "assumed_numeric_grade": "90",
+      "reference_grade_point_5": "4",
+      "weighted_grade_point": "8"
+    },
+    {
+      "code": "DG2202012",
+      "course": "数值计算",
+      "type": "公共必修课",
+      "original_grade": "83",
+      "credits": 1,
+      "assumed_numeric_grade": "83",
+      "reference_grade_point_5": "3.3",
+      "weighted_grade_point": "3.3"
+    },
+    {
+      "code": "DG2202013",
+      "course": "最优化理论及应用",
+      "type": "公共必修课",
+      "original_grade": "92",
+      "credits": 1,
+      "assumed_numeric_grade": "92",
+      "reference_grade_point_5": "4.2",
+      "weighted_grade_point": "4.2"
+    },
+    {
+      "code": "DG2802001",
+      "course": "中国特色社会主义理论与实践研究",
+      "type": "公共必修课",
+      "original_grade": "96",
+      "credits": 2,
+      "assumed_numeric_grade": "96",
+      "reference_grade_point_5": "4.6",
+      "weighted_grade_point": "9.2"
+    },
+    {
+      "code": "DZ0202002",
+      "course": "先进制造系统",
+      "type": "专业必修课",
+      "original_grade": "85",
+      "credits": 2,
+      "assumed_numeric_grade": "85",
+      "reference_grade_point_5": "3.5",
+      "weighted_grade_point": "7.0"
+    },
+    {
+      "code": "DZ0202014",
+      "course": "智能制造与人工智能",
+      "type": "专业必修课",
+      "original_grade": "85",
+      "credits": 2,
+      "assumed_numeric_grade": "85",
+      "reference_grade_point_5": "3.5",
+      "weighted_grade_point": "7.0"
+    },
+    {
+      "code": "GB01902002",
+      "course": "通用学术英语Ⅱ",
+      "type": "公共必修课",
+      "original_grade": "78.7",
+      "credits": 2,
+      "assumed_numeric_grade": "78.7",
+      "reference_grade_point_5": "2.87",
+      "weighted_grade_point": "5.74"
+    },
+    {
+      "code": "GB02002004",
+      "course": "自然辩证法概论",
+      "type": "公共必修课",
+      "original_grade": "88.4",
+      "credits": 1,
+      "assumed_numeric_grade": "88.4",
+      "reference_grade_point_5": "3.84",
+      "weighted_grade_point": "3.84"
+    },
+    {
+      "code": "NX0202006",
+      "course": "信号处理技术",
+      "type": "专业选修课",
+      "original_grade": "85",
+      "credits": 2,
+      "assumed_numeric_grade": "85",
+      "reference_grade_point_5": "3.5",
+      "weighted_grade_point": "7.0"
+    },
+    {
+      "code": "NX0202009",
+      "course": "现代表面工程技术",
+      "type": "专业选修课",
+      "original_grade": "91",
+      "credits": 2,
+      "assumed_numeric_grade": "91",
+      "reference_grade_point_5": "4.1",
+      "weighted_grade_point": "8.2"
+    },
+    {
+      "code": "NX0202010",
+      "course": "虚拟样机技术及其应用",
+      "type": "专业选修课",
+      "original_grade": "85",
+      "credits": 2,
+      "assumed_numeric_grade": "85",
+      "reference_grade_point_5": "3.5",
+      "weighted_grade_point": "7.0"
+    },
+    {
+      "code": "NX0202025",
+      "course": "先进制造专业外语",
+      "type": "专业选修课",
+      "original_grade": "88",
+      "credits": 1,
+      "assumed_numeric_grade": "88",
+      "reference_grade_point_5": "3.8",
+      "weighted_grade_point": "3.8"
+    },
+    {
+      "code": "ZX00902002",
+      "course": "高等机械原理",
+      "type": "专业选修课",
+      "original_grade": "90",
+      "credits": 2,
+      "assumed_numeric_grade": "90",
+      "reference_grade_point_5": "4",
+      "weighted_grade_point": "8"
+    },
+    {
+      "code": "ZX00902010",
+      "course": "机械故障诊断",
+      "type": "专业选修课",
+      "original_grade": "82.5",
+      "credits": 2,
+      "assumed_numeric_grade": "82.5",
+      "reference_grade_point_5": "3.25",
+      "weighted_grade_point": "6.50"
+    },
+    {
+      "code": "ZX00902026",
+      "course": "文献检索与科研写作",
+      "type": "专业选修课",
+      "original_grade": "中",
+      "credits": 1,
+      "assumed_numeric_grade": "70",
+      "reference_grade_point_5": "2",
+      "weighted_grade_point": "2"
+    }
+  ],
+  "reference_urls": [
+    "https://info.sit.edu.cn/info/2451/35831.htm",
+    "https://gs.sit.edu.cn/info/1321/6331.htm"
+  ],
+  "resume_gpa": 3.5,
+  "resume_gpa_source": "用户在本轮明确指定：研究生绩点你填3.5",
+  "resume_display": "GPA：3.5"
+}

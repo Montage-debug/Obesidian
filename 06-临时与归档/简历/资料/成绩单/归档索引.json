@@ -1,0 +1,21 @@
+{
+  "archived_on": "2026-09-09",
+  "method": "原件复制，未修改图像",
+  "files": [
+    {
+      "file": "本科-温州理工学院-学业成绩表.jpg",
+      "source": "C:\\Users\\26434\\Downloads\\IMG_0002.jpg",
+      "sha256": "d3ccf6aaa5f29915e1246c8c59ea3cf72e947d62e50c9097593bb6a032ddb9d7"
+    },
+    {
+      "file": "本科-温州理工学院-录取名册.jpg",
+      "source": "C:\\Users\\26434\\Downloads\\IMG_0001.jpg",
+      "sha256": "60158c93a526a8881e18826837262a3db32d30da81a2c27552875271c2de121c"
+    },
+    {
+      "file": "研究生-上海应用技术大学-课程成绩.jpg",
+      "source": "E:\\xwechat_files\\wxid_6rawr3ohzsdb22_ac6d\\temp\\RWTemp\\2026-09\\9e20f478899dc29eb19741386f9343c8\\0dbdb44d7ebda263c54c763a453b9559.jpg",
+      "sha256": "ae908a3085fa0f4cdd55cc14c2fdae12fdd0b54e5d7fa230e377517471b7dd24"
+    }
+  ]
+}

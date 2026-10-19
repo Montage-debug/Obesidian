@@ -1,0 +1,23 @@
+# 摘要
+
+人体表面目标具有外观差异大、局部标志不明显以及目标位置随个体变化等特点。将视觉识别结果用于机械臂作业，需要同时解决二维目标推理、三维位姿转换和目标之间的路径搜索问题。本文以人体穴位作为个体化视觉目标，围绕YOLOv11-AMP穴位视觉定位方法和SC-RRT路径规划方法开展研究，并结合机械臂平台整理两类算法的部署与衔接过程。
+
+针对穴位难以直接从图像外观稳定识别的问题，构建由通用人体姿态模型、局部解剖锚点模型和骨度约束规则组成的YOLOv11-AMP方法。首先提取肩、髋等人体关键点，并利用颈部和脐部模型补充局部参考信息；随后根据解剖基线估计像素尺度，调用分部位规则生成穴位坐标。已有训练日志表明，颈部、脐部及膝部锚点模型完成了相应训练；其中膝部模型属于预研结果，不能与当前部署状态混同。穴位级独立定位误差与消融效果尚需逐样本记录支持。
+
+针对有限扩展预算下的路径搜索问题，研究由双向树、动态中间参考点、双椭球约束采样和搜索状态反馈组成的SC-RRT方法。在每个维度10张冻结地图、每张地图50个规划随机种子的二维和三维静态点机器人环境中，统一采用5000次原子扩展尝试。SC-RRT在两个维度均完成500次有效求解，终值平均路径长度分别为2022.93 mm和2570.91 mm，相比RRT-Connect分别缩短10.15%和1.37%。RRT-Connect的首解速度更快，RRT*和Informed-RRT*的终值路径更短，说明SC-RRT体现的是特定预算下路径质量与计算成本的取舍。匹配启动条件的反馈消融表明，三维平均改善幅度为0.361%，二维改善幅度为0.283%且其95%置信区间跨越零，反馈贡献具有条件性。
+
+在部署层面，建立从图像与深度快照、人工确认、空间反投影和局部法向估计，到工具位姿、接近点、转移路径及执行路点的处理链路。给出相机内参、眼在手上外参和工具坐标的作用及检查要求，区分几何路径可行性与机械臂运动可执行性。现有实物图像用于说明平台与曲面轨迹执行案例，尚不能替代统一记录条件下的视觉到执行定量验证。
+
+关键词：视觉定位；YOLOv11-AMP；SC-RRT；约束采样；手眼标定；机械臂运动规划
+
+# Abstract
+
+Human-surface targets vary across individuals and may lack distinctive visual features. Transferring image-based target locations to a robotic arm requires geometric inference, three-dimensional pose generation, and feasible motion planning. This thesis studies YOLOv11-AMP for acupoint localization and SC-RRT for path planning, and describes their deployment and integration on a robotic platform.
+
+YOLOv11-AMP combines a general human pose model, regional anatomical landmark models, and explicit geometric rules. Shoulder and hip keypoints provide structural references, while neck and navel models supplement local landmarks. Image-space scales are estimated from anatomical baselines to generate target coordinates. Available logs document training of neck, navel, and knee landmark models. The knee model remains a preliminary model rather than a confirmed component of the deployed inference pipeline. Independent acupoint-level accuracy and ablation results require further verification of sample-level records.
+
+SC-RRT combines bidirectional search, a moving intermediate reference, dual ellipsoidal sampling, and search-state feedback. Evaluation uses ten frozen maps and fifty planner seeds per map in each of two-dimensional and three-dimensional static point-robot workspaces. Every planner receives 5,000 atomic extension attempts. SC-RRT succeeds in all 500 runs per dimension, with mean final path lengths of 2,022.93 mm and 2,570.91 mm, respectively. These are 10.15% and 1.37% shorter than those of RRT-Connect. However, RRT-Connect finds initial solutions faster, while RRT* and Informed-RRT* yield shorter final paths. With matched activation conditions, feedback reduces the mean path length by 0.361% in three dimensions; the corresponding two-dimensional improvement is 0.283%, with a 95% confidence interval crossing zero.
+
+The deployment pipeline connects RGB-D acquisition, manual confirmation, back-projection, and surface-normal estimation with tool poses, approach points, transfer paths, and executable waypoints. Camera intrinsics, eye-in-hand transformations, tool offsets, and kinematic checks are explicitly distinguished. Existing physical demonstrations illustrate platform operation; they do not establish the quantitative accuracy of the complete perception-to-execution chain.
+
+Keywords: visual localization; YOLOv11-AMP; SC-RRT; constrained sampling; hand-eye calibration; robotic arm motion planning

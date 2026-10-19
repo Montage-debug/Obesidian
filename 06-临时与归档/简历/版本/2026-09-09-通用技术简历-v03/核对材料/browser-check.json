@@ -1,0 +1,20 @@
+{
+  "geometry": {
+    "height": 1122.515625,
+    "scroll": 1123,
+    "last": 1083.484375
+  },
+  "original": {
+    "height": 1122.515625,
+    "footer": 1087.75
+  },
+  "errors": [],
+  "checks": [
+    "one HTML page",
+    "both GPAs correct",
+    "requested omissions absent",
+    "photo loaded",
+    "HTML download uses isolated storage",
+    "root HTML academic fields synchronized"
+  ]
+}

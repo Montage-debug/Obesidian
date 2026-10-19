@@ -1,0 +1,222 @@
+[0] SC-RRT: Bidirectional Path Planning with Adaptive Dual-Superellipsoid Sampling
+[1]  Yan Wu, Xingyu Guo1, Muchun Fan1, Feng Hong1, Hongyu Gao1, Jianyu Zheng1
+[2] Abstract: 基于采样的路径规划算法在障碍物密集环境中常存在无效采样过多、搜索效率不足及可行路径获取速度较慢等问题。本文提出一种具有自适应双超椭球约束采样机制的双向快速扩展随机树方法。该方法采用自适应双超椭球约束采样（ADCS）策略，通过一个动态更新的中间参考点来定义两个采样区域，并利用基于搜索状态反馈的在线调节（SSFOR）机制，根据各搜索方向近期最优路径代价的改善程度构造反馈偏差，在搜索停滞时扩大搜索范围实现探索与开发之间的动态平衡。实验与物种基于采样的基线算法进行对比评估，结果表明, SC-RRT 在二维和三维场景中均成功找到了可行解，相较于 Dynamic-RRT，SC-RRT 平均路径长度缩短 12.6%，路径效率达到0.9553；其规划时间仅为 Informed RRT* 的 16.2%，采样节点数量降低 94.2%。表明该方法在保证可观路径质量的同时计算效率具有显著提升。此外，基于六自由度机械臂，在 RGB-D 感知构建的非结构化三维环境中开展实物实验。SC-RRT 规划得到长度 3.249 m 的多目标连续轨迹，机械臂实际运行路径长度为 3.245 m，路径长度偏差仅 0.12%；工具中心点（TCP）平均跟踪误差 1.98 mm，最大跟踪误差 3.09 mm，验证了规划轨迹能够在实体机器人系统中可靠执行。综上，SC-RRT 在路径质量与计算效率之间取得了较好的平衡，并表现出一定的真实机器人应用潜力。
+[3] Keywords: Sampling-based path planning; informed sampling; bidirectional tree search; online parameter regulation; robotic manipulator
+[4] 
+[5] 
+[6] Introduction
+[7] 随着工业机器人与服务机器人技术的快速发展，机器人正被广泛部署于复杂环境中，对其运动规划的可靠性与效率提出了更高要求。其应用场景已从结构化制造环境扩展至人机协作、非结构化空间以及空间受限操作等复杂任务环境中[1–5]。在实际应用中，规划算法不仅需要具备较高的计算效率，还需保证路径质量。然而，在障碍物随机分布或几何约束复杂的环境中，可行采样空间显著收缩，树结构扩展受限，从而使得算法难以同时实现快速收敛与高质量路径生成[6–10]。
+[8] RRT、RRT-Connect 和 RRT 为基于采样的规划提供了成熟的框架[11–15]。它们各自不同的探索与优化策略，提供了求解速度与路径质量间的不同平衡[16–19]。为提升采样效率与搜索引导能力，国内外研究者提出了多种基于方向性采样与双向搜索增强的改进方法。诸如 ARRT-Connect、ABQ-RRT 以及几何引导采样等扩展方法，通过利用搜索树的演化信息或周围环境信息来改善搜索引导[20-22]。
+[9] Informed RRT*将采样限制在一个能够改进现有解的椭球子集内[23,24]，为代价引导的约束采样提供了重要基础。而BIT*则将启发式采样与隐式随机几何图上的启发式搜索相结合，以提升高维空间中的规划效率[25,26]。后续方法通过自适应采样和路径优化进一步拓展了这些思路[27,29]。其中，Zhao等提出的Dynamic-RRT[29]引入基于超椭球体的启发式约束采样机制，通过估计路径代价确定采样区域，并结合Pareto支配节点选择策略[30]及问题分解方法，在保证路径质量的同时提升了可行路径生成效率。
+[10] 这些研究促使人们进一步探讨采样区域应如何响应搜索进展，但仍存在两个关键局限性。过大的采样区域有利于探索，但可能将计算资源浪费在偏离有用路径的方向上；而过于受限的区域则可能限制替代连接的发现。本文考察了方向特定的采样几何与基于近期解成本改善的反馈机制相结合的方法。
+[11] 针对上述问题，本文提出了SC-RRT，并引入自适应双超椭球约束采样机制（ADCS）。在双向搜索框架下，围绕一个共享的中间参考点构建两个椭球采样区域，将全局规划问题分解为两个协同子问题，从而为双侧独立约束采样提供结构基础。提升采样效率并保持必要的探索能力。此外，进一步提出基于搜索状态反馈的在线调节机制（SSFOR），利用当前最优完整路径的近期改善情况，对超椭球扩张因子及启发式采样概率进行自适应调整。在搜索初期或陷入停滞阶段，适当放宽约束以扩大搜索范围；在路径持续优化阶段，则逐步收紧约束以提高有效采样密度并抑制冗余扩展。该整体框架在二维和三维基准测试以及物理机械臂执行案例中进行了评估，以验证方法的实际可用性与工程适应性。
+[12] The main contributions are as follows:
+[13] 1. A bidirectional planning framework that uses a dynamic intermediate reference point to construct direction-specific ellipsoidal sampling regions.
+[14] 2. A search-state feedback mechanism that jointly regulates region expansion and sampling probability using the recent improvement of the incumbent path.
+[15] 3. An evaluation of overall planning performance in two and three dimensions, together with a physical case demonstrating the execution of SC-RRT-generated TCP paths on a manipulator.
+[16] Proposed Method
+[17] Problem Formulation and Environment Representation
+[18] Let W ⊆ Rn , with , denote the Cartesian planning workspace [31-32], Obstacles occupy Wobs，and the free space is . Given , the planner seeks a collision-free path connecting them, with path quality measured by Euclidean length.
+[19] SC-RRT grows two trees TA and TB rooted at xstart and xgoal, respectively. As illustrated in Fig. 1, a dynamic intermediate reference point xmeet is introduced as a shared geometric reference for the two search directions. It is initialized at the midpoint of xstart and xgoal, and is subsequently updated according to the expansion states of the two trees. This reference point is used to construct direction-specific constrained sampling regions for each search direction, rather than relying on a single global sampling space. Note that xmeet is not a required waypoint nor the actual tree-connection point.
+[20] The detailed construction of the dual constrained sampling regions, as well as their online regulation mechanism, will be presented in Sections 2.2 and 2.3, respectively.
+[21] 
+[22] Fig. 1 Schematic diagram of the SC-RRT algorithm with adaptive asymmetric dual-superellipsoid constrained sampling.下面这一节的文献33被删除了
+[23] Adaptive Dual-Ellipsoid Constrained Sampling
+[24] This paper proposes an Adaptive Asymmetric Dual-Superellipsoid Constrained Sampling (ADCS) strategy, as illustrated in Fig. 2, to adaptively regulate the sampling domains during bidirectional tree expansion. The two search directions are indexed by i∈{A,B}, where A and B denote the start-side and goal-side searches, respectively. For each search direction, the corresponding constrained sampling region is constructed according to its current search state. ADCS determines the geometric form and direction-specific location of the constrained sampling regions, whereas the SSFOR mechanism introduced in Section 2.3 dynamically regulates their constraint strength and informed sampling probability. The constrained sampling subset is defined as:
+[25] 
+[26] where γi denotes the expansion coefficient for search direction i, pi denotes its informed sampling probability,  is the current best estimated path cost for search direction i, and f1,i and f2,i denote the corresponding focal points. For the start-side search, f1,A = xstart and f2,A = xmeet, whereas for the goal-side search, f1,B = xgoal and f2,B = xmeet.
+[27] The two constrained regions are constructed independently, forming an asymmetric constraint structure due to their different focal points and direction-specific path costs. During each iteration, informed sampling is performed within the corresponding constrained region with probability pi, biased sampling is performed toward a Pareto-optimal node selected from the opposite tree according to the Paretodominance principle [30], and global uniform sampling is used otherwise. This hybrid strategy balances focused search and global exploration.
+[28] For each newly expanded node, a direct connection to the opposite tree is first attempted. If the distance exceeds the predefined threshold, the opposite tree greedily advances toward the newly generated node. Once the two trees are successfully connected, path generation is completed, followed by the same path-smoothing procedure for all compared algorithms [33,34] to obtain the final feasible trajectory.
+[29] 
+[30] Fig. 2 Flowchart of the Adaptive Dual-Superellipsoid Constrained Sampling Strategy.
+[31] Search State Feedback-Based Online Regulation (SSFOR) Mechanism
+[32] The effectiveness of the ADCS strategy is strongly influenced by the selection of the expansion coefficient γi and the informed sampling probability pi. To address this issue, a Search State Feedback-Based Online Regulation (SSFOR) mechanism is proposed to dynamically regulate these parameters according to the search progress, as illustrated in Fig.3. 
+[33] Before a feasible solution is obtained, γi is initialized to 4.0 and the  is set to 0, maintaining a broad exploration range and avoiding premature concentration of samples within the constrained regions. After a feasible solution is obtained, the regulation parameters are recomputed every Nf=50 iterations according to the recent variation in the best path cost. Since the two search directions may exhibit different search behaviors, the feedback signal is calculated independently for each direction. 
+[34] Let  denote the relative improvement of the best feasible path cost for search direction i over the latest feedback interval. The feedback deviation is defined as  where 0.02 denotes the target improvement rate. The expansion coefficient and informed sampling probability are then directly determined from ei by  where
+[35] 
+[36] Here, ei determines the adjustment of the two sampling parameters for search direction i. When the recent improvement is insufficient, becomes smaller than the target value of 0.02, resulting in a positive ei. Consequently, increases and decreases, thereby enlarging the constrained sampling region and increasing the proportion of global exploration. Conversely, effective path improvement results in a smaller ei, leading to a reduction in and an increase in , concentrating samples within promising regions and promoting local refinement.
+[37] 
+[38] Fig. 3 Flow diagram of the Search State Feedback-Based Online Regulation (SSFOR) mechanism.
+[39] Through this feedback regulation mechanism, the constraint strength of the ADCS strategy can be dynamically matched with different search stages. During the early exploration stage, relatively relaxed constraints maintain sufficient search coverage. After feasible solutions are obtained, gradually strengthened constraints improve sampling efficiency by concentrating samples in promising regions.
+[40] To ensure the boundedness and reproducibility of the regulation process, γi and are restricted within predefined ranges. The expansion coefficient is bounded by γi ∈ [1.0, 4.0]. A larger γi expands the constrained sampling region and improves exploration capability, whereas a smaller γi produces a tighter sampling region and promotes local convergence. The informed sampling probability is bounded by pi ∈ [0.2, 0.95]. During the feedback regulation stage, pi is adjusted within this range according to the search state. The value pi=0 is used only before a feasible solution is obtained. A smaller pi maintains a higher proportion of global exploration, whereas a larger pi increases the contribution of informed sampling and promotes local refinement.
+[41] Under the closed-loop regulation of SSFOR, both parameters are dynamically adjusted for each search direction within the above ranges, allowing the two constrained sampling regions to adapt independently to their respective search states. This regulation prevents excessive expansion or premature contraction of the sampling domains while maintaining a balance between exploration capability and convergence efficiency.
+[42] 
+[43] Fig. 4 Overall framework of the SC-RRT algorithm. It consists of the main search loop, SSFOR-based online regulation, and ADCS sampling. Dashed arrows indicate the internal implementation of key modules
+[44] The SSFOR mechanism is integrated into the SC-RRT framework as an online parameter regulation module. The internal closed-loop regulation process of SSFOR is presented in Fig. 3, while the complete framework of SC-RRT, including the main search loop, SSFOR regulation, and ADCS sampling, is illustrated in Fig. 4. During execution, ADCS performs constrained sampling based on the updated direction-specific parameters, and the complete search procedure in a representative two-dimensional environment is shown in Fig. 5.
+[45] 
+[46] Fig. 5 Path planning process of SC-RRT in a 2D environment.
+[47] Experiment
+[48] Comparative Evaluation in Benchmark Environments
+[49] To systematically evaluate the performance of the proposed SCRRT algorithm, comparative simulations were carried out in twodimensional and threedimensional obstacle environments against representative samplingbased pathplanning algorithms in terms of path quality and computational efficiency.
+[50] Two workspaces of different dimensions were established, including a twodimensional workspace and a threedimensional workspace. Obstacle layouts, startgoal states, and maximum iteration budget were identical across all tested algorithms to guarantee fair experimental conditions. All algorithms shared a maximum iteration budget of 5000. The search terminated upon finding the first collision-free path or exhausting the iteration limit. This unified stopping criterion provides a consistent basis for comparing planning efficiency and path quality. Detailed environment parameters are listed in Table 1. Four widelyused metrics were adopted for performance assessment: Path Length, Planning Time, Node Count, and Path Efficiency. Path Length is the cumulative Euclidean distance between successive nodes on the output path, characterizing solution quality. Planning Time refers to the wallclock time consumed by the search procedure. Node Count counts all sampled nodes produced during planning for samplingefficiency assessment. The path efficiency η is defined as:
+[51] 
+[52] whererepresents the total length of the generated path , and ∥xgoal − xstart∥ denotes the Euclidean distance between the start and goal states. A value of η closer to 1.0 indicates that the generated path has a shorter detour relative to the straight-line distance between the start and goal states. Based on previous studies on sampling-based motion planning, five representative algorithms, including RRT, RRT-Connect, RRT*, Informed RRT*, and Dynamic-RRT, were selected as baseline methods. All algorithms were implemented under the same computational conditions and executed independently for 500 trials in each environment. The average values and standard deviations of the evaluation metrics were recorded for quantitative comparison.
+[53] Tab. 1 Environment Configuration
+[54] Dimension
+[55] Workspace
+[56] Obstacles
+[57] Start
+[58] Goal
+[59] Max Iterations
+[60] 2
+[61] 1500×1500
+[62] 225
+[63] （75，75）
+[64] (1425，1425)
+[65] 5000
+[66] 3
+[67] 1500×1500×1500
+[68] 400
+[69] (75, 75, 75)
+[70] (1425，1425，1425)
+[71] 5000
+[72] The qualitative comparison results of different algorithms in the two-dimensional and three-dimensional environments are presented in Fig. 6 and Fig. 7, respectively.
+[73] 
+[74] Fig. 6 Comparison results of different path planning algorithms in two-dimensional space.
+[75] As shown in Fig. 6, all compared algorithms successfully generated collisionfree paths between the start and goal states in the representative twodimensional environment and achieved a 100% success rate over the 500 independent trials. However, noticeable differences can be observed in the search behaviors and generated trajectories. The conventional RRT algorithm tends to produce irregular paths due to the randomness of sampling, resulting in unnecessary exploration and longer trajectories. RRT* and Informed RRT* generate shorter paths by continuously optimizing the solution, but their improvement is achieved with substantially increased computational cost. In contrast, SC-RRT generates a more concentrated search process by restricting sampling within adaptive superellipsoid regions, leading to smoother trajectories with fewer redundant expansions.
+[76] 
+[77] Fig. 7 Comparison Results of Different Path Planning Algorithms in Three-Dimensional Space.
+[78] Similar results can be observed in the three-dimensional environment shown in Fig. 7. With the increase in spatial dimensionality, the search space becomes more complex, making sampling efficiency increasingly important. Compared with other algorithms, SC-RRT maintains a compact search structure and avoids excessive exploration in low-potential regions through adaptive dual-superellipsoid sampling. This enables efficient path generation while preserving path feasibility in complex environments.
+[79] Tab. 2 Comparison of Path Planning Algorithms
+[80] Algorithm 
+[81] Path Length (mm) 
+[82] Planning Time (s) 
+[83] Node Count
+[84] Path Efficiency
+[85] RRT
+[86] 2329.5500 ± 126.2500
+[87] 0.0409 ± 0.0305
+[88] 279.4000 ± 175.5000
+[89] 0.8219 ± 0.0429
+[90] RRT-Connect
+[91] 2143.2400 ± 93.4900
+[92] 0.0108 ± 0.0053
+[93] 69.3000 ± 10.8000
+[94] 0.8924 ± 0.0376
+[95] RRT*
+[96] 1970.7200 ± 19.9400
+[97] 0.1629 ± 0.0843
+[98] 3846.6000 ± 99.7000
+[99] 0.9689 ± 0.0098
+[100] Informed RRT*
+[101] 1938.4500 ± 24.1300
+[102] 0.2134 ± 0.0487
+[103] 3612.3000 ± 108.6000
+[104] 0.9849 ± 0.0076
+[105] SC-RRT
+[106] 1998.8000 ± 57.5300
+[107] 0.0345 ± 0.0124
+[108] 209.6000 ± 38.5000
+[109] 0.9553 ± 0.0265
+[110] Dynamic-RRT
+[111] 2288.1300 ± 136.0200
+[112] 0.0414 ± 0.0384
+[113] 281.3000 ± 160.2000
+[114] 0.8372 ± 0.0468
+[115] According to the quantitative results in Table 2, SC-RRT achieves a favorable balance between path quality and computational efficiency. Regarding path quality, SC-RRT achieves an average path length of 1998.80 mm, which is 12.6% shorter than Dynamic-RRT (2288.13 mm). Although RRT* and Informed RRT* obtain shorter paths of 1970.72 mm and 1938.45 mm, respectively, the improvement is achieved at the expense of substantially increased computational cost. In particular, the path length generated by SC-RRT differs from RRT* by only 1.42%, while maintaining substantially lower computational requirements. Furthermore, SC-RRT achieves a path efficiency of 0.9553, which is close to RRT* (0.9689) and Informed RRT* (0.9849), indicating that the proposed method can generate paths with relatively small detours from the start–goal straight line while avoiding excessive optimization overhead.
+[116] In terms of computational efficiency, SC-RRT requires substantially fewer sampled nodes during the planning process. The average planning time of SC-RRT is 0.0345 s, which is considerably lower than RRT* (0.1629 s) and Informed RRT* (0.2134 s). Compared with Informed RRT*, SC-RRT reduces the planning time by approximately 83.8%, while maintaining comparable path efficiency. Moreover, SC-RRT generates only 209.6 nodes on average, representing a substantial reduction compared with RRT* (3846.6 nodes) and Informed RRT* (3612.3 nodes).The standard deviation results further indicate the consistency of SC-RRT across independent random trials. The path length variation of SC-RRT is ±57.53 mm, which is lower than RRT (±126.25 mm) and Dynamic-RRT (±136.02 mm). 
+[117] Overall, the comparison results demonstrate that SC-RRT effectively improves sampling efficiency while preserving competitive path quality. The integration of bidirectional search, adaptive dual-superellipsoid constrained sampling (ADCS), and Search State Feedback-Based Online Regulation (SSFOR) enables the algorithm to achieve a better balance between exploration capability and convergence efficiency in complex environments. The three-dimensional experiment further demonstrates the applicability of SC-RRT to higher-dimensional planning environments. However, simulation environments cannot fully reflect the uncertainties and execution constraints existing in real robotic systems, such as perception errors, geometric disturbances, and motion tracking deviations. Therefore, a real-world robotic experiment was further conducted to evaluate the practical applicability and execution feasibility of SC-RRT in an actual manipulation scenario.
+[118] Real-world Validation of SC-RRT on a Robotic Manipulation Platform
+[119] To further evaluate the transferability and practical applicability of SC-RRT from simulation environments to real robotic systems, a real-world experiment was conducted on a robotic manipulation platform. Different from the idealized simulation environments, real robotic applications involve additional uncertainties, including perception noise, geometric modeling errors, and execution deviations. Therefore, the objective of this experiment was to validate whether the proposed algorithm can generate and execute a feasible motion trajectory under real three-dimensional conditions.
+[120] The experimental platform configuration is summarized in Table 3. The robotic system consists of an AUBO-i10 six-degree-of-freedom manipulator, a KWT1D60-300 force sensor, and a Deptrum Aurora 930 RGB-D camera. The force sensor was only used to monitor the contact state during robot execution and was not involved in path planning or trajectory optimization. Therefore, force-related parameters were not considered as evaluation metrics in this study.
+[121] Tab. 3 Configuration of the Real Robotic Experimental Platform
+[122] Component
+[123] Specification
+[124] Robot manipulator
+[125] AUBO-i10
+[126] Degrees of freedom
+[127] 6-DOF
+[128] Force sensor
+[129] KWT1D60-300
+[130] Perception system
+[131] Deptrum Aurora 930 RGB-D camera
+[132] Planning algorithm
+[133] SC-RRT
+[134] In the experiment, the back surface of one of the authors was selected as a representative unstructured three-dimensional workspace with continuous spatial motion requirements. Multiple spatial target points obtained from the perception system were used as sequential planning objectives, forming a multi-target continuous trajectory planning task. This task involves complex geometric constraints, continuously distributed target points, and limited robot workspace, which is consistent with the design objectives of the proposed bidirectional search and constrained sampling strategy.
+[135] In the experiment, the spatial target points obtained from the perception system were transformed into the robot planning coordinate system and provided to SC-RRT as sequential planning objectives. The generated continuous trajectory was subsequently transferred to the physical robotic manipulator for execution.
+[136] As shown in Fig. 8, the robotic manipulator performs the planned motion on the curved surface. The two views illustrate different execution states of the end-effector during the experiment. The manipulator maintains the intended spatial relationship with the curved surface while completing the planned motion sequence, demonstrating the feasibility of executing SC-RRT-generated trajectories on the physical robotic platform.
+[137] 
+[138] Fig.8 Real-world execution of SC-RRT on the robotic platform
+[139] To further analyze the interaction between perception and planning, Fig.9 illustrates the RGB-D-based three-dimensional reconstruction environment used for SC-RRT planning. The Deptrum Aurora 930 camera captures RGB and depth information, and the ROS2-based perception framework is employed to perform data alignment and point cloud reconstruction. The reconstructed point cloud provides the geometric representation of the actual working environment, while the detected spatial target points are used as sequential planning objectives for continuous trajectory generation.
+[140] As shown in Fig. 9, the reconstructed point cloud captures the geometric structure of the working environment together with the robotic manipulator. The local view further illustrates the spatial relationship between the end-effector, the reconstructed surface, and the planned motion. Compared with the simplified simulation environments, the RGB-D-reconstructed scene introduces practical uncertainties caused by sensor noise, incomplete surface reconstruction, and geometric modeling errors. Therefore, the experiment provides a more realistic evaluation of the applicability and execution feasibility of SC-RRT under practical conditions.
+[141] 
+[142] Fig.9 RGB-D point cloud reconstruction and planning environment.
+[143] Based on the reconstructed three-dimensional environment and the sequential target points described above, SC-RRT was then used to generate a continuous trajectory connecting the multiple target locations. Fig. 10 shows the multi-target continuous trajectory generated by SC-RRT in the real three-dimensional environment. For the sequential motion task involving multiple spatial target points, SC-RRT constructs constrained search regions through bidirectional exploration and adaptive dual-superellipsoid sampling. As shown in Fig. 10, the generated trajectory successfully connects all target points while maintaining consistency with the geometric characteristics of the human back surface. These results demonstrate the capability of SC-RRT to perform continuous trajectory generation in unstructured three-dimensional environments.
+[144] 
+[145] Fig.10 Multi-target continuous trajectory generated by SC-RRT in the RGB-D-reconstructed three-dimensional environment
+[146] Tab. 4 Performance Metrics of the Real-World Robotic Experiment
+[147] Metric
+[148] Value
+[149] Executed path length
+[150] 3.245 m
+[151] Planned path length
+[152] 3.249 m
+[153] Path length difference
+[154] 0.12 %
+[155] TCP tracking error
+[156] 1.98 mm (mean),3.09 mm (max)
+[157] The quantitative execution results of the real robotic experiment are summarized in Table 4. The planned trajectory length was 3.249 m, while the actual executed trajectory length was 3.245 m, corresponding to a difference of only 0.12%. The TCP tracking error, calculated as the Euclidean distance between the planned and actual TCP positions at corresponding trajectory samples, was 1.98 mm on average and 3.09 mm at maximum. These results indicate that the generated trajectory can be successfully transferred to the physical robotic system with satisfactory execution accuracy. Although the real-world experiment introduced perception uncertainty, geometric reconstruction errors, and robot execution deviations, the proposed method maintained feasible execution performance in the real-world experiment.
+[158] The quantitative execution results of the real robotic experiment are summarized in Table 4. The planned trajectory length was 3.249 m, while the actual executed trajectory length was 3.245 m, corresponding to a difference of only 0.12%. The TCP tracking error, calculated as the Euclidean distance between the planned and actual TCP positions at corresponding trajectory samples, was 1.98 mm on average and 3.09 mm at maximum. These results indicate that the generated trajectory can be successfully transferred to the physical robotic system with satisfactory execution accuracy. Although the realworld experiment introduced perception uncertainty, geometric reconstruction errors, and robot execution deviations, the proposed method maintained feasible execution performance in the realworld experiment.
+[159] 
+[160] 
+[161] Conclusions
+[162] In this study, a Superellipsoid-Constrained Bidirectional RRT (SC-RRT) algorithm was proposed for efficient motion planning in complex robotic environments. The method integrates bidirectional search, Adaptive Dual-SuperEllipsoid Constrained Sampling (ADCS), and Search State Feedback-Based Online Regulation (SSFOR). By constructing direction-specific asymmetric sampling regions and dynamically regulating their constraint strength according to the search state, SC-RRT reduces redundant exploration while maintaining sufficient search coverage. Comparative experiments were conducted in two-dimensional and three-dimensional Cartesian workspaces using RRT, RRT-Connect, RRT*, Informed RRT*, and Dynamic-RRT as baseline methods. Quantitative results in the two-dimensional environment showed that SC-RRT achieved a favorable balance between path quality and computational efficiency. Compared with Dynamic-RRT, SC-RRT reduced the average path length by 12.6%, while requiring 83.8% less planning time and 94.2% fewer sampled nodes than Informed RRT*. Although RRT* and Informed RRT* produced slightly shorter paths, SC-RRT maintained competitive path efficiency with substantially lower computational cost. The three-dimensional experiment further demonstrated the applicability of the proposed method to higher-dimensional planning environments.
+[163] The practical applicability of SC-RRT was further evaluated on a six-degree-of-freedom robotic manipulation platform equipped with an RGB-D perception system. In an unstructured three-dimensional environment, the proposed method successfully generated and executed a continuous multi-target trajectory. The planned trajectory length was 3.249 m, while the actual executed trajectory length was 3.245 m, corresponding to a difference of 0.12%. The mean and maximum TCP tracking errors were 1.98 mm and 3.09 mm, respectively. These results indicate that the generated trajectory can be successfully transferred to the physical robotic system with satisfactory execution accuracy. Although real-world experiments introduced perception uncertainty, geometric reconstruction errors, and robot execution deviations, the proposed method maintained feasible execution performance in the real-world experiment.
+[164] Overall, SC-RRT provides an adaptive sampling-based planning framework that improves sampling efficiency while preserving competitive path quality. The simulation and real-robot results demonstrate its potential for robotic motion planning in complex three-dimensional environments. Future work will focus on improving adaptability to dynamically changing environments, incorporating dynamic obstacle avoidance, and extending the framework to more complex manipulation tasks involving real-time perception and physical interaction.
+[165] Acknowledgements
+[166] The authors would like to thank the School of Mechanical Engineering, Shanghai Institute of Technology, for providing the computational resources.
+[167] AI disclosure
+[168] During the preparation of this manuscript, the authors used GitHub Copilot as a translation aid to translate the original Chinese draft into English. All AI-assisted output was carefully reviewed and edited by the authors, who take full responsibility for the accuracy, scientific integrity, and originality of the manuscript.
+[169] Declarations
+[170] Author contributions: Xingyu Guo conceived the algorithm, conducted the simulation experiments, and drafted the manuscript. Yan Wu supervised the research and provided guidance on the overall manuscript. Muchun Fan and Feng Hong provided technical support during implementation. Hongyu Gao and Jianyu Zheng contributed to manuscript revision and provided valuable comments. All authors contributed to the conception and design of the study, and all authors read and approved the final manuscript.
+[171] Funding
+[172] This research received no specific grant from any funding agency, commercial, or not-for-profit sectors.
+[173] Competing interests
+[174] The authors declare no competing interests.
+[175] Ethics approval
+[176] No external human participants were involved in the study. The real-world experiment was conducted using one of the authors as the sole human subject.
+[177] Consent to participate
+[178] The real-world experiment was conducted using the authors' own body as the experimental subject. No other human participants were involved.
+[179] Consent for publication
+[180] All authors have approved the manuscript and agree to its submission for publication.
+[181] Data availability
+[182] The data that support the findings of this study are available from the corresponding author upon reasonable request.
+[183] Code availability
+[184] The code used in this study is not publicly available, but may be obtained from the corresponding author upon reasonable request.
+[185] References
+[186] Zhong, R.Y., Xu, X., Klotz, E., Newman, S.T.: Intelligent manufacturing in the context of industry 4.0: a review. Engineering 3(5), 616–630 (2017)
+[187] Wirtz, J., Patterson, P.G., Kunz, W.H., Gruber, T., Lu, V.N., Paluch, S., Martins, A.: Brave new world: service robots in the frontline. Journal of service management 29(5), 907–931 (2018)
+[188] Mac, T.T., Copot, C., Tran, D.T., De Keyser, R.: Heuristic approaches in robot path planning: A survey. Robotics and Autonomous Systems 86, 13–28 (2016)
+[189] Ajoudani, A., Zanchettin, A.M., Ivaldi, S., Albu-Sch¨affer, A., Kosuge, K., Khatib, O.: Progress and prospects of the human–robot collaboration. Autonomous robots 42(5), 957–975 (2018)
+[190] Villani, V., Pini, F., Leali, F., Secchi, C.: Survey on human–robot collaboration in industrial settings: Safety, intuitive interfaces and applications. Mechatronics 55, 248–266 (2018)
+[191] LaValle, S.M.: Planning Algorithms. Cambridge university press, Cambridge (2006)
+[192] Latombe, J.-C.: Robot Motion Planning vol. 124. Springer, New York (2012)
+[193] Kingston, Z., Moll, M., Kavraki, L.E.: Sampling-based methods for motion planning with constraints. Annual review of control, robotics, and autonomous systems 1(1), 159–185 (2018)
+[194] Mohanan, M., Salgoankar, A.: A survey of robotic motion planning in dynamic environments. Robotics and Autonomous Systems 100, 171–185 (2018)
+[195] Aggarwal, S., Kumar, N.: Path planning techniques for unmanned aerial vehicles: A review, solutions, and challenges. Computer communications 149, 270–299 (2020)
+[196] Elbanhawi, M., Simic, M.: Sampling-based robot motion planning: A review. Ieee access 2, 56–77 (2014)
+[197] Karaman, S., Frazzoli, E.: Sampling-based algorithms for optimal motion planning. The international journal of robotics research 30(7), 846–894 (2011)
+[198] LaValle, S.: Rapidly-exploring random trees: A new tool for path planning. Research Report 9811 (1998)
+[199] LaValle, S.M., Kuffner Jr, J.J.: Randomized kinodynamic planning. The international journal of robotics research 20(5), 378–400 (2001)
+[200] Kuffner, J.J., LaValle, S.M.: Rrt-connect: An efficient approach to single-query path planning. In: Proceedings 2000 ICRA. Millennium Conference. IEEE International Conference on Robotics and Automation. Symposia Proceedings (Cat.No. 00CH37065), vol. 2, pp. 995–1001 (2000). IEEE
+[201] Gammell, J.D., Strub, M.P.: Asymptotically optimal sampling-based motion planning methods. Annual Review of Control, Robotics, and Autonomous Systems 4(1), 295–318 (2021)
+[202] Qureshi, A.H., Ayaz, Y.: Intelligent bidirectional rapidly-exploring random trees for optimal motion planning in complex cluttered environments. Robotics and Autonomous Systems 68, 1–11 (2015)
+[203] Ding, J., Zhou, Y., Huang, X., Song, K., Lu, S., Wang, L.: An improved rrt* algorithm for robot path planning based on path expansion heuristic sampling. Journal of computational science 67, 101937 (2023)
+[204] Noreen, I., Khan, A., Habib, Z., et al.: Optimal path planning using rrt* based approaches: a survey and future directions. International Journal of Advanced Computer Science and Applications 7(11), 97–107 (2016)
+[205] Li, B., Chen, B.: An adaptive rapidly-exploring random tree. IEEE/CAA Journal of Automatica Sinica 9(2), 283–294 (2022)
+[206] Huang, Z., Gao, Y., Guo, J., Qian, C., Chen, Q.: An adaptive bidirectional quick optimal rapidly-exploring random tree algorithm for path planning. Engineering Applications of Artificial Intelligence 135, 108776 (2024)
+[207] Tahirovic, A., Ferizbegovic, M.: Rapidly-exploring random vines (rrv) for motion planning in configuration spaces with narrow passages. In: 2018 IEEE International Conference on Robotics and Automation (ICRA), pp. 7055–7062 (2018). IEEE
+[208] Gammell, J.D., Srinivasa, S.S., Barfoot, T.D.: Informed rrt*: Optimal samplingbased path planning focused via direct sampling of an admissible ellipsoidal heuristic. In: 2014 IEEE/RSJ International Conference on Intelligent Robots and Systems, pp. 2997–3004 (2014). IEEE
+[209] Gammell, J.D., Barfoot, T.D., Srinivasa, S.S.: Informed sampling for asymptotically optimal path planning. IEEE Transactions on Robotics 34(4), 966–984 (2018)
+[210] Gammell, J.D., Srinivasa, S.S., Barfoot, T.D.: Batch informed trees (bit*): Sampling-based optimal planning via the heuristically guided search of implicit random geometric graphs. In: 2015 IEEE International Conference on Robotics and Automation (ICRA), pp. 3067–3074 (2015). IEEE
+[211] Gammell, J.D., Barfoot, T.D., Srinivasa, S.S.: Batch informed trees (bit*): Informed asymptotically optimal anytime search. The International Journal of Robotics Research 39(5), 543–567 (2020)
+[212] Yuan, L., Zhao, J., Li, W., Hou, J.: Improved informed-rrt* based path planning and trajectory optimization for mobile robots. International Journal of Precision Engineering and Manufacturing 24(3), 435–446 (2023)
+[213] Zeng, Z., Chang, Y.: Abf-rrt*: Bidirectional fast optimal rapidly-exploring random tree via adaptive sampling of a permissible hyper-ellipsoid. Journal of King Saud University Computer and Information Sciences 37(7), 165 (2025)
+[214] Zhao, P., Chang, Y., Wu, W., Luo, H., Zhou, Z., Qiao, Y., Li, Y., Zhao, C., Huang, Z., Liu, B., et al.: Dynamic rrt: fast feasible path planning in randomly distributed obstacle environments. Journal of Intelligent & Robotic Systems 107(4), 48 (2023)
+[215] Deb, K., Pratap, A., Agarwal, S., Meyarivan, T.: A fast and elitist multiobjective genetic algorithm: Nsga-ii. IEEE transactions on evolutionary computation 6(2), 182–197 (2002)
+[216] Choset, H., Lynch, K.M., Hutchinson, S., Kantor, G.A., Burgard, W.: Principles of Robot Motion: Theory, Algorithms, and Implementations. MIT press, Boston (2005)
+[217] Lynch, K.M., Park, F.C.: Modern Robotics. Cambridge University Press, Cambridge (2017)
+[218] Ravankar, A., Ravankar, A.A., Kobayashi, Y., Hoshino, Y., Peng, C.-C.: Path smoothing techniques in robot navigation: State-of-the-art, current and future challenges. Sensors 18(9), 3170 (2018)
+[219] Yang, K., Sukkarieh, S.: An analytical continuous-curvature path-smoothing algorithm. IEEE Transactions on Robotics 26(3), 561–568 (2010)
+[220] 
+[221] 

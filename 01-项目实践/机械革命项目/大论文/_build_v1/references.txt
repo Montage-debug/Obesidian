@@ -1,0 +1,35 @@
+# 参考文献
+
+[1] CAO Z, SIMON T, WEI S E, et al. Realtime multi-person 2D pose estimation using part affinity fields[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2017: 7291-7299. https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html.
+
+[2] JIANG T, LU P, ZHANG L, et al. RTMPose: Real-time multi-person pose estimation based on MMPose[EB/OL]. (2023-03-13)[2026-10-19]. https://arxiv.org/abs/2303.07399.
+
+[3] REDMON J, DIVVALA S, GIRSHICK R, et al. You only look once: Unified, real-time object detection[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2016: 779-788. https://openaccess.thecvf.com/content_cvpr_2016/html/Redmon_You_Only_Look_CVPR_2016_paper.html.
+
+[4] ULTRALYTICS. Ultralytics YOLO11[EB/OL]. [2026-10-19]. https://docs.ultralytics.com/models/yolo11/.
+
+[5] MALEKROODI H S, SEO S D, CHOI J, et al. Real-time location of acupuncture points based on anatomical landmarks and pose estimation models[J]. Frontiers in Neurorobotics, 2024, 18: 1484038. DOI: 10.3389/fnbot.2024.1484038.
+
+[6] MASOOD D, QI J. 3D localization of hand acupoints using hand geometry and landmark points based on RGB-D CNN fusion[J/OL]. Annals of Biomedical Engineering, 2022. https://pubmed.ncbi.nlm.nih.gov/35660982/.
+
+[7] ZHANG Z. A flexible new technique for camera calibration[J]. IEEE Transactions on Pattern Analysis and Machine Intelligence, 2000, 22: 1330-1334. https://www.microsoft.com/en-us/research/publication/a-flexible-new-technique-for-camera-calibration/.
+
+[8] OPENCV. Camera calibration and 3D reconstruction: OpenCV 4.10.0 documentation[EB/OL]. [2026-10-19]. https://docs.opencv.org/4.10.0/d9/d0c/group__calib3d.html.
+
+[9] LYNCH K M, PARK F C. Modern robotics: Mechanics, planning, and control[M]. Cambridge: Cambridge University Press, 2017. ISBN 9781107156302.
+
+[10] LAVALLE S M. Rapidly-exploring random trees: A new tool for path planning[R]. Iowa State University, Technical Report 98-11, 1998. https://lavalle.pl/rrtpubs.html.
+
+[11] KUFFNER J J, LAVALLE S M. RRT-Connect: An efficient approach to single-query path planning[C]//Proceedings of the IEEE International Conference on Robotics and Automation. 2000: 995-1001. DOI: 10.1109/ROBOT.2000.844730.
+
+[12] KARAMAN S, FRAZZOLI E. Sampling-based algorithms for optimal motion planning[J]. The International Journal of Robotics Research, 2011, 30(7): 846-894. DOI: 10.1177/0278364911406761.
+
+[13] GAMMELL J D, SRINIVASA S S, BARFOOT T D. Informed RRT*: Optimal sampling-based path planning focused via direct sampling of an admissible ellipsoidal heuristic[C]//IEEE/RSJ International Conference on Intelligent Robots and Systems. 2014: 2997-3004. DOI: 10.1109/IROS.2014.6942976.
+
+[14] 遨博智能. AUBO-i系列机械臂用户手册[EB/OL]. [2026-10-19]. https://developer.aubo-robotics.cn/hardware/user_manual/robot_arm_i_user_manual.html.
+
+[15] AUBOROBOT. aubo_description[CP/OL]. [2026-10-19]. https://github.com/AuboRobot/aubo_description.
+
+[16] OPEN ROBOTICS. tf2 package overview[EB/OL]. [2026-10-19]. https://index.ros.org/p/tf2/.
+
+[17] POINT CLOUD LIBRARY. Estimating surface normals in a PointCloud[EB/OL]. [2026-10-19]. https://pointclouds.org/documentation/tutorials/normal_estimation.html.

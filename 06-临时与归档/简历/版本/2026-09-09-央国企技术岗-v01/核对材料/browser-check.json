@@ -1,0 +1,32 @@
+{
+  "geometry": [
+    {
+      "height": 1122.515625,
+      "scroll": 1123,
+      "last": 1044.828125,
+      "editable": "true"
+    },
+    {
+      "height": 1122.515625,
+      "scroll": 1123,
+      "last": 1048.59375,
+      "editable": "true"
+    }
+  ],
+  "originalGeometry": {
+    "height": 1122.515625,
+    "scroll": 1123,
+    "footer": 1073.15625
+  },
+  "errors": [],
+  "checks": [
+    "photo loaded",
+    "2 editable pages",
+    "browser persistence",
+    "HTML download contains edits and photo",
+    "download uses new storage key",
+    "original undergraduate GPA placement",
+    "cached draft migration retains unrelated edits",
+    "no browser script errors"
+  ]
+}

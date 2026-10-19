@@ -1,0 +1,86 @@
+{
+  "pages": 68,
+  "tables": 19,
+  "images": 15,
+  "editable_OMML_equations": 48,
+  "six_chapters": [
+    "第1章 绪论",
+    "第2章 机械臂运动学建模与分析",
+    "第3章 基于YOLOv11-AMP的人体穴位视觉定位方法",
+    "第4章 基于自适应双椭球约束采样的SC-RRT路径规划方法",
+    "第5章 视觉与路径规划算法部署及机械臂实验验证",
+    "第6章 总结与展望"
+  ],
+  "automatic_toc_field": true,
+  "toc_excludes_cover_and_itself": true,
+  "red_placeholders_and_index": [
+    "D00",
+    "D01",
+    "D02",
+    "D03",
+    "D04",
+    "D05",
+    "D06",
+    "D07",
+    "D08",
+    "D09",
+    "D10",
+    "D11",
+    "D12",
+    "D13",
+    "D14",
+    "D15",
+    "D16",
+    "D17",
+    "D18",
+    "D19",
+    "D20",
+    "D21",
+    "D22",
+    "D23",
+    "D24",
+    "D25",
+    "D26",
+    "D27",
+    "D40",
+    "D41"
+  ],
+  "blank_table_values_red": true,
+  "references_numbered_and_cited": 17,
+  "no_broken_fields_or_authoring_markers": true,
+  "original_documents_unchanged": [
+    "E:\\xwechat_files\\wxid_6rawr3ohzsdb22_ac6d\\msg\\file\\2026-10\\MS基于NX MCD的装配机械臂轨迹规划与虚拟调试研究.docx",
+    "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\SC-RRT小论文编写\\SC-RRT论文-增机械臂实验版\\zh\\修订交付_20260907\\第九版_SC-RRT_中文完整修订稿_黑色加粗.docx",
+    "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\SC-RRT小论文编写\\SC-RRT论文-增机械臂实验版\\zh\\第八版-完整重构-SC-RRT增加实验版.docx",
+    "E:\\xwechat_files\\wxid_6rawr3ohzsdb22_ac6d\\msg\\file\\2026-10\\视觉目标到机械臂运动约束的衔接与验证.docx",
+    "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\郭兴雨大论文目录.docx"
+  ],
+  "render_changes": {
+    "render2 to render3": [
+      4,
+      5,
+      6
+    ],
+    "render3 to render_final": [
+      46,
+      57,
+      58,
+      59,
+      61
+    ]
+  },
+  "visual_review": {
+    "pages_1_to_16": "render2 reviewed; changed TOC pages 4-6 reviewed in render3",
+    "pages_17_to_68": "all reviewed in render3",
+    "final_changed_pages": [
+      46,
+      57,
+      58,
+      59,
+      61
+    ],
+    "all_final_pages_covered": true
+  },
+  "output_sha256": "e03ba7c06df521b7efbf712d3ccb81c41955671812c7aa9d4f354dfb93b589b5",
+  "output_bytes": 17541842
+}

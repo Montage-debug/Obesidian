@@ -35,15 +35,15 @@ body.long-page .sheet{min-height:297mm}.long-page .sheet{height:auto;max-height:
 <div class="identity">
 <h1>郭兴雨</h1>
 <div class="headline">ROS 机器人工程师 / 嵌入式机器人系统工程师</div>
-<div class="contact"><span><b>电话</b> 18989767989</span><span><b>邮箱</b> gxyhaoxianghenli@gmail.com</span><span><b>出生</b> 2001.03</span><span><b>政治面貌</b> 群众</span></div>
+<div class="contact"><span><b>电话</b> 18989767989</span><span><b>邮箱</b> gxyhaoxianghenlihai@gmail.com</span><span><b>出生</b> 2001.03</span><span><b>政治面貌</b> 群众</span></div>
 <div class="badges"><span class="badge">C++ / Python / C</span><span class="badge">ROS2</span><span class="badge">STM32</span><span class="badge">RS485 / CAN</span><span class="badge">机械臂控制</span><span class="badge">Linux</span></div>
 </div>
 <div class="photo" id="photoBox"><img src="assets/resume/郭兴雨证件照.png" alt="郭兴雨证件照"></div>
 </header>
 <section class="section"><div class="section-title">个人摘要</div><p class="summary">机械电子工程硕士，面向 ROS 机器人研发、嵌入式软件与 C++ 开发岗位。具备从 <strong>ESP32/STM32 电源控制、总线通信与 Linux 部署</strong>到 ROS2 驱动抽象、机械臂轨迹与力控、整机状态机及语音大模型任务路由的跨层开发能力。参与 AUBO i5、Elite LS65、Elite ES66 开发设计与系统适配；独立研发的语音交互模块及机械臂功能已完善并进入商用阶段。</p></section>
 <section class="section"><div class="section-title">教育背景</div>
-<div class="edu"><div class="school">上海应用技术大学｜机械电子工程｜硕士</div><div class="time">2024.09—2027.06</div><div class="sub">研究方向：深度视觉感知、双向超椭球体约束采样 RRT 的六轴机械臂运动规划；铜铝异种金属激光深熔焊接数值模拟与工艺优化；<strong>专业排名 / GPA：xxx</strong></div></div>
-<div class="edu"><div class="school">温州理工学院｜机械工程｜本科</div><div class="time">2022.09—2024.06</div><div class="sub">主修机械设计、PLC、单片机、机械 CAM/CAE</div></div>
+<div class="edu"><div class="school">上海应用技术大学｜机械电子工程｜硕士</div><div class="time">2024.09—2027.06</div><div class="sub">研究方向：深度视觉感知、双向超椭球体约束采样 RRT 的六轴机械臂运动规划；铜铝异种金属激光深熔焊接数值模拟与工艺优化</div><div class="sub academic-metrics" data-academic-score="graduate"><strong>研究生 GPA：3.5</strong></div></div>
+<div class="edu"><div class="school">温州理工学院｜机械工程｜本科</div><div class="time">2022.09—2024.06</div><div class="sub">主修机械设计、PLC、单片机、机械 CAM/CAE</div><div class="sub academic-metrics" data-academic-score="undergraduate"><strong>本科 GPA：2.55</strong></div></div>
 </section>
 <section class="section"><div class="section-title">实习 / 工作经历</div>
 <div class="entry"><div class="entry-head"><span class="org">杭州市未来之城科技有限公司｜ROS2 机器人系统工程师</span><span class="date">2025.09—至今</span></div><ul>
@@ -87,7 +87,18 @@ const key='resume-gu-xingyu-editable-v5';
 const sheet=document.querySelector('.sheet');
 const photoSrc='assets/resume/郭兴雨证件照.png';
 const saved=localStorage.getItem(key);
-if(saved) sheet.innerHTML=saved;
+if(saved) sheet.innerHTML=saved.replaceAll('gxyhaoxianghenli@gmail.com','gxyhaoxianghenlihai@gmail.com');
+// Keep cached academic fields aligned with the user's GPA-only display preference.
+for(const edu of sheet.querySelectorAll('.edu')){
+  const school=edu.querySelector('.school')?.textContent||'';
+  const level=school.includes('温州理工学院')?'undergraduate':school.includes('上海应用技术大学')?'graduate':null;
+  if(!level)continue;
+  const value=level==='graduate'?'研究生 GPA：3.5':'本科 GPA：2.55';
+  let field=edu.querySelector('[data-academic-score]');
+  if(!field){field=document.createElement('div');field.className='sub academic-metrics';field.dataset.academicScore=level;edu.appendChild(field);}
+  field.innerHTML='<strong>'+value+'</strong>';
+  edu.querySelectorAll('strong').forEach(e=>{if(e.textContent.trim()==='专业排名 / GPA：xxx')e.remove();});
+}
 const photo=sheet.querySelector('.photo img');
 if(photo) { photo.src=photoSrc; photo.onerror=()=>{photo.src='./assets/resume/郭兴雨证件照.png'}; }
 sheet.addEventListener('input',()=>localStorage.setItem(key,sheet.innerHTML));

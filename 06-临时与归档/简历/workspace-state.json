@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-09-09",
+  "baseline_html": "郭兴雨-ROS2嵌入式机器人方向-可编辑简历.html",
+  "baseline_status": "本科与研究生GPA已同步，仅显示绩点；原有经历正文保持原稿",
+  "existing_pdf": "郭兴雨.pdf",
+  "pdf_status": "根目录旧PDF保留原版内容；邮箱已同步更正，正文仍为图像型；与HTML内容差异仍保留",
+  "source_directory": "源",
+  "backup_directory": "备份",
+  "versions_directory": "版本",
+  "skills_directory": "skills",
+  "pending_checks": [
+    "商用、独立研发、约 8ms 周期等陈述需要对应材料或用户确认",
+    "论文投稿、录用、发表状态及数量需核对",
+    "经历中的至今与毕业时间需按目标投递日期核对",
+    "现有 A4 打印样式固定高度并隐藏溢出，扩写时需检查内容截断",
+    "现有 HTML 不含磁盘保存和照片上传控件；浏览器编辑仅写 localStorage",
+    "历史稿中的实习日期、正式岗位称谓及邮箱有差异，现阶段沿用用户指定的根目录HTML",
+    "录取名册显示专科毕业院校为金华职业技术学院；专业及起止年月待补，不推定"
+  ],
+  "undergraduate_academics": {
+    "gpa": 2.55,
+    "average_grade": 76.51,
+    "earned_credits": 81.5,
+    "source": "资料/成绩单/本科-温州理工学院-学业成绩表.jpg",
+    "calculation_file": "资料/成绩单/本科绩点核算.json"
+  },
+  "soe_resume_html": "版本/2026-09-09-央国企技术岗-v02/郭兴雨-央国企技术岗-单页简历.html",
+  "soe_resume_pdf": "版本/2026-09-09-央国企技术岗-v02/郭兴雨-央国企技术岗-单页简历.pdf",
+  "soe_resume_status": "单页A4；本科GPA2.55；研究生GPA3.5按用户指定；打印和保存验证通过",
+  "academic_records_directory": "资料/成绩单",
+  "graduate_academics": {
+    "resume_gpa": 3.5,
+    "source": "用户2026-09-09明确指定",
+    "transcript": "资料/成绩单/研究生-上海应用技术大学-课程成绩.jpg",
+    "calculation_file": "资料/成绩单/研究生绩点核算.json",
+    "official_gpa_verified": false
+  },
+  "resume_preferences": {
+    "soe_page_limit": 1,
+    "education_scores": "仅显示本科GPA2.55和研究生GPA3.5，不显示均分、学分和单科成绩",
+    "omit": [
+      "聚润汽配有限公司经历",
+      "横向铰接机械手本科毕业设计",
+      "预计字样",
+      "专升本字样"
+    ],
+    "experience_order": [
+      "杭州市云深处科技有限公司",
+      "杭州市未来之城科技有限公司"
+    ],
+    "headline": "机械电子工程硕士 · 2027 届（通用版不列细分目标岗位）",
+    "future_city_title": "ROS2 架构师（用户指定）"
+  },
+  "current_resume_html": "版本/2026-09-09-通用技术简历-v03/郭兴雨-通用技术简历-单页.html",
+  "current_resume_pdf": "版本/2026-09-09-通用技术简历-v03/郭兴雨.pdf",
+  "mechanical_resume_html": "版本/2026-09-09-机械私企-v04/郭兴雨-机械设计与机电研发-单页简历.html",
+  "mechanical_resume_pdf": "版本/2026-09-09-机械私企-v04/郭兴雨.pdf",
+  "mechanical_resume_confirmed_employment": {
+    "source": "用户本轮选择采用新机械附件",
+    "future_city_period": "2025.09—2026.08",
+    "future_city_title": "ROS2 架构师",
+    "cloud_period": "2025.06—2025.08",
+    "cloud_title": "研发实习生",
+    "cloud_title_source": "用户后续明确更正机械版职位"
+  },
+  "mechanical_resume_status": "单页A4；正文11pt；采用用户确认的新附件任职信息与邮箱；内容、打印、文本提取和HTML导出验证通过",
+  "mechanical_resume_email": "gxyhaoxianghenlihai@gmail.com",
+  "contact_email": "gxyhaoxianghenlihai@gmail.com",
+  "contact_email_source": "用户2026-09-09明确确认并要求同步其他错误邮箱",
+  "contact_corrections": {
+    "gxyhaoxianghenli@gmail.com": "gxyhaoxianghenlihai@gmail.com"
+  },
+  "email_sync_status": "机械版正确；其他4份HTML及4份对应PDF已同步；浏览器旧缓存纠错和后续复制脚本验证通过；历史来源与备份保留原始记录"
+}

@@ -1,0 +1,16 @@
+{
+  "geometry": {
+    "height": 1122.515625,
+    "scroll": 1123,
+    "last": 1012.796875,
+    "overflow": "visible"
+  },
+  "errors": [],
+  "checks": [
+    "content present",
+    "omissions retained",
+    "internship order",
+    "photo loaded",
+    "editable HTML export and isolated storage"
+  ]
+}

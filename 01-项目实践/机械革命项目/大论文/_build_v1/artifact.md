@@ -1,0 +1,13 @@
+# Thesis V1 artifact contract
+
+Deliver one editable DOCX in the parent 大论文 directory. Preserve source documents.
+
+Reference: MS基于NX MCD的装配机械臂轨迹规划与虚拟调试研究.docx (path and SHA256 in source_manifest.json). Reference rendered to 78 pages with native Word, rasterized using the packaged render_docx.py pipeline. Inspected cover, declaration, TOC and body pages 1, 4, 8, 15. Use its academic hierarchy, A4, 25 mm side margins, 28 mm top, 20 mm body bottom, Chinese Song body, black Hei headings, equation numbering, centered caption convention, running university header and page numbers. Retain reference style definitions as baseline. Intentionally omit unsigned declarations and reuse no reference-thesis research content. Cover uses ordinary editable type rather than university calligraphy artwork. No borrowed school logo.
+
+Approved six chapters. Camera calibration, eye-in-hand and TCP in Chapter 5. Title excludes 按摩 and 实时. Actual DH values not established: leave blank with red marker. SC-RRT static point workspace evaluation is separate from physical deployment. Visual training metrics are not independent acupoint localization accuracy. Planned experiments must not appear as accomplished.
+
+Red missing markers generated with stable IDs and an appendix index. Source appendix maps local evidence to sections. All equations native OMML. Main quantitative tables built from frozen CSV; no reruns. Figures primarily original supplied assets. OpenCV eye-in-hand and pinhole images, if reused, attributed and accompanied by license notice.
+
+Runtime: bundled codex-primary-runtime 26.1015.12040. Dependency loader unavailable. Manifest directly resolved. Bundled LibreOffice null; native Word COM performs PDF export, packaged render_docx.py rasterize handles all pages via a native-PDF adapter. Final render QA inspects all page PNGs. Only requested DOCX delivered; intermediate sources/renderings remain in _build_v1.
+
+Final verification completed 2026-10-19: 68 rendered pages, 19 editable tables, 15 figures, 48 native OMML equations, 17 numbered and cited references, and 30 red missing/verification items matched to Appendix C. Native Word successfully opened, updated the TOC and page numbers, saved, and exported the DOCX. Every page was visually inspected; final changed pages were re-inspected and remaining pages verified unchanged by image hashes. No clipped formulas, split short-table rows, orphaned source captions or broken field messages remained. Original source hashes passed. See qa_final.json for verification details and output hash. No additional physical experiments were run.

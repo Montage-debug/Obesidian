@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>郭兴雨｜ROS2 / 嵌入式机器人方向</title>
+<style>
+:root{--blue:#1f4f91;--ink:#1b2430;--muted:#5f6b78;--line:#d5deea;--soft:#f3f6fa;--accent:#163d73}
+*{box-sizing:border-box}
+@page{size:A4;margin:0}
+body{margin:0;background:#e8edf3;color:var(--ink);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;font-size:10.1pt;line-height:1.34}
+.toolbar{position:sticky;top:0;z-index:10;display:flex;gap:6px;align-items:center;padding:9px 12px;background:#172335;color:#fff;box-shadow:0 2px 10px #0002}.toolbar label{font-size:8.5pt;color:#dbe6f5}.toolbar button,.toolbar select,.toolbar input[type=color]{height:28px;border:1px solid #ffffff40;border-radius:5px;background:#fff;color:#172335;padding:3px 8px;font:inherit;cursor:pointer}.toolbar input[type=color]{width:34px;padding:2px}.toolbar span{margin-left:auto;font-size:8.5pt;color:#dbe6f5}
+.sheet{width:210mm;min-height:297mm;margin:18px auto;padding:10mm 11mm;background:#fff;box-shadow:0 3px 16px #17233522}
+header{display:flex;justify-content:space-between;gap:18px;border-bottom:0;padding-bottom:8px;margin-bottom:8px}.identity h1{margin:0 0 2px;font-size:25pt;letter-spacing:2px;color:#111827}.identity .headline{font-size:11.5pt;font-weight:700;color:var(--accent);margin-bottom:6px}.contact{display:flex;flex-wrap:wrap;gap:2px 13px;color:var(--muted)}.contact b{color:var(--ink);font-weight:600}.badges{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:6px}.badge{padding:2.5px 7px;border-radius:10px;background:#e6eef9;color:var(--accent);font-size:9pt;font-weight:600}
+.photo{width:24mm;height:31mm;border:1px dashed #aab7c8;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#8795a7;text-align:center;font-size:8pt;flex:none;overflow:hidden}.photo img{display:block;width:100%;height:100%;object-fit:cover}.photo:has(img)::before{display:none}
+.section{margin-top:10px;padding-top:5px;border-top:0}.section:first-of-type{padding-top:0}.section-title{display:flex;align-items:center;gap:8px;margin-bottom:4px;color:var(--accent);font-size:13.2pt;font-weight:800;line-height:1.2}.section-title:after{content:"";display:block;flex:1;height:0;border-top:3px solid var(--blue);margin-top:.08em}.summary{margin:0;padding:5px 7px;background:var(--soft);border-left:3px solid var(--blue);text-align:justify}
+.entry{margin:4px 0 5px;padding-bottom:4px;break-inside:avoid}.entry:last-child{padding-bottom:0}.entry-head{display:flex;justify-content:space-between;gap:10px;font-weight:700}.entry-head .org{color:var(--blue)}.date{white-space:nowrap;color:var(--muted);font-weight:600}ul{margin:2px 0 0;padding-left:16px}li{margin:1.5px 0;text-align:justify}li strong{color:var(--accent)}
+.edu{display:grid;grid-template-columns:1fr auto;gap:1px 12px;padding:4px 0}.edu .school{font-weight:700}.edu .time{color:var(--muted);white-space:nowrap}.sub{grid-column:1/-1;color:var(--muted);margin-bottom:2px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 18px}.skill{margin:1px 0;padding-right:8px}.skill:nth-child(even){padding-right:0;padding-left:8px}.skill b{color:var(--blue)}.research{display:grid;grid-template-columns:62px 1fr;gap:2px 7px}.research b{color:var(--blue)}
+[contenteditable=true]{outline:none;border-radius:2px}[contenteditable=true]:focus{box-shadow:0 0 0 2px #72a6e955}footer{margin-top:5px;color:#7b8796;font-size:7.5pt;text-align:right}
+body.long-page .sheet{min-height:297mm}.long-page .sheet{height:auto;max-height:none;overflow:visible}@media print{body{background:#fff;font-size:8.65pt;line-height:1.18}.toolbar{display:none}.sheet{margin:0;width:210mm;height:297mm;min-height:297mm;max-height:297mm;padding:7mm 9mm;box-shadow:none;overflow:hidden}.section{margin-top:5px;padding-top:3px;border-top-width:1px}body.long-page .sheet{height:auto;min-height:297mm;max-height:none;overflow:visible}header{padding-bottom:2px;margin-bottom:1px}.identity h1{font-size:21pt;margin-bottom:1px}.identity .headline{font-size:9.6pt;margin-bottom:2px}.contact{gap:1px 9px}.badges{margin-top:3px;gap:4px}.badge{padding:1.5px 6px;font-size:8.2pt;font-weight:600}.photo{width:21mm;height:27mm}.section{margin-top:4px;padding-top:2px}.section-title{font-size:11pt;margin-bottom:1px}.section-title:after{border-top-width:2px}.summary{padding:3px 5px}.entry{margin:2px 0 3px;padding-bottom:2px}.entry-head{gap:7px}ul{margin:1px 0 0;padding-left:14px}li{margin:.5px 0}.edu{gap:1px 7px;padding:2px 0}.sub{margin-bottom:0}.grid{gap:0 9px}.skill{margin:0}.research{grid-template-columns:48px 1fr;gap:0 4px}footer{margin-top:1px;font-size:6pt}}
+</style>
+</head>
+<body>
+<div class="toolbar" aria-label="编辑工具栏">
+<label>页面模式</label><select id="pageMode" onchange="setPageMode(this.value)"><option value="paged">A4 分页</option><option value="long">A4 长页（不限高度）</option></select>
+<button onclick="document.execCommand('undo')">撤回</button><button onclick="document.execCommand('redo')">前进</button>
+<label>字体</label><select onchange="document.execCommand('fontName',false,this.value)"><option value="Microsoft YaHei">黑体</option><option value="SimSun">宋体</option><option value="Arial">Arial</option></select>
+<label>字号</label><select onchange="document.execCommand('fontSize',false,this.value)"><option value="3">11</option><option value="2">小</option><option value="4">大</option><option value="5">特大</option></select>
+<label>颜色</label><input type="color" value="#172033" onchange="document.execCommand('foreColor',false,this.value)">
+<button onclick="document.execCommand('bold')"><b>B</b></button><button onclick="window.print()">打印 / 导出 PDF</button>
+<span>已自动保存</span>
+</div>
+<main class="sheet" contenteditable="true" spellcheck="false">
+<header>
+<div class="identity">
+<h1>郭兴雨</h1>
+<div class="headline">ROS 机器人工程师 / 嵌入式机器人系统工程师</div>
+<div class="contact"><span><b>电话</b> 18989767989</span><span><b>邮箱</b> gxyhaoxianghenli@gmail.com</span><span><b>出生</b> 2001.03</span><span><b>政治面貌</b> 群众</span></div>
+<div class="badges"><span class="badge">C++ / Python / C</span><span class="badge">ROS2</span><span class="badge">STM32</span><span class="badge">RS485 / CAN</span><span class="badge">机械臂控制</span><span class="badge">Linux</span></div>
+</div>
+<div class="photo" id="photoBox"><img src="assets/resume/郭兴雨证件照.png" alt="郭兴雨证件照"></div>
+</header>
+<section class="section"><div class="section-title">个人摘要</div><p class="summary">机械电子工程硕士，面向 ROS 机器人研发、嵌入式软件与 C++ 开发岗位。具备从 <strong>ESP32/STM32 电源控制、总线通信与 Linux 部署</strong>到 ROS2 驱动抽象、机械臂轨迹与力控、整机状态机及语音大模型任务路由的跨层开发能力。参与 AUBO i5、Elite LS65、Elite ES66 开发设计与系统适配；独立研发的语音交互模块及机械臂功能已完善并进入商用阶段。</p></section>
+<section class="section"><div class="section-title">教育背景</div>
+<div class="edu"><div class="school">上海应用技术大学｜机械电子工程｜硕士</div><div class="time">2024.09—2027.06</div><div class="sub">研究方向：深度视觉感知、双向超椭球体约束采样 RRT 的六轴机械臂运动规划；铜铝异种金属激光深熔焊接数值模拟与工艺优化；<strong>专业排名 / GPA：xxx</strong></div></div>
+<div class="edu"><div class="school">温州理工学院｜机械工程｜本科</div><div class="time">2022.09—2024.06</div><div class="sub">主修机械设计、PLC、单片机、机械 CAM/CAE</div></div>
+</section>
+<section class="section"><div class="section-title">实习 / 工作经历</div>
+<div class="entry"><div class="entry-head"><span class="org">杭州市未来之城科技有限公司｜ROS2 机器人系统工程师</span><span class="date">2025.09—至今</span></div><ul>
+<li>参与遨博六轴机械臂 <strong>AUBO i5、Elite LS65、Elite ES66</strong> 的开发设计与系统适配；基于同一套 <strong>ArmDriverBase</strong> 抽象 ROS2 驱动层，按厂商拆分 AUBO/Elite 两个可执行文件，统一提供轨迹 Action、预设姿态、上下电、状态监控、碰撞保护与末端控制接口；按 SKU 切换运动学、预设位、安装角和末端标定，相关机械臂功能已进入商用阶段。</li>
+<li>实现 <strong>arm_control</strong> 驱动包：支持路点轨迹执行、路点追加、暂停/恢复/取消、Home/拍照位/Ready/打包位预设；发布 JointState、TF、急停及模块状态，并通过 RTSI + 约 8ms 周期 servoj 流式跟踪、KDL 运动学和 TCP 偏移完成 Elite 轨迹控制。</li>
+<li>基于末端一维/六维力传感器实现导纳力控，完成工具序列号关联的质量、质心、力偏置标定数据加载、目标力在线调整及力值冻结检测，支撑机械臂末端接触任务。</li>
+<li>独立研发 <strong>voice_asr_node</strong>：接入火山引擎豆包实时语音（Doubao Realtime Dialog，O2.0）完成流式 ASR、对话与 TTS；本地部署 Sherpa-ONNX Zipformer 中英唤醒与 CAM++ 声纹识别，结合结构化控制命令词和大模型模糊匹配，将自然语言路由至指定 ROS2 任务并回调执行状态，模块已进入商用阶段。</li>
+<li>参与 <strong>robot_control</strong> 整机业务编排：基于 SMACC2 + BehaviorTree.CPP 组织初始化、自检、识别、方案生成、力控执行、暂停/继续/取消和异常恢复，通过 ROS2 Service/Action 串联机械臂、视觉、按摩头、语音与音乐模块。</li>
+</ul></div>
+<div class="entry"><div class="entry-head"><span class="org">杭州市云深处科技有限公司｜研发实习生</span><span class="date">2025.06—2025.08</span></div><ul>
+<li>基于雷达 SLAM 完成建图与导航，使用 ROS 实现机器人运动控制，通过 Rviz 监测点云与障碍物分布，完成雷达校准、点云质量验证和地图匹配参数调优。</li>
+<li>参与路径规划效率测试及机械臂末端执行器路径规划工程化，基于内部调度框架搭建仿真验证流程，完成点到点与避障路径脚本、规划参数验证，检查受限空间下的可执行性。</li>
+<li>跟进固件与底层控制包问题，负责<strong>问题复现、日志定位、协作修复、测试用例与自动化验证脚本</strong>编写；协同硬件组完成核心部件调试与机电故障排查，提升现场测试可重复性。</li>
+</ul></div>
+</section>
+<section class="section"><div class="section-title">核心项目</div>
+<div class="entry"><div class="entry-head"><span class="org">按摩机器人整机远程电源控制固件｜嵌入式开发</span><span class="date">2025.09—至今</span></div><div class="sub"><strong>技术栈：</strong>ESP32-P4/C6、ESP-IDF、FreeRTOS、MQTT/WSS、BLE、OTA、UART、NVS</div><ul>
+<li>基于 ESP-IDF v5.4.1 + FreeRTOS，在 ESP32-P4 双核 RISC-V 主控上完成 STM32 整机电源控制逻辑移植；统一继电器、工控机脉冲、机械臂 RMT-ON/OFF、实体按键和急停联锁时序。</li>
+<li>采用 ESP32-C6 作为 SDIO 无线协处理器，实现 Wi-Fi 6 STA、NimBLE GATT 配网及 MQTT over WSS 云端遥控、状态遥测和 HTTPS 双分区 OTA 回滚；量产联网以 Wi-Fi 为主。</li>
+<li>设计按键、工控机 UART 与云端 MQTT 三路输入归一化事件总线，加入急停最高优先级、长按关机、冷却防连发、任务看门狗与网络监督自愈机制。</li>
+</ul></div>
+<div class="entry"><div class="entry-head"><span class="org">双臂轮式机器人系统｜机电与 ROS2 集成</span><span class="date">2025.09—至今</span></div><div class="sub"><strong>技术栈：</strong>ROS2、ESP32-P4/C6、ESP-IDF、FreeRTOS、CAN、EtherCAT</div><ul>
+<li>完成电机、编码器及驱动电路选型，使用立创 EDA 设计电机驱动原理图与 PCB，完成贴片焊接、安全检查及四轮驱动底盘方案验证。</li>
+<li>搭建树莓派上位机与分布式下位机架构，规划 EtherCAT 线性拓扑和 CAN 控制链路；完成六轴机械臂外壳设计、URDF 建模，推进双臂正逆运动学模型开发。</li>
+<li>当前轮式底盘已完成四轮驱动验证，双臂处于开发与整机联调前阶段，重点处理复杂任务中的双臂空间干涉问题。</li>
+</ul></div>
+</section>
+<section class="section"><div class="section-title">技术能力</div><div class="grid">
+<div class="skill"><b>编程与系统：</b>C++、Python、C；Linux 部署、日志分析、故障定位；CMake、GDB、Git</div>
+<div class="skill"><b>ROS2 工程：</b>Node、Topic、Service、Action、TF、URDF、Rviz；SMACC2、BehaviorTree.CPP、KDL</div>
+<div class="skill"><b>机械臂与算法：</b>AUBO i5 / Elite LS65 / ES66、Aubo/Elite SDK、RTSI、servoj、轨迹规划、TCP 偏移、正逆运动学、导纳力控、SLAM、导航、RRT</div>
+<div class="skill"><b>嵌入式：</b>ESP-IDF 5.4.1、FreeRTOS、ESP32-P4/C6、STM32；GPIO、UART、RMT、LEDC、SDIO、NVS、Task WDT</div>
+<div class="skill"><b>通信与物联：</b>RS485/RS232、CAN、EtherCAT、MQTT over WSS/TLS、BLE GATT、JSON、SQLite、SQLCipher、ZeroMQ</div>
+<div class="skill"><b>语音与大模型：</b>豆包 Realtime、ASR/TTS、LLM API、Sherpa-ONNX、Zipformer KWS、CAM++、结构化命令、意图匹配与任务路由</div>
+</div></section>
+<section class="section"><div class="section-title">科研成果与证书</div><div class="research"><b>在投论文</b><span>SC-RRT: Superellipsoid-Constrained Bidirectional RRT with Adaptive Dual-Super-Ellipsoid Sampling；SC-RRT 算法相关论文 2 篇，投稿中</span><b>已发表</b><span>Numerical Simulation Study on Heat and Mass Transfer Processes in Laser Deep Penetration Welding of Thin-Plate Copper-Aluminum Dissimilar Metals；已录用并发表</span><b>证书</b><span>英语 CET-4、电工中级资格证、机器人一级资格证、计算机一级证书、C1D 驾驶证</span></div></section>
+<footer>简历内容基于本人提供的工程材料整理。</footer>
+</main>
+<script>
+const key='resume-gu-xingyu-editable-v5';
+const sheet=document.querySelector('.sheet');
+const photoSrc='assets/resume/郭兴雨证件照.png';
+const saved=localStorage.getItem(key);
+if(saved) sheet.innerHTML=saved;
+const photo=sheet.querySelector('.photo img');
+if(photo) { photo.src=photoSrc; photo.onerror=()=>{photo.src='./assets/resume/郭兴雨证件照.png'}; }
+sheet.addEventListener('input',()=>localStorage.setItem(key,sheet.innerHTML));
+function setPageMode(mode){document.body.classList.toggle('long-page',mode==='long');localStorage.setItem('resume-page-mode',mode)}
+const pageMode=localStorage.getItem('resume-page-mode')||'paged';
+document.getElementById('pageMode').value=pageMode;setPageMode(pageMode);
+</script>
+</body>
+</html>

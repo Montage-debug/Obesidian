@@ -1,0 +1,56 @@
+<main class="page" contenteditable="true" spellcheck="false">
+<header class="identity">
+<div><h1>郭兴雨</h1><div class="headline">机械电子工程硕士 · 2027 届</div>
+<div class="contact"><b>电话</b> 18989767989　 <b>邮箱</b> gxyhaoxianghenlihai@gmail.com<br>
+<b>出生年月</b> 2001.03　 <b>政治面貌</b> 群众　 <b>籍贯</b> 河南</div></div>
+<img class="photo" src="PHOTO_DATA" alt="郭兴雨证件照" title="点击替换照片" contenteditable="false">
+</header>
+<p class="summary">机械电子工程硕士在读，具备<strong>机械设计、嵌入式控制、ROS2 系统集成与整机测试</strong>经验。参与多型号工业机械臂驱动、导纳力控、电源固件与语音任务交互开发，熟悉设备联调、故障定位、测试验证及工程文档交付。</p>
+<section><h2>教育背景</h2>
+<div class="edu row"><strong>上海应用技术大学｜机械电子工程｜硕士在读</strong><span class="gpa">GPA：3.5</span><span class="date">2024.09—2027.06</span></div>
+<div class="edu row"><strong>温州理工学院｜机械工程｜本科</strong><span class="gpa">GPA：2.55</span><span class="date">2022.09—2024.06</span></div>
+</section>
+<section><h2>实习 / 工作经历</h2>
+<article class="entry"><div class="company"><strong>杭州市云深处科技有限公司｜研发实习生</strong><span class="date">2025.06—2025.08</span></div>
+<ul>
+<li>开展雷达 SLAM 建图与导航调试，通过 Rviz 检查点云及障碍物分布，完成雷达校准、点云质量验证及地图匹配参数调整；参与路径规划仿真、点到点与避障路径脚本验证。</li>
+<li>跟进固件及底层控制问题，完成<b>问题复现、日志定位、协作修复与回归验证</b>，编写测试用例和自动化验证脚本；配合硬件组进行核心部件调试、机电故障排查，提高现场测试可重复性。</li>
+</ul></article>
+<article class="entry"><div class="company"><strong>杭州市未来之城科技有限公司｜ROS2 架构师</strong><span class="date">2025.09—至今</span></div>
+<ul>
+<li><b>驱动与运动控制：</b>参与 AUBO i5、Elite LS65 / ES66 适配，基于 ArmDriverBase 统一 ROS2 驱动接口，提供轨迹 Action、上下电、状态监控、预设姿态及末端控制；实现路点追加、暂停 / 恢复 / 取消，结合 RTSI、servoj、KDL 与 TCP 偏移开展轨迹跟踪。</li>
+<li><b>力控与末端集成：</b>读取一维 / 六维力传感器数据，实现导纳力控、质量 / 质心 / 力偏置标定加载与力值冻结检测；封装 RS485 串口协议，结合 JSON、SQLite 识别末端设备及可用参数，统一指令下发与负载配置。</li>
+<li><b>整机任务编排：</b>基于 SMACC2 与 BehaviorTree.CPP 组织初始化、自检、识别、任务执行及异常恢复，通过 ROS2 Service / Action 串联机械臂、视觉、末端工具和语音模块。</li>
+<li><b>语音交互开发：</b>开发 voice_asr_node，接入豆包实时语音完成 ASR / 对话 / TTS，本地部署 Sherpa-ONNX 唤醒与 CAM++ 声纹识别；将结构化命令及意图匹配结果映射至 ROS2 任务，回传执行状态。</li>
+</ul></article>
+</section>
+<section><h2>核心项目</h2>
+<article class="project"><div class="row"><h3>机器人整机远程电源控制固件｜嵌入式开发</h3><span class="date">2025.09—至今</span></div>
+<p class="stack">ESP32-P4 / C6 · STM32 · ESP-IDF 5.4.1 · FreeRTOS · MQTT / WSS · BLE · OTA</p>
+<ul>
+<li>基于 ESP-IDF 与 FreeRTOS，将 STM32 整机电源逻辑迁移至 ESP32-P4，统一继电器、工控机脉冲、机械臂 RMT-ON / OFF、实体按键与急停联锁时序。</li>
+<li>采用 ESP32-C6 无线协处理器，完成 SDIO 通信、Wi-Fi 联网、NimBLE GATT 配网、MQTT over WSS 遥控与遥测、HTTPS 双分区 OTA 及回滚；归一化按键 / UART / 云端输入，加入急停优先、冷却防连发、任务看门狗与网络恢复机制。</li>
+</ul></article>
+<article class="project"><div class="row"><h3>双臂轮式机器人系统｜机电与 ROS2 集成</h3><span class="date">2025.09—至今</span></div>
+<p class="stack">ROS2 · 电机 / 编码器选型 · 立创 EDA · PCB · URDF · CAN · EtherCAT 方案</p>
+<ul>
+<li>开展电机、编码器及驱动电路选型，设计原理图与 PCB，完成贴片焊接和电路安全检查；完成六轴机械臂外壳设计、URDF 建模，搭建树莓派上位机与分布式下位机架构，规划 EtherCAT / CAN 链路。</li>
+<li><b>项目进展：</b>四轮驱动底盘已完成验证，双臂仍在开发，推进正逆运动学与空间干涉问题处理；尚未完成双臂与底盘整机联调。</li>
+</ul></article>
+</section>
+<section><h2>科研方向</h2>
+<p><b>机械臂运动规划：</b>研究深度视觉感知与自适应双向超椭球体约束采样的 RRT 方法，面向六轴机械臂运动规划问题。</p>
+<p class="paper-title">相关论文：SC-RRT: Superellipsoid-Constrained Bidirectional RRT with Adaptive Dual-Super-Ellipsoid Sampling</p>
+<p><b>焊接仿真与工艺优化：</b>研究薄板铜铝异种金属激光深熔焊接的传热传质过程与工艺参数优化。</p>
+<p class="paper-title">相关论文：Numerical Simulation Study on Heat and Mass Transfer Processes in Laser Deep Penetration Welding of Thin-Plate Copper-Aluminum Dissimilar Metals</p>
+</section>
+<section><h2>专业能力与证书</h2>
+<div class="skills">
+<p><b>编程 / 系统：</b>C++、C、Python；Linux、CMake、GDB、Git；Cubic 系统镜像、Jenkins 构建部署。</p>
+<p><b>机器人软件：</b>ROS2 Topic / Service / Action、TF、URDF、Rviz；SMACC2、BehaviorTree.CPP、KDL。</p>
+<p><b>嵌入式 / 通信：</b>ESP-IDF、FreeRTOS、ESP32、STM32；UART、RS485 / RS232、CAN、MQTT、BLE、SQLite。</p>
+<p><b>机械 / 工程：</b>CAD、SolidWorks、UG、MATLAB、Ansys；机械建模、加工装配、样机调试及测试文档。</p>
+</div>
+<p class="cert"><b>证书：</b>英语 CET-4、电工中级资格证、机器人一级资格证、计算机一级证书、C1D 驾驶证。</p>
+</section>
+</main>

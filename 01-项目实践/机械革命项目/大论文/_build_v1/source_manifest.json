@@ -1,0 +1,528 @@
+{
+  "reference": {
+    "path": "E:\\xwechat_files\\wxid_6rawr3ohzsdb22_ac6d\\msg\\file\\2026-10\\MS基于NX MCD的装配机械臂轨迹规划与虚拟调试研究.docx",
+    "sha256": "a71d9eac6e1cede5c938e7381474b1874dda67d8b8cc42477eafe1fad9e5ae08",
+    "images": []
+  },
+  "scrrt": {
+    "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\SC-RRT小论文编写\\SC-RRT论文-增机械臂实验版\\zh\\修订交付_20260907\\第九版_SC-RRT_中文完整修订稿_黑色加粗.docx",
+    "sha256": "749ae9149b029b301f91472aa762264efb2b49457e213b109c879c184c7ec384",
+    "images": [
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image3.png",
+        "size": [
+          1270,
+          752
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image8.wmf",
+        "size": [
+          66,
+          15
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image16.wmf",
+        "size": [
+          109,
+          18
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image5.wmf",
+        "size": [
+          21,
+          16
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image13.png",
+        "size": [
+          1200,
+          992
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image18.jpeg",
+        "size": [
+          591,
+          736
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image2.wmf",
+        "size": [
+          74,
+          18
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image7.wmf",
+        "size": [
+          11,
+          14
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image11.png",
+        "size": [
+          681,
+          504
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image15.wmf",
+        "size": [
+          103,
+          18
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image21.jpeg",
+        "size": [
+          993,
+          736
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image6.png",
+        "size": [
+          568,
+          642
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image9.wmf",
+        "size": [
+          85,
+          14
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image4.wmf",
+        "size": [
+          347,
+          20
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image20.jpeg",
+        "size": [
+          589,
+          736
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image1.wmf",
+        "size": [
+          29,
+          12
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image10.wmf",
+        "size": [
+          398,
+          16
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image14.wmf",
+        "size": [
+          243,
+          36
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image19.jpeg",
+        "size": [
+          491,
+          736
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image12.png",
+        "size": [
+          1003,
+          737
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image17.jpeg",
+        "size": [
+          591,
+          736
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image22.png",
+        "size": [
+          3400,
+          2600
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image23.png",
+        "size": [
+          8221,
+          6251
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image24.png",
+        "size": [
+          8169,
+          6516
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image25.png",
+        "size": [
+          9036,
+          6534
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image26.png",
+        "size": [
+          9039,
+          3500
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt_image27.png",
+        "size": [
+          9037,
+          6301
+        ]
+      }
+    ]
+  },
+  "scrrt8": {
+    "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\SC-RRT小论文编写\\SC-RRT论文-增机械臂实验版\\zh\\第八版-完整重构-SC-RRT增加实验版.docx",
+    "sha256": "040c812b0026fd077c5d300c267e724cc772e4226002be76854f7dca5166cc95",
+    "images": [
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image22.jpeg",
+        "size": [
+          993,
+          736
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image1.wmf",
+        "size": [
+          41,
+          14
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image2.wmf",
+        "size": [
+          69,
+          18
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image3.wmf",
+        "size": [
+          74,
+          18
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image4.png",
+        "size": [
+          1270,
+          752
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image5.wmf",
+        "size": [
+          347,
+          20
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image6.wmf",
+        "size": [
+          21,
+          16
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image7.png",
+        "size": [
+          568,
+          642
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image8.wmf",
+        "size": [
+          11,
+          14
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image9.wmf",
+        "size": [
+          66,
+          15
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image10.wmf",
+        "size": [
+          85,
+          14
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image11.wmf",
+        "size": [
+          398,
+          16
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image12.png",
+        "size": [
+          681,
+          504
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image13.png",
+        "size": [
+          1003,
+          737
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image14.png",
+        "size": [
+          1200,
+          992
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image15.wmf",
+        "size": [
+          243,
+          36
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image16.wmf",
+        "size": [
+          103,
+          18
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image17.wmf",
+        "size": [
+          109,
+          18
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image18.jpeg",
+        "size": [
+          591,
+          736
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image19.jpeg",
+        "size": [
+          591,
+          736
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image20.jpeg",
+        "size": [
+          491,
+          736
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\scrrt8_image21.jpeg",
+        "size": [
+          589,
+          736
+        ]
+      }
+    ]
+  },
+  "bridge": {
+    "path": "E:\\xwechat_files\\wxid_6rawr3ohzsdb22_ac6d\\msg\\file\\2026-10\\视觉目标到机械臂运动约束的衔接与验证.docx",
+    "sha256": "cc885024a5799e8faadd01c4bc6dbad3200792342b694e47bfa81c3f54a38742",
+    "images": [
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\bridge_image1.png",
+        "size": [
+          2000,
+          1050
+        ]
+      },
+      {
+        "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\_build_v1\\assets\\bridge_image2.png",
+        "size": [
+          1900,
+          920
+        ]
+      }
+    ]
+  },
+  "outline": {
+    "path": "E:\\obsidian_知识库\\01-项目实践\\机械革命项目\\大论文\\郭兴雨大论文目录.docx",
+    "sha256": "379e5bd89781527cc23eaeaccd098462febdc52507e796511e9bc1c972cbab02",
+    "images": []
+  },
+  "layout": {
+    "sections": [
+      {
+        "page_width": 210.01,
+        "page_height": 297.0,
+        "top_margin": 28.01,
+        "bottom_margin": 25.01,
+        "left_margin": 25.01,
+        "right_margin": 25.01,
+        "header_distance": 20.0,
+        "footer_distance": 11.99
+      },
+      {
+        "page_width": 210.01,
+        "page_height": 297.0,
+        "top_margin": 28.01,
+        "bottom_margin": 25.01,
+        "left_margin": 25.01,
+        "right_margin": 25.01,
+        "header_distance": 20.0,
+        "footer_distance": 11.99
+      },
+      {
+        "page_width": 210.01,
+        "page_height": 297.0,
+        "top_margin": 28.01,
+        "bottom_margin": 25.01,
+        "left_margin": 25.01,
+        "right_margin": 25.01,
+        "header_distance": 20.0,
+        "footer_distance": 11.99
+      },
+      {
+        "page_width": 210.01,
+        "page_height": 297.0,
+        "top_margin": 27.99,
+        "bottom_margin": 20.0,
+        "left_margin": 25.01,
+        "right_margin": 25.01,
+        "header_distance": 20.0,
+        "footer_distance": 11.99
+      },
+      {
+        "page_width": 210.01,
+        "page_height": 297.0,
+        "top_margin": 28.01,
+        "bottom_margin": 20.0,
+        "left_margin": 25.01,
+        "right_margin": 25.01,
+        "header_distance": 20.0,
+        "footer_distance": 11.99
+      },
+      {
+        "page_width": 210.01,
+        "page_height": 297.0,
+        "top_margin": 28.01,
+        "bottom_margin": 20.0,
+        "left_margin": 25.01,
+        "right_margin": 25.01,
+        "header_distance": 20.0,
+        "footer_distance": 11.99
+      }
+    ],
+    "styles": [
+      {
+        "id": "1",
+        "name": "Heading 1",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"1\">\n  <w:name w:val=\"heading 1\"/>\n  <w:basedOn w:val=\"2\"/>\n  <w:next w:val=\"a1\"/>\n  <w:link w:val=\"10\"/>\n  <w:uiPriority w:val=\"9\"/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:spacing w:line=\"300\" w:lineRule=\"auto\"/>\n    <w:outlineLvl w:val=\"0\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:bCs w:val=\"0\"/>\n    <w:kern w:val=\"44\"/>\n    <w:szCs w:val=\"44\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "2",
+        "name": "Heading 2",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"2\">\n  <w:name w:val=\"heading 2\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:link w:val=\"20\"/>\n  <w:uiPriority w:val=\"9\"/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:keepNext/>\n    <w:keepLines/>\n    <w:spacing w:line=\"240\" w:lineRule=\"auto\"/>\n    <w:ind w:firstLineChars=\"0\" w:firstLine=\"0\"/>\n    <w:jc w:val=\"left\"/>\n    <w:outlineLvl w:val=\"1\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:bCs/>\n    <w:szCs w:val=\"32\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "3",
+        "name": "Heading 3",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"3\">\n  <w:name w:val=\"heading 3\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:link w:val=\"30\"/>\n  <w:uiPriority w:val=\"9\"/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:keepNext/>\n    <w:keepLines/>\n    <w:spacing w:beforeLines=\"100\" w:before=\"100\" w:afterLines=\"100\" w:after=\"100\" w:line=\"415\" w:lineRule=\"auto\"/>\n    <w:jc w:val=\"center\"/>\n    <w:outlineLvl w:val=\"2\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:b/>\n    <w:bCs/>\n    <w:sz w:val=\"28\"/>\n    <w:szCs w:val=\"32\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "4",
+        "name": "Heading 4",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"4\">\n  <w:name w:val=\"heading 4\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:link w:val=\"40\"/>\n  <w:uiPriority w:val=\"9\"/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:keepNext/>\n    <w:keepLines/>\n    <w:spacing w:before=\"280\" w:after=\"290\" w:line=\"372\" w:lineRule=\"auto\"/>\n    <w:outlineLvl w:val=\"3\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:ascii=\"Arial\" w:eastAsia=\"黑体\" w:hAnsi=\"Arial\"/>\n    <w:b/>\n    <w:sz w:val=\"28\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "5",
+        "name": "Heading 5",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"5\">\n  <w:name w:val=\"heading 5\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:link w:val=\"50\"/>\n  <w:uiPriority w:val=\"9\"/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:keepNext/>\n    <w:keepLines/>\n    <w:spacing w:before=\"280\" w:after=\"290\" w:line=\"372\" w:lineRule=\"auto\"/>\n    <w:outlineLvl w:val=\"4\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:b/>\n    <w:sz w:val=\"28\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "6",
+        "name": "Heading 6",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"6\">\n  <w:name w:val=\"heading 6\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:link w:val=\"60\"/>\n  <w:uiPriority w:val=\"9\"/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:keepNext/>\n    <w:keepLines/>\n    <w:spacing w:before=\"240\" w:after=\"64\" w:line=\"317\" w:lineRule=\"auto\"/>\n    <w:outlineLvl w:val=\"5\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:ascii=\"Arial\" w:eastAsia=\"黑体\" w:hAnsi=\"Arial\"/>\n    <w:b/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "7",
+        "name": "Heading 7",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"7\">\n  <w:name w:val=\"heading 7\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:link w:val=\"70\"/>\n  <w:uiPriority w:val=\"9\"/>\n  <w:semiHidden/>\n  <w:unhideWhenUsed/>\n  <w:qFormat/>\n  <w:rsid w:val=\"00C10564\"/>\n  <w:pPr>\n    <w:keepNext/>\n    <w:keepLines/>\n    <w:spacing w:before=\"40\" w:line=\"240\" w:lineRule=\"auto\"/>\n    <w:ind w:firstLineChars=\"0\" w:firstLine=\"0\"/>\n    <w:outlineLvl w:val=\"6\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:asciiTheme=\"minorHAnsi\" w:eastAsiaTheme=\"minorEastAsia\" w:hAnsiTheme=\"minorHAnsi\" w:cstheme=\"majorBidi\"/>\n    <w:b/>\n    <w:bCs/>\n    <w:color w:val=\"595959\" w:themeColor=\"text1\" w:themeTint=\"A6\"/>\n    <w:sz w:val=\"21\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "8",
+        "name": "Heading 8",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"8\">\n  <w:name w:val=\"heading 8\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:link w:val=\"80\"/>\n  <w:uiPriority w:val=\"9\"/>\n  <w:semiHidden/>\n  <w:unhideWhenUsed/>\n  <w:qFormat/>\n  <w:rsid w:val=\"00C10564\"/>\n  <w:pPr>\n    <w:keepNext/>\n    <w:keepLines/>\n    <w:spacing w:line=\"240\" w:lineRule=\"auto\"/>\n    <w:ind w:firstLineChars=\"0\" w:firstLine=\"0\"/>\n    <w:outlineLvl w:val=\"7\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:asciiTheme=\"minorHAnsi\" w:eastAsiaTheme=\"minorEastAsia\" w:hAnsiTheme=\"minorHAnsi\" w:cstheme=\"majorBidi\"/>\n    <w:color w:val=\"595959\" w:themeColor=\"text1\" w:themeTint=\"A6\"/>\n    <w:sz w:val=\"21\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "9",
+        "name": "Heading 9",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"9\">\n  <w:name w:val=\"heading 9\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:link w:val=\"90\"/>\n  <w:uiPriority w:val=\"9\"/>\n  <w:semiHidden/>\n  <w:unhideWhenUsed/>\n  <w:qFormat/>\n  <w:rsid w:val=\"00C10564\"/>\n  <w:pPr>\n    <w:keepNext/>\n    <w:keepLines/>\n    <w:spacing w:line=\"240\" w:lineRule=\"auto\"/>\n    <w:ind w:firstLineChars=\"0\" w:firstLine=\"0\"/>\n    <w:outlineLvl w:val=\"8\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:asciiTheme=\"minorHAnsi\" w:eastAsiaTheme=\"majorEastAsia\" w:hAnsiTheme=\"minorHAnsi\" w:cstheme=\"majorBidi\"/>\n    <w:color w:val=\"595959\" w:themeColor=\"text1\" w:themeTint=\"A6\"/>\n    <w:sz w:val=\"21\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "TOC3",
+        "name": "toc 3",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"TOC3\">\n  <w:name w:val=\"toc 3\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:uiPriority w:val=\"39\"/>\n  <w:unhideWhenUsed/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:widowControl/>\n    <w:spacing w:after=\"100\" w:line=\"259\" w:lineRule=\"auto\"/>\n    <w:ind w:left=\"440\" w:firstLineChars=\"0\" w:firstLine=\"0\"/>\n    <w:jc w:val=\"left\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:ascii=\"等线\" w:eastAsia=\"等线\" w:hAnsi=\"等线\"/>\n    <w:kern w:val=\"0\"/>\n    <w:sz w:val=\"22\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "TOC1",
+        "name": "toc 1",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"TOC1\">\n  <w:name w:val=\"toc 1\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:uiPriority w:val=\"39\"/>\n  <w:unhideWhenUsed/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:widowControl/>\n    <w:tabs>\n      <w:tab w:val=\"right\" w:leader=\"dot\" w:pos=\"8296\"/>\n    </w:tabs>\n    <w:ind w:firstLineChars=\"0\" w:firstLine=\"0\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:ascii=\"黑体\" w:eastAsia=\"黑体\" w:hAnsi=\"黑体\"/>\n    <w:kern w:val=\"0\"/>\n    <w:szCs w:val=\"24\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "TOC2",
+        "name": "toc 2",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"TOC2\">\n  <w:name w:val=\"toc 2\"/>\n  <w:basedOn w:val=\"a1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:uiPriority w:val=\"39\"/>\n  <w:unhideWhenUsed/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:widowControl/>\n    <w:tabs>\n      <w:tab w:val=\"right\" w:leader=\"dot\" w:pos=\"8296\"/>\n    </w:tabs>\n    <w:spacing w:after=\"100\"/>\n    <w:ind w:firstLineChars=\"0\" w:firstLine=\"0\"/>\n    <w:jc w:val=\"left\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:ascii=\"等线\" w:eastAsia=\"等线\" w:hAnsi=\"等线\"/>\n    <w:kern w:val=\"0\"/>\n    <w:sz w:val=\"22\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "af1",
+        "name": "No Spacing",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"af1\">\n  <w:name w:val=\"No Spacing\"/>\n  <w:uiPriority w:val=\"1\"/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:widowControl w:val=\"0\"/>\n    <w:spacing w:beforeLines=\"100\" w:before=\"100\" w:afterLines=\"100\" w:after=\"100\"/>\n    <w:jc w:val=\"center\"/>\n    <w:outlineLvl w:val=\"0\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:eastAsia=\"黑体\"/>\n    <w:kern w:val=\"2\"/>\n    <w:sz w:val=\"28\"/>\n    <w:szCs w:val=\"22\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "TOC10",
+        "name": "TOC 标题1",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:customStyle=\"1\" w:styleId=\"TOC10\">\n  <w:name w:val=\"TOC 标题1\"/>\n  <w:basedOn w:val=\"1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:uiPriority w:val=\"39\"/>\n  <w:unhideWhenUsed/>\n  <w:qFormat/>\n  <w:pPr>\n    <w:widowControl/>\n    <w:spacing w:before=\"240\" w:line=\"259\" w:lineRule=\"auto\"/>\n    <w:outlineLvl w:val=\"9\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:ascii=\"等线 Light\" w:eastAsia=\"等线 Light\" w:hAnsi=\"等线 Light\"/>\n    <w:bCs/>\n    <w:color w:val=\"2F5496\"/>\n    <w:kern w:val=\"0\"/>\n    <w:sz w:val=\"32\"/>\n    <w:szCs w:val=\"32\"/>\n  </w:rPr>\n</w:style>\n"
+      },
+      {
+        "id": "TOC",
+        "name": "TOC Heading",
+        "xml": "<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cex=\"http://schemas.microsoft.com/office/word/2018/wordml/cex\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16=\"http://schemas.microsoft.com/office/word/2018/wordml\" xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\" xmlns:w16sdtdh=\"http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" w:type=\"paragraph\" w:styleId=\"TOC\">\n  <w:name w:val=\"TOC Heading\"/>\n  <w:basedOn w:val=\"1\"/>\n  <w:next w:val=\"a1\"/>\n  <w:uiPriority w:val=\"39\"/>\n  <w:unhideWhenUsed/>\n  <w:qFormat/>\n  <w:rsid w:val=\"00C10564\"/>\n  <w:pPr>\n    <w:widowControl/>\n    <w:spacing w:before=\"240\" w:line=\"259\" w:lineRule=\"auto\"/>\n    <w:outlineLvl w:val=\"9\"/>\n  </w:pPr>\n  <w:rPr>\n    <w:rFonts w:asciiTheme=\"majorHAnsi\" w:eastAsiaTheme=\"majorEastAsia\" w:hAnsiTheme=\"majorHAnsi\" w:cstheme=\"majorBidi\"/>\n    <w:color w:val=\"0F4761\" w:themeColor=\"accent1\" w:themeShade=\"BF\"/>\n    <w:kern w:val=\"0\"/>\n    <w:sz w:val=\"32\"/>\n    <w:szCs w:val=\"32\"/>\n  </w:rPr>\n</w:style>\n"
+      }
+    ]
+  }
+}

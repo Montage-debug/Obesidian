@@ -1,0 +1,34 @@
+const {chromium}=require('C:/Users/26434/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const fs=require('fs'),path=require('path'),assert=require('assert');
+const {pathToFileURL}=require('url');
+(async()=>{
+ const root=path.resolve(__dirname,'../../..'),out=path.dirname(__dirname);
+ const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+ const context=await browser.newContext({viewport:{width:1000,height:1250},acceptDownloads:true});
+ const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(pathToFileURL(path.join(out,'郭兴雨-央国企技术岗-单页简历.html')).href);await page.evaluate(()=>document.fonts.ready);
+ await page.emulateMedia({media:'print'});
+ assert.equal(await page.locator('.page').count(),1);
+ assert(await page.locator('.photo').evaluate(e=>e.complete&&e.naturalWidth>0));
+ const text=await page.locator('#resume').innerText();
+ for(const term of ['GPA：3.5','GPA：2.55','专业能力与证书','C1D'])assert(text.includes(term),term);
+ for(const term of ['聚润','横向铰接','专升本','预计','平均成绩','已获学分','426','（92）'])assert(!text.includes(term),term);
+ const geometry=await page.locator('.page').evaluate(e=>({height:e.getBoundingClientRect().height,scroll:e.scrollHeight,last:e.lastElementChild.getBoundingClientRect().bottom-e.getBoundingClientRect().top}));
+ console.log('Single-page geometry',geometry);
+ await page.pdf({path:path.join(out,'郭兴雨-央国企技术岗-单页简历.pdf'),preferCSSPageSize:true,printBackground:true,displayHeaderFooter:false});
+ await page.locator('.page').screenshot({path:path.join(__dirname,'单页HTML预览.png')});
+ // Download must keep this version's edited content and generate isolated storage.
+ const dlPromise=page.waitForEvent('download');await page.emulateMedia({media:'screen'});await page.locator('#saveHtml').click();
+ const dl=await dlPromise;const saved=fs.readFileSync(await dl.path(),'utf8');
+ assert(saved.includes('GPA：3.5'));assert(!saved.includes("const storageKey='resume-soe-gxy-20260909-v02';"));
+ await page.goto(pathToFileURL(path.join(root,'郭兴雨-ROS2嵌入式机器人方向-可编辑简历.html')).href);
+ assert.equal(await page.locator('[data-academic-score]').count(),2);
+ assert.equal(await page.locator('[data-academic-score="graduate"]').innerText(),'研究生 GPA：3.5');
+ assert.equal(await page.locator('[data-academic-score="undergraduate"]').innerText(),'本科 GPA：2.55');
+ await page.emulateMedia({media:'print'});
+ const original=await page.locator('.sheet').evaluate(e=>({height:e.getBoundingClientRect().height,footer:e.querySelector('footer').getBoundingClientRect().bottom-e.getBoundingClientRect().top}));
+ assert(original.footer<original.height-15);
+ assert.equal(errors.length,0,errors.join('\n'));
+ fs.writeFileSync(path.join(__dirname,'browser-check.json'),JSON.stringify({geometry,original,errors,checks:['one HTML page','both GPAs correct','requested omissions absent','photo loaded','HTML download uses isolated storage','root HTML academic fields synchronized']},null,2));
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});
